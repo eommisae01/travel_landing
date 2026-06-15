@@ -1,0 +1,10 @@
+{
+  "name": "타카마쓰 가족여행",
+  "short_name": "타카마쓰 여행",
+  "description": "타카마쓰와 나오시마 가족여행용 개인 대시보드",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f2ea",
+  "theme_color": "#4c7f86",
+  "lang": "ko-KR"
+}

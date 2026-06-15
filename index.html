@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#4c7f86">
+    <meta name="description" content="타카마쓰 가족여행용 개인 여행 대시보드">
+    <title>타카마쓰 가족여행</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">본문으로 바로가기</a>
+    <div class="scroll-progress" aria-hidden="true"></div>
+
+    <aside class="edit-dock" aria-label="페이지 편집 도구">
+      <button class="button edit-toggle" id="edit-toggle" type="button" aria-pressed="false">편집 켜기</button>
+      <button class="button ghost" id="settings-toggle" type="button" aria-expanded="false" aria-controls="settings-panel">링크/날짜</button>
+      <button class="button ghost" id="reset-page-edits" type="button">문구 초기화</button>
+    </aside>
+
+    <section class="settings-panel" id="settings-panel" aria-labelledby="settings-title" hidden>
+      <div class="settings-card">
+        <div class="card-title-row">
+          <div>
+            <p class="eyebrow">Editable setup</p>
+            <h2 id="settings-title">링크와 날짜 수정</h2>
+          </div>
+          <button class="button ghost" id="settings-close" type="button">닫기</button>
+        </div>
+        <form id="settings-form" class="settings-form">
+          <label>여행 시작일 <input type="date" name="tripStartDate"></label>
+          <label>여행 종료일 <input type="date" name="tripEndDate"></label>
+          <label>월요일 날짜 <input type="date" name="monday"></label>
+          <label>화요일 날짜 <input type="date" name="tuesday"></label>
+          <label>수요일 날짜 <input type="date" name="wednesday"></label>
+          <label class="span-two">Google My Maps iframe src <input type="url" name="myMapsEmbedUrl" placeholder="https://www.google.com/maps/d/embed?..."></label>
+          <label>My Maps 링크 <input type="url" name="myMaps"></label>
+          <label>Google Calendar 링크 <input type="url" name="calendar"></label>
+          <label>날씨 링크 <input type="url" name="weather"></label>
+          <label>페리 시간 링크 <input type="url" name="ferry"></label>
+          <label>항공권 링크 <input type="url" name="flight"></label>
+          <label>호텔 예약 링크 <input type="url" name="hotel"></label>
+          <label>미술관 예약 링크 <input type="url" name="museum"></label>
+          <div class="button-row span-two">
+            <button class="button" type="submit">설정 저장</button>
+            <button class="button danger" id="reset-settings" type="button">설정 초기화</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <header class="hero" aria-label="타카마쓰 여행 대표 화면">
+      <nav class="top-nav" aria-label="주요 섹션">
+        <a class="nav-brand" href="#main">TAKAMATSU</a>
+        <a href="#schedule">일정</a>
+        <a href="#map">지도</a>
+        <a href="#checklist">체크</a>
+        <a href="#quick-info">현장정보</a>
+      </nav>
+
+      <div class="hero-grid">
+        <section class="hero-card" aria-labelledby="page-title">
+          <p class="eyebrow">Setouchi family dashboard</p>
+          <h1 id="page-title">타카마쓰 가족여행</h1>
+          <p class="subtitle">나 · 아빠 · 동생 | 세토내해 · 미술관 · 우동</p>
+          <div class="trip-period" id="trip-period">여행 기간을 script.js에서 설정하세요</div>
+          <p class="hero-copy">월·화 중심의 짧은 세토내해 여행. 수요일은 11시 비행기로 공항 이동 중심.</p>
+        </section>
+
+        <aside class="today-panel" aria-labelledby="today-title">
+          <div class="panel-heading">
+            <p class="eyebrow">Today focus</p>
+            <h2 id="today-title">오늘의 핵심 3개</h2>
+          </div>
+          <ol class="focus-list">
+            <li>페리 시간과 강풍 여부 확인</li>
+            <li>미술관 예약 상태 확인</li>
+            <li>날씨에 따라 플랜 B 판단</li>
+          </ol>
+        </aside>
+      </div>
+    </header>
+
+    <main id="main" class="page-shell">
+      <section class="section" aria-labelledby="quick-links-title">
+        <div class="section-heading">
+          <p class="eyebrow">Fast access</p>
+          <h2 id="quick-links-title">빠른 링크</h2>
+        </div>
+        <div class="quick-links" id="quick-links"></div>
+      </section>
+
+      <section class="section grid-two" aria-labelledby="summary-title">
+        <div class="card span-two">
+          <div class="section-heading compact">
+            <p class="eyebrow">Overview</p>
+            <h2 id="summary-title">여행 요약</h2>
+          </div>
+          <div class="summary-grid">
+            <dl>
+              <dt>여행지</dt>
+              <dd>타카마쓰 / 나오시마</dd>
+            </dl>
+            <dl>
+              <dt>멤버</dt>
+              <dd>나, 아빠, 동생</dd>
+            </dl>
+            <dl>
+              <dt>핵심 일정</dt>
+              <dd>월요일·화요일 실질 여행 / 수요일 11시 비행기</dd>
+            </dl>
+            <dl>
+              <dt>여행 스타일</dt>
+              <dd>무리하지 않기 · 날씨에 따라 유연하게 변경 · 페리 시간 중요</dd>
+            </dl>
+          </div>
+          <div class="tag-row" aria-label="여행 테마">
+            <span>미술관</span>
+            <span>세토내해</span>
+            <span>우동</span>
+            <span>가족여행</span>
+            <span>조용한 일정</span>
+          </div>
+        </div>
+
+        <article class="card" aria-labelledby="flight-title">
+          <div class="card-title-row">
+            <h2 id="flight-title">항공편</h2>
+            <span class="status done">예약 완료 / 메일 확인</span>
+          </div>
+          <!-- 항공편 정보 수정 위치: 예약번호나 e-ticket 번호는 넣지 마세요. -->
+          <div class="split-list">
+            <div>
+              <h3>가는 편</h3>
+              <p>항공편명: placeholder</p>
+              <p>출발공항: placeholder</p>
+              <p>도착공항: placeholder</p>
+              <p>출발시간: placeholder</p>
+              <p>도착시간: placeholder</p>
+            </div>
+            <div>
+              <h3>오는 편</h3>
+              <p>수요일 11:00 출발</p>
+              <p>항공편명: placeholder</p>
+              <p>출발공항: placeholder</p>
+              <p>도착공항: placeholder</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" aria-labelledby="hotel-title">
+          <div class="card-title-row">
+            <h2 id="hotel-title">숙소</h2>
+            <span class="status check">확인 필요</span>
+          </div>
+          <!-- 숙소 정보 수정 위치: 상세 개인정보성 주소는 공개 배포 전 한 번 더 확인하세요. -->
+          <dl class="info-list">
+            <dt>호텔명</dt>
+            <dd>placeholder hotel</dd>
+            <dt>지역</dt>
+            <dd>타카마쓰 시내 / 역 또는 항구 근처</dd>
+            <dt>체크인 / 체크아웃</dt>
+            <dd>placeholder / placeholder</dd>
+            <dt>메모</dt>
+            <dd>예약 상세정보는 예약 앱 또는 이메일에서 확인</dd>
+          </dl>
+          <div class="button-row">
+            <a class="button secondary" data-config-link="hotel" href="#">Google Maps 열기</a>
+          </div>
+        </article>
+      </section>
+
+      <section id="map" class="section" aria-labelledby="map-title">
+        <div class="section-heading">
+          <p class="eyebrow">Map source</p>
+          <h2 id="map-title">Google My Maps</h2>
+          <p>장소 추가/수정은 Google My Maps에서 하고, 이 웹페이지는 지도를 보기 좋게 보여주는 용도입니다.</p>
+        </div>
+        <div class="map-shell">
+          <iframe
+            id="my-maps-iframe"
+            title="타카마쓰 가족여행 Google My Maps"
+            src="about:blank"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+          <!-- 여기에 Google My Maps iframe src를 붙여넣기: script.js의 CONFIG.myMapsEmbedUrl도 함께 수정하세요. -->
+        </div>
+        <div class="button-row">
+          <a class="button" id="open-my-maps" href="#" target="_blank" rel="noreferrer">Google My Maps 열기</a>
+          <span class="small-note">iframe이 보이지 않으면 버튼으로 지도를 여세요.</span>
+        </div>
+      </section>
+
+      <section id="schedule" class="section" aria-labelledby="schedule-title">
+        <div class="section-heading">
+          <p class="eyebrow">Itinerary</p>
+          <h2 id="schedule-title">날짜별 일정</h2>
+        </div>
+        <div class="day-grid">
+          <article class="day-card" data-trip-day="monday">
+            <div class="day-head">
+              <h3>월요일</h3>
+              <span class="day-type">도착 · 타카마쓰</span>
+            </div>
+            <div class="timeline">
+              <div class="schedule-item">
+                <time>오전</time>
+                <div>
+                  <h4>타카마쓰 도착</h4>
+                  <p>공항에서 시내 이동. 호텔에 짐 맡기기.</p>
+                  <p class="meta">이동수단: 공항버스/택시 · 피로도 보통 · 비 영향 조금 있음</p>
+                  <span class="badge must">필수</span>
+                  <span class="status check">확인 필요</span>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <time>오후</time>
+                <div>
+                  <h4>리쓰린 공원</h4>
+                  <p>날씨가 괜찮으면 천천히 산책. 무리하지 않는 첫날 핵심 일정.</p>
+                  <p class="meta">Google Maps: placeholder · 마지막 입장: 확인 필요</p>
+                  <span class="badge weather">날씨 좋으면</span>
+                  <span class="status none">해당 없음</span>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <time>저녁</time>
+                <div>
+                  <h4>타카마쓰 시내 산책 / 우동 또는 이자카야</h4>
+                  <p>가볍게 저녁. 다음 날 나오시마 이동을 위해 일찍 쉬기.</p>
+                  <span class="badge optional">가능하면</span>
+                  <span class="status onsite">현장 결제</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="day-card" data-trip-day="tuesday">
+            <div class="day-head">
+              <h3>화요일</h3>
+              <span class="day-type">나오시마 · 미술관</span>
+            </div>
+            <div class="timeline">
+              <div class="schedule-item">
+                <time>아침</time>
+                <div>
+                  <h4>타카마쓰항 → 나오시마</h4>
+                  <p>페리 시간 placeholder. 강풍 예보와 결항 여부 확인.</p>
+                  <p class="meta">이동수단: 페리 · 피로도 보통 · 비 오면 영향 큼</p>
+                  <span class="badge must">필수</span>
+                  <span class="status check">확인 필요</span>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <time>낮</time>
+                <div>
+                  <h4>지중미술관</h4>
+                  <p>이번 여행의 핵심. 예약 필요 여부와 입장 시간을 먼저 확인.</p>
+                  <p class="meta">영업시간/휴관일/마지막 입장: placeholder</p>
+                  <span class="badge must">필수</span>
+                  <span class="status need">예약 필요</span>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <time>오후</time>
+                <div>
+                  <h4>베네세하우스 뮤지엄</h4>
+                  <p>체력과 시간에 따라 관람. 무리하면 항구 복귀 우선.</p>
+                  <span class="badge optional">가능하면</span>
+                  <span class="status check">확인 필요</span>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <time>저녁</time>
+                <div>
+                  <h4>타카마쓰 복귀 / 저녁</h4>
+                  <p>복귀 페리 시간을 놓치지 않기. 저녁은 시내 후보군에서 선택.</p>
+                  <span class="badge must">필수</span>
+                  <span class="status none">해당 없음</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="day-card travel-day" data-trip-day="wednesday">
+            <div class="day-head">
+              <h3>수요일</h3>
+              <span class="day-type">이동일 · 11시 비행기</span>
+            </div>
+            <div class="timeline">
+              <div class="schedule-item">
+                <time>아침</time>
+                <div>
+                  <h4>아침 식사 / 체크아웃</h4>
+                  <p>관광일이 아니라 공항 이동 중심. 여유 있게 움직이기.</p>
+                  <span class="badge must">필수</span>
+                  <span class="status none">해당 없음</span>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <time>출발 전</time>
+                <div>
+                  <h4>공항 이동</h4>
+                  <p>버스/택시 시간 placeholder. 11:00 비행기에 맞춰 조기 이동.</p>
+                  <span class="badge must">필수</span>
+                  <span class="status check">확인 필요</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section grid-two" aria-labelledby="places-title">
+        <div class="section-heading span-two">
+          <p class="eyebrow">Places</p>
+          <h2 id="places-title">장소 운영 정보</h2>
+        </div>
+        <article class="place-card">
+          <h3>지중미술관</h3>
+          <p>영업시간: placeholder · 휴관일: placeholder · 마지막 입장: placeholder</p>
+          <p>예약 필요 여부: 확인 필요</p>
+          <p class="address" data-address="일본어 주소 placeholder" hidden>일본어 주소 placeholder</p>
+          <div class="button-row">
+            <a class="button secondary" href="#" target="_blank" rel="noreferrer">Google Maps 열기</a>
+            <button class="button ghost copy-address" type="button">주소 복사</button>
+            <button class="button ghost reveal-address" type="button">일본어 주소 보기</button>
+          </div>
+        </article>
+        <article class="place-card">
+          <h3>리쓰린 공원</h3>
+          <p>영업시간: placeholder · 휴관일: placeholder · 마지막 입장: placeholder</p>
+          <p>예약 필요 여부: 해당 없음</p>
+          <p class="address" data-address="일본어 주소 placeholder" hidden>일본어 주소 placeholder</p>
+          <div class="button-row">
+            <a class="button secondary" href="#" target="_blank" rel="noreferrer">Google Maps 열기</a>
+            <button class="button ghost copy-address" type="button">주소 복사</button>
+            <button class="button ghost reveal-address" type="button">일본어 주소 보기</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="section" aria-labelledby="movement-title">
+        <div class="section-heading">
+          <p class="eyebrow">Transfers</p>
+          <h2 id="movement-title">이동 타임라인</h2>
+        </div>
+        <div class="movement-list">
+          <div><time>placeholder</time><strong>호텔 출발</strong><span>→ 타카마쓰항 · 도보/택시 · 예상 placeholder</span></div>
+          <div><time>placeholder</time><strong>페리 탑승</strong><span>→ 나오시마 도착 · 페리 · 강풍 여부 확인</span></div>
+          <div><time>placeholder</time><strong>미술관 이동</strong><span>→ 버스/택시 · 예상 placeholder</span></div>
+          <div><time>placeholder</time><strong>타카마쓰 복귀</strong><span>→ 복귀 페리 · 마지막 배 시간 확인</span></div>
+        </div>
+      </section>
+
+      <section id="checklist" class="section" aria-labelledby="checklist-title">
+        <div class="section-heading">
+          <p class="eyebrow">Ready</p>
+          <h2 id="checklist-title">체크리스트</h2>
+          <p id="checklist-total">전체 0 / 0 완료</p>
+        </div>
+        <div class="button-row">
+          <button class="button danger" id="reset-all-checks" type="button">전체 초기화</button>
+        </div>
+        <div class="checklist-grid" id="checklist-groups"></div>
+      </section>
+
+      <section class="section" aria-labelledby="weather-title">
+        <div class="section-heading">
+          <p class="eyebrow">Plan B</p>
+          <h2 id="weather-title">비 오는 날 플랜 B</h2>
+          <p>가벼운 비면 나오시마 일정은 가능. 폭우나 강풍이면 페리 감편/결항 가능성이 있으므로 타카마쓰 시내 또는 구라시키 일정으로 전환.</p>
+        </div>
+        <div class="tabs" role="tablist" aria-label="날씨별 플랜">
+          <button role="tab" aria-selected="true" aria-controls="sunny-panel" id="sunny-tab" data-tab="sunny">맑음</button>
+          <button role="tab" aria-selected="false" aria-controls="rain-panel" id="rain-tab" data-tab="rain">가벼운 비</button>
+          <button role="tab" aria-selected="false" aria-controls="storm-panel" id="storm-tab" data-tab="storm">폭우/강풍</button>
+        </div>
+        <div class="tab-panel" id="sunny-panel" role="tabpanel" aria-labelledby="sunny-tab">
+          <ul><li>나오시마</li><li>리쓰린 공원</li><li>항구 주변 산책</li><li>전망 좋은 장소</li></ul>
+        </div>
+        <div class="tab-panel" id="rain-panel" role="tabpanel" aria-labelledby="rain-tab" hidden>
+          <ul><li>나오시마 유지 가능</li><li>미술관 중심</li><li>이동은 버스/택시 위주</li><li>우산 준비</li></ul>
+        </div>
+        <div class="tab-panel" id="storm-panel" role="tabpanel" aria-labelledby="storm-tab" hidden>
+          <ul><li>페리 변동 가능성 있음</li><li>타카마쓰 시내 일정</li><li>카가와현립뮤지엄</li><li>구라시키 미관지구 / 오하라 미술관</li><li>실내 카페/쇼핑</li></ul>
+        </div>
+      </section>
+
+      <section class="section grid-two" aria-labelledby="food-title">
+        <div class="section-heading span-two">
+          <p class="eyebrow">Food pool</p>
+          <h2 id="food-title">음식 후보 리스트</h2>
+        </div>
+        <article class="food-card"><h3>우동</h3><p>식당명: placeholder · 위치: placeholder · 예약: 해당 없음 · 웨이팅: 확인 필요 · 카드: 확인 필요</p></article>
+        <article class="food-card"><h3>이자카야</h3><p>식당명: placeholder · 위치: placeholder · 예약: 가능하면 · 웨이팅: 있음 가능 · 카드: 확인 필요</p></article>
+        <article class="food-card"><h3>카페</h3><p>식당명: placeholder · 위치: placeholder · 비 오는 날 가까운 곳 후보</p></article>
+        <article class="food-card"><h3>아빠가 먹기 편한 곳</h3><p>식당명: placeholder · 위치: 호텔/역 근처 · 메모: 조용하고 메뉴가 쉬운 곳</p></article>
+      </section>
+
+      <section class="section" aria-labelledby="expense-title">
+        <div class="section-heading">
+          <p class="eyebrow">Light budget</p>
+          <h2 id="expense-title">예산/지출 메모</h2>
+        </div>
+        <form class="expense-form" id="expense-form">
+          <label>카테고리
+            <select id="expense-category">
+              <option>교통</option>
+              <option>식비</option>
+              <option>입장권</option>
+              <option>쇼핑</option>
+              <option>기타</option>
+            </select>
+          </label>
+          <label>항목 <input id="expense-item" type="text" placeholder="예: 페리"></label>
+          <label>금액 <input id="expense-amount" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+          <label>결제자 <input id="expense-payer" type="text" placeholder="나 / 아빠 / 동생"></label>
+          <label class="span-two">메모 <input id="expense-note" type="text" placeholder="간단 메모"></label>
+          <button class="button" type="submit">추가</button>
+        </form>
+        <div class="expense-summary" id="expense-summary">합계 0</div>
+        <div class="expense-list" id="expense-list"></div>
+      </section>
+
+      <section id="quick-info" class="section" aria-labelledby="quick-info-title">
+        <div class="section-heading">
+          <p class="eyebrow">On-site</p>
+          <h2 id="quick-info-title">현장용 빠른 정보</h2>
+        </div>
+        <div class="quick-info-grid">
+          <article><h3>호텔명</h3><p>placeholder hotel</p></article>
+          <article><h3>공항 가는 방법</h3><p>버스/택시 placeholder. 수요일은 여유 있게 이동.</p></article>
+          <article><h3>타카마쓰항</h3><p>위치 placeholder. 페리 시간은 당일 재확인.</p></article>
+          <article><h3>응급 메모</h3><p>실제 전화번호, 여권번호, 건강정보는 넣지 말고 가족 메신저/예약 앱에서 확인.</p></article>
+          <article><h3>택시용 일본어 주소</h3><p>placeholder</p></article>
+          <article><h3>가족에게 보여줄 메모</h3><p>오늘은 무리하지 않고 핵심 일정만 먼저 보기.</p></article>
+        </div>
+      </section>
+
+      <section class="section privacy-note" aria-labelledby="privacy-title">
+        <h2 id="privacy-title">개인정보 주의</h2>
+        <p>GitHub Pages 등에 올리면 공개 링크가 될 수 있습니다. 여권번호, 생년월일, 전화번호 전체, 예약번호 전체, e-ticket 번호, 결제정보, 집 주소, 민감한 건강정보는 이 페이지에 직접 넣지 마세요.</p>
+      </section>
+
+      <!-- Google Calendar iframe 옵션:
+      공개 설정 문제가 생길 수 있으므로 기본은 버튼 연결을 추천합니다.
+      필요할 때만 아래 iframe을 별도 섹션으로 옮겨 사용하세요.
+      <iframe src="GOOGLE_CALENDAR_EMBED_URL_PLACEHOLDER" title="Google Calendar"></iframe>
+      -->
+    </main>
+
+    <footer class="site-footer">
+      <p>타카마쓰 가족여행 대시보드 · 주요 링크와 여행 날짜는 script.js 상단 CONFIG에서 수정</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
