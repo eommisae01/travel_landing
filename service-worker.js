@@ -1,4 +1,4 @@
-const CACHE_NAME = "takamatsu-family-trip-v1";
+const CACHE_NAME = "takamatsu-family-trip-v3";
 const OFFLINE_ASSETS = [
   "./",
   "./index.html",
