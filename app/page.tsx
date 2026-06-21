@@ -1074,7 +1074,7 @@ function ChecklistView({ items, mutate }: { items: ChecklistItem[]; mutate: Page
   };
   const renderItem = (item: ChecklistItem, list: ChecklistItem[]) => (
     <div
-      className="grid min-h-10 cursor-grab grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-black/5 py-1 first:border-t-0 active:cursor-grabbing"
+      className="check-row"
       draggable
       key={item.id}
       onContextMenu={(event) => {
@@ -1086,28 +1086,28 @@ function ChecklistView({ items, mutate }: { items: ChecklistItem[]; mutate: Page
       onDrop={() => moveDraggedItem(list, item)}
       title="잡고 끌어서 순서 변경. 우클릭하면 보관."
     >
-      <label className="grid min-w-0 grid-cols-[1rem_1rem_minmax(0,1fr)] items-center gap-2 text-sm font-bold leading-none">
-        <GripVertical className="shrink-0 self-center text-black/25" size={15} />
-        <input checked={item.is_done} className="h-4 w-4 shrink-0 self-center accent-sea" onChange={(event) => mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { is_done: event.target.checked } })} type="checkbox" />
+      <label className="check-label">
+        <GripVertical className="text-black/25" size={14} />
+        <input checked={item.is_done} className="check-box accent-sea" onChange={(event) => mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { is_done: event.target.checked } })} type="checkbox" />
         {editing[item.id] !== undefined ? (
-          <input className="field h-8 min-h-0 px-2 py-1 text-sm leading-tight" value={editing[item.id]} onChange={(event) => setEditing({ ...editing, [item.id]: event.target.value })} />
+          <input className="check-edit-field" value={editing[item.id]} onChange={(event) => setEditing({ ...editing, [item.id]: event.target.value })} />
         ) : (
-          <span className={`block min-w-0 truncate leading-8 ${item.is_done ? "text-black/38 line-through" : ""}`}>{item.text}</span>
+          <span className={`check-text ${item.is_done ? "text-black/38 line-through" : ""}`}>{item.text}</span>
         )}
       </label>
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="check-actions">
         {editing[item.id] !== undefined ? (
-          <button className="btn btn-secondary h-8 min-h-0 px-2 py-1 text-xs" type="button" onClick={() => {
+          <button className="check-action check-action-secondary text-xs" type="button" onClick={() => {
             mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { text: editing[item.id] } });
             const next = { ...editing };
             delete next[item.id];
             setEditing(next);
           }}>저장</button>
         ) : (
-          <button className="btn btn-secondary h-8 min-h-0 px-2 py-1" onClick={() => setEditing({ ...editing, [item.id]: item.text })} type="button" aria-label="수정"><Pencil size={13} /></button>
+          <button className="check-action check-action-secondary" onClick={() => setEditing({ ...editing, [item.id]: item.text })} type="button" aria-label="수정"><Pencil size={13} /></button>
         )}
-        <button className="btn btn-secondary h-8 min-h-0 px-2 py-1" onClick={() => mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { is_archived: true } })} type="button" aria-label="보관"><Archive size={13} /></button>
-        <button className="btn btn-danger h-8 min-h-0 px-2 py-1" onClick={() => mutate<ChecklistItem>("checklist_items", "delete", { id: item.id })} type="button" aria-label="삭제"><Trash2 size={13} /></button>
+        <button className="check-action check-action-secondary" onClick={() => mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { is_archived: true } })} type="button" aria-label="보관"><Archive size={13} /></button>
+        <button className="check-action check-action-danger" onClick={() => mutate<ChecklistItem>("checklist_items", "delete", { id: item.id })} type="button" aria-label="삭제"><Trash2 size={13} /></button>
       </div>
     </div>
   );
