@@ -1,26 +1,69 @@
-# 타카마쓰 가족여행 대시보드
+# 타카마쓰 가족여행 협업 웹앱
 
-타카마쓰 / 나오시마 가족여행을 한눈에 보기 위한 정적 웹 대시보드입니다. 일정, 지도, 체크리스트, 날씨별 플랜 B, 빠른 링크, 간단 지출 메모를 담고 있습니다.
+타카마쓰 / 나오시마 가족여행을 가족이 함께 계획하고 확인하기 위한 Next.js + Supabase 기반 협업 웹앱입니다. 가족코드로 입장한 뒤 일정, 지도/식당, 체크리스트, 자료보드, 예산, 현장 정보를 여러 기기에서 같은 데이터로 관리합니다.
 
 ## 로컬에서 실행
 
-파일을 그대로 열어도 대부분 동작합니다. PWA와 오프라인 캐시까지 확인하려면 로컬 서버로 실행하는 것이 좋습니다.
+의존성을 설치한 뒤 개발 서버를 실행합니다.
 
 ```bash
-python3 -m http.server 8000
+pnpm install
+pnpm dev
 ```
 
-브라우저에서 `http://localhost:8000`을 엽니다.
+브라우저에서 `http://localhost:3000`을 엽니다. Supabase 환경변수를 넣기 전에는 데모 모드로 바로 앱이 열립니다. Supabase를 연결하면 가족코드 화면이 켜지고, 기본 개발 가족코드는 `.env.example`의 `FAMILY_CODE` 값을 참고하세요. 배포 전에는 반드시 바꾸세요.
+
+## 환경변수
+
+`.env.local`을 만들고 필요 값을 넣습니다.
+
+```bash
+FAMILY_CODE=원하는-가족코드
+SESSION_SECRET=긴-랜덤-문자열
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+OPENAI_API_KEY=...
+OPENAI_RECOMMENDATION_MODEL=gpt-4.1-mini
+```
+
+Supabase 값을 비워두면 가족코드 없이 데모 데이터로 실행됩니다. 데모 모드에서는 화면 상 상태 변경은 되지만 새로고침 후 클라우드 저장되지는 않습니다.
+OpenAI 키를 넣으면 홈의 `AI 추천 도우미`에서 식당/카페/관광지/나오시마 동선 추천을 생성할 수 있습니다.
+
+## Supabase 설정
+
+1. Supabase 프로젝트를 만듭니다.
+2. SQL Editor에서 `supabase/schema.sql`을 실행합니다.
+3. 초기 데이터가 필요하면 `supabase/seed.sql`을 실행합니다.
+4. Vercel 또는 로컬 `.env.local`에 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FAMILY_CODE`, `SESSION_SECRET`을 설정합니다.
+
+가족과 공유하는 순서는 `family-share-setup.md`와 `deploy-vercel-github.md`를 참고하세요.
 
 ## 파일 구조
 
-- `index.html`: 화면 구조, 항공편/숙소/일정/장소 placeholder
-- `style.css`: 모바일 우선 반응형 디자인
-- `script.js`: 날짜, 빠른 링크, 체크리스트, 지출 메모, 탭, 복사 기능
-- 식당 후보/시간대별 계획표: 식당, 위치, 이동 블록을 날짜별 시간대에 드래그
-- `manifest.json`: 홈 화면 추가용 PWA 설정
-- `service-worker.js`: 기본 오프라인 캐시
-- `assets/setouchi-hero.png`: 상단 히어로 이미지
+- `app/page.tsx`: 가족코드 입장, 홈/일정/자료/지도·식당/체크/예산/현장/설정 화면
+- `app/api/*`: 가족코드 세션과 Supabase 서버 저장 API
+- `app/lib/*`: 타입, 초기 데이터, 인증, 서버 데이터 접근
+- `supabase/schema.sql`: Supabase 테이블과 RLS 설정
+- `supabase/seed.sql`: 초기 여행 데이터
+- `public/manifest.json`, `public/sw.js`: PWA 설정
+- `public/assets/setouchi-hero.png`: 상단 히어로 이미지
+
+## 주요 기능
+
+- 자료보드: 사진을 날짜/주제별로 저장하고, 같은 날짜·주제 사진은 게시물처럼 넘겨볼 수 있습니다.
+- 지도/식당: Google Maps 링크 기반 장소와 식당 후보를 한 화면에서 관리하고 일정에 바로 넣습니다.
+- 현장정보: 공항, 버스, 셔틀, 예약 같은 긴급 메모를 추가/수정/삭제합니다.
+- 추천도우미: `OPENAI_API_KEY`를 설정하면 여행 맥락 기반 추천을 생성합니다.
+
+## 보안 메모
+
+가족코드는 공개 URL을 바로 열어보는 것을 막는 가벼운 접근 제어입니다. 실제 데이터 읽기/쓰기는 브라우저가 Supabase에 직접 접근하지 않고 Next.js 서버 API가 `SUPABASE_SERVICE_ROLE_KEY`로 수행합니다. 예약번호나 상세 연락처는 입력할 수 있지만, 가족코드와 배포 URL은 가족 안에서만 공유하는 것을 권장합니다.
+
+---
+
+## 이전 정적 버전 메모
+
+아래 내용은 기존 정적 대시보드에서 사용하던 메모입니다. 필요 시 데이터 이관 참고용으로 남겨둡니다.
 
 ## 수정 위치
 

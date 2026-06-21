@@ -1,0 +1,18 @@
+{
+  "name": "타카마쓰 가족여행",
+  "short_name": "타카마쓰 여행",
+  "description": "가족이 함께 계획하고 확인하는 타카마쓰/나오시마 여행 협업 앱",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f6f3",
+  "theme_color": "#16a3a3",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "/assets/setouchi-hero.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
