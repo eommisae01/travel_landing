@@ -1057,7 +1057,7 @@ function ChecklistView({ items, mutate }: { items: ChecklistItem[]; mutate: Page
   };
   const renderItem = (item: ChecklistItem, list: ChecklistItem[]) => (
     <div
-      className="flex cursor-grab items-center justify-between gap-2 border-t border-black/5 py-2 first:border-t-0 active:cursor-grabbing"
+      className="flex cursor-grab items-center justify-between gap-1.5 border-t border-black/5 py-1 first:border-t-0 active:cursor-grabbing"
       draggable
       key={item.id}
       onContextMenu={(event) => {
@@ -1069,28 +1069,28 @@ function ChecklistView({ items, mutate }: { items: ChecklistItem[]; mutate: Page
       onDrop={() => moveDraggedItem(list, item)}
       title="잡고 끌어서 순서 변경. 우클릭하면 보관."
     >
-      <label className="flex min-w-0 flex-1 items-center gap-2 font-bold">
-        <GripVertical className="shrink-0 text-black/25" size={16} />
+      <label className="flex min-w-0 flex-1 items-center gap-1.5 text-sm font-bold">
+        <GripVertical className="shrink-0 text-black/25" size={15} />
         <input checked={item.is_done} className="h-4 w-4 shrink-0 accent-sea" onChange={(event) => mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { is_done: event.target.checked } })} type="checkbox" />
         {editing[item.id] !== undefined ? (
-          <input className="field min-h-9 flex-1 px-2 text-sm" value={editing[item.id]} onChange={(event) => setEditing({ ...editing, [item.id]: event.target.value })} />
+          <input className="field min-h-8 flex-1 px-2 text-sm" value={editing[item.id]} onChange={(event) => setEditing({ ...editing, [item.id]: event.target.value })} />
         ) : (
           <span className={`truncate ${item.is_done ? "text-black/38 line-through" : ""}`}>{item.text}</span>
         )}
       </label>
       <div className="flex shrink-0 gap-1">
         {editing[item.id] !== undefined ? (
-          <button className="btn btn-secondary min-h-8 px-2 text-xs" type="button" onClick={() => {
+          <button className="btn btn-secondary min-h-7 px-2 text-xs" type="button" onClick={() => {
             mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { text: editing[item.id] } });
             const next = { ...editing };
             delete next[item.id];
             setEditing(next);
           }}>저장</button>
         ) : (
-          <button className="btn btn-secondary min-h-8 px-2" onClick={() => setEditing({ ...editing, [item.id]: item.text })} type="button" aria-label="수정"><Pencil size={14} /></button>
+          <button className="btn btn-secondary min-h-7 px-2" onClick={() => setEditing({ ...editing, [item.id]: item.text })} type="button" aria-label="수정"><Pencil size={13} /></button>
         )}
-        <button className="btn btn-secondary min-h-8 px-2" onClick={() => mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { is_archived: true } })} type="button" aria-label="보관"><Archive size={14} /></button>
-        <button className="btn btn-danger min-h-8 px-2" onClick={() => mutate<ChecklistItem>("checklist_items", "delete", { id: item.id })} type="button" aria-label="삭제"><Trash2 size={14} /></button>
+        <button className="btn btn-secondary min-h-7 px-2" onClick={() => mutate<ChecklistItem>("checklist_items", "update", { id: item.id, patch: { is_archived: true } })} type="button" aria-label="보관"><Archive size={13} /></button>
+        <button className="btn btn-danger min-h-7 px-2" onClick={() => mutate<ChecklistItem>("checklist_items", "delete", { id: item.id })} type="button" aria-label="삭제"><Trash2 size={13} /></button>
       </div>
     </div>
   );
