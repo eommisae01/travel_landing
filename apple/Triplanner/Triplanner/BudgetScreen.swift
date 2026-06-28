@@ -36,14 +36,30 @@ struct BudgetScreen: View {
                     ScreenHeader(title: "Budget", subtitle: "여행 지출과 예상 부담을 한눈에 확인")
 
                     VStack(alignment: .leading, spacing: 14) {
-                        SectionLabel(title: "SPENT")
-                        HStack(alignment: .firstTextBaseline) {
-                            Text("\(Int(total))")
-                                .font(.system(size: 44, weight: .black, design: .rounded))
-                            Text(store.trip?.budgetCurrency ?? "JPY")
-                                .font(.headline.weight(.black))
-                                .foregroundStyle(.secondary)
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: "creditcard.fill")
+                                .font(.title3.weight(.black))
+                                .foregroundStyle(.teal)
+                                .frame(width: 46, height: 46)
+                                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 15))
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                SectionLabel(title: "SPENT")
+                                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                                    Text("\(Int(total))")
+                                        .font(.system(size: 44, weight: .black, design: .rounded))
+                                    Text(store.trip?.budgetCurrency ?? "JPY")
+                                        .font(.headline.weight(.black))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                             Spacer()
+                            Text(budget > 0 ? "\(Int(progress * 100))%" : "미정")
+                                .font(.caption.weight(.black))
+                                .foregroundStyle(.teal)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 5)
+                                .background(.teal.opacity(0.12), in: Capsule())
                         }
                         ProgressView(value: progress)
                             .tint(.teal)
@@ -110,7 +126,7 @@ struct BudgetScreen: View {
                 }
             }
             .sheet(isPresented: $isAddingExpense) {
-                AddExpenseSheet()
+                ExpenseEditorSheet()
                     .environmentObject(store)
             }
         }
@@ -142,22 +158,31 @@ private struct BudgetStat: View {
 }
 
 private struct ExpenseRow: View {
+    @EnvironmentObject private var store: TripStore
     var expense: ExpenseItem
+    @State private var isEditing = false
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Image(systemName: iconName)
                 .font(.headline.weight(.bold))
                 .frame(width: 34, height: 34)
-                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
-                .foregroundStyle(.teal)
+                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(categoryColor)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(expense.title)
                     .font(.subheadline.weight(.black))
-                Text("\(expense.category) · 결제 \(expense.paidBy) · 예정 \(expense.intendedPayer)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(expense.category)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(categoryColor)
+                    Text("결제 \(expense.paidBy)")
+                    Text("예정 \(expense.intendedPayer)")
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
                 Text(expense.participants.joined(separator: ", "))
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -171,9 +196,23 @@ private struct ExpenseRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
+            Button {
+                isEditing = true
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
         }
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .center)
         .padding(10)
         .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 12))
+        .sheet(isPresented: $isEditing) {
+            ExpenseEditorSheet(existingExpense: expense)
+                .environmentObject(store)
+        }
     }
 
     private var iconName: String {
@@ -184,11 +223,23 @@ private struct ExpenseRow: View {
         default: return "creditcard.fill"
         }
     }
+
+    private var categoryColor: Color {
+        switch expense.category {
+        case "교통": return .blue
+        case "입장권": return .teal
+        case "식비": return .orange
+        case "숙소": return .purple
+        case "쇼핑": return .pink
+        default: return .secondary
+        }
+    }
 }
 
-private struct AddExpenseSheet: View {
+private struct ExpenseEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var store: TripStore
+    var existingExpense: ExpenseItem?
 
     @State private var category = "교통"
     @State private var title = ""
@@ -216,7 +267,7 @@ private struct AddExpenseSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "지출 추가", subtitle: "결제자와 사용자를 함께 기록")
+                    ScreenHeader(title: existingExpense == nil ? "지출 추가" : "지출 수정", subtitle: "결제자와 사용자를 함께 기록")
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "CATEGORY")
@@ -240,14 +291,9 @@ private struct AddExpenseSheet: View {
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "DETAIL")
-                        TextField("항목명", text: $title)
-                            .textFieldStyle(.roundedBorder)
+                        LabeledExpenseField(title: "항목", iconName: "text.badge.plus", placeholder: "항목명", text: $title)
                         HStack(spacing: 10) {
-                            TextField("금액", text: $amount)
-                                #if os(iOS)
-                                .keyboardType(.decimalPad)
-                                #endif
-                                .textFieldStyle(.roundedBorder)
+                            LabeledExpenseField(title: "금액", iconName: "yensign", placeholder: "금액", text: $amount)
                             TextField("통화", text: $currency)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(maxWidth: 96)
@@ -277,40 +323,89 @@ private struct AddExpenseSheet: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("저장") {
+                    Button(existingExpense == nil ? "저장" : "수정") {
                         save()
                     }
                     .disabled(!canSave)
                 }
             }
             .onAppear {
-                if currency.isEmpty {
-                    currency = store.trip?.budgetCurrency ?? "JPY"
-                }
-                if paidBy.isEmpty {
-                    paidBy = memberNames.first ?? ""
-                }
-                if intendedPayer.isEmpty {
-                    intendedPayer = memberNames.first ?? ""
-                }
-                if selectedParticipants.isEmpty {
-                    selectedParticipants = Set(memberNames)
-                }
+                syncInitialValues()
             }
         }
     }
 
     private func save() {
-        store.addExpense(
-            category: category,
-            title: title,
-            amount: parsedAmount,
-            currency: currency,
-            paidBy: paidBy,
-            intendedPayer: intendedPayer,
-            participants: memberNames.filter { selectedParticipants.contains($0) }
-        )
+        let participants = memberNames.filter { selectedParticipants.contains($0) }
+        if let existingExpense {
+            store.updateExpense(
+                existingExpense,
+                category: category,
+                title: title,
+                amount: parsedAmount,
+                currency: currency,
+                paidBy: paidBy,
+                intendedPayer: intendedPayer,
+                participants: participants
+            )
+        } else {
+            store.addExpense(
+                category: category,
+                title: title,
+                amount: parsedAmount,
+                currency: currency,
+                paidBy: paidBy,
+                intendedPayer: intendedPayer,
+                participants: participants
+            )
+        }
         dismiss()
+    }
+
+    private func syncInitialValues() {
+        if let existingExpense {
+            category = existingExpense.category
+            title = existingExpense.title
+            amount = "\(Int(existingExpense.amount))"
+            currency = existingExpense.currency
+            paidBy = existingExpense.paidBy
+            intendedPayer = existingExpense.intendedPayer
+            selectedParticipants = Set(existingExpense.participants)
+            return
+        }
+        if currency.isEmpty {
+            currency = store.trip?.budgetCurrency ?? "JPY"
+        }
+        if paidBy.isEmpty {
+            paidBy = memberNames.first ?? ""
+        }
+        if intendedPayer.isEmpty {
+            intendedPayer = memberNames.first ?? ""
+        }
+        if selectedParticipants.isEmpty {
+            selectedParticipants = Set(memberNames)
+        }
+    }
+}
+
+private struct LabeledExpenseField: View {
+    var title: String
+    var iconName: String
+    var placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Label(title, systemImage: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+                .frame(width: 64, alignment: .leading)
+            TextField(placeholder, text: $text)
+                #if os(iOS)
+                .keyboardType(title == "금액" ? .decimalPad : .default)
+                #endif
+                .textFieldStyle(.roundedBorder)
+        }
     }
 }
 
