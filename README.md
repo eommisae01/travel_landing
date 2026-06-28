@@ -2,6 +2,16 @@
 
 타카마쓰 / 나오시마 가족여행을 가족이 함께 계획하고 확인하기 위한 Next.js + Supabase 기반 협업 웹앱입니다. 가족코드로 입장한 뒤 일정, 지도/식당, 체크리스트, 자료보드, 예산, 현장 정보를 여러 기기에서 같은 데이터로 관리합니다.
 
+## 프로젝트 구성
+
+이 repository는 두 프로젝트를 함께 보관합니다.
+
+- `app/`: 기존 Next.js 웹앱. Vercel 배포, Supabase 실험, 가족 공유용 웹 화면입니다.
+- `apple/Triplanner/`: Apple 생태계 앱 확장 프로젝트. iPhone, iPad, Mac용 SwiftUI 앱입니다.
+- `supabase/`: 웹앱과 Apple 앱이 같이 사용할 DB schema / migration / seed입니다.
+
+지금 방향은 웹앱을 버리는 것이 아니라, 웹앱에서 검증한 기능을 Apple 앱으로 옮기는 것입니다.
+
 ## 로컬에서 실행
 
 의존성을 설치한 뒤 개발 서버를 실행합니다.

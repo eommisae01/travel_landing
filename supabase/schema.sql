@@ -6,6 +6,22 @@ create table if not exists trips (
   end_date date not null,
   hero_image text not null default '',
   note text not null default '',
+  country text not null default '',
+  cities text[] not null default '{}',
+  accommodation text not null default '',
+  my_maps_url text not null default '',
+  outbound_origin text not null default '',
+  outbound_destination text not null default '',
+  outbound_flight text not null default '',
+  outbound_departure_time time,
+  outbound_arrival_time time,
+  return_origin text not null default '',
+  return_destination text not null default '',
+  return_flight text not null default '',
+  return_departure_time time,
+  return_arrival_time time,
+  budget_amount numeric not null default 0,
+  budget_currency text not null default 'JPY',
   created_at timestamptz not null default now()
 );
 

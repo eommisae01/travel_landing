@@ -8,3 +8,8 @@ node_modules/
 
 *.log
 .DS_Store
+
+# Xcode local-only files
+**/xcuserdata/
+**/*.xcuserstate
+apple/Triplanner/.git-xcode-local-backup/

@@ -19,6 +19,22 @@ export type Trip = {
   end_date: string;
   hero_image: string;
   note: string;
+  country?: string;
+  cities?: string[];
+  accommodation?: string;
+  my_maps_url?: string;
+  outbound_origin?: string;
+  outbound_destination?: string;
+  outbound_flight?: string;
+  outbound_departure_time?: string;
+  outbound_arrival_time?: string;
+  return_origin?: string;
+  return_destination?: string;
+  return_flight?: string;
+  return_departure_time?: string;
+  return_arrival_time?: string;
+  budget_amount?: number;
+  budget_currency?: string;
 };
 
 export type TripMember = {
@@ -113,6 +129,8 @@ export type Expense = {
   currency: string;
   payer: string;
   note: string;
+  intended_payer?: string;
+  participants?: string[];
 };
 
 export type QuickLink = {

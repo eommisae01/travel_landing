@@ -103,7 +103,21 @@ export const seedData: TripData = {
       start_date: "2026-06-22",
       end_date: "2026-06-24",
       hero_image: "/assets/setouchi-hero.png",
-      note: "RS0741 10:30 도착, RS0742 11:40 출발. 짐을 들고 우동집/공원에 가지 않고 숙소 짐보관 후 움직이는 일정."
+      note: "RS0741 10:30 도착, RS0742 11:40 출발. 짐을 들고 우동집/공원에 가지 않고 숙소 짐보관 후 움직이는 일정.",
+      country: "일본",
+      cities: ["타카마쓰", "나오시마"],
+      accommodation: "리쓰린코엔 기타구치역 근처 숙소 · 12:00 짐보관 기준",
+      my_maps_url: MY_MAPS_URL,
+      outbound_origin: "서울",
+      outbound_destination: "타카마쓰",
+      outbound_flight: "RS0741",
+      outbound_arrival_time: "10:30",
+      return_origin: "타카마쓰",
+      return_destination: "서울",
+      return_flight: "RS0742",
+      return_departure_time: "11:40",
+      budget_amount: 150000,
+      budget_currency: "JPY"
     }
   ],
   trip_members: [
@@ -177,8 +191,8 @@ export const seedData: TripData = {
     sort_order: index
   })),
   expenses: [
-    { id: "expense-1", trip_id: DEFAULT_TRIP_ID, category: "교통비", item: "페리 예상", amount: 3120, currency: "JPY", payer: "예지", note: "성인 3명 왕복 기준 520엔 x 2 x 3" },
-    { id: "expense-2", trip_id: DEFAULT_TRIP_ID, category: "입장권", item: "지중미술관", amount: 7500, currency: "JPY", payer: "예지", note: "성인 3명, 12:00 예약, 각 2,500엔" }
+    { id: "expense-1", trip_id: DEFAULT_TRIP_ID, category: "교통비", item: "페리 예상", amount: 3120, currency: "JPY", payer: "예지", intended_payer: "예지", participants: ["예지", "승환", "민지"], note: "성인 3명 왕복 기준 520엔 x 2 x 3" },
+    { id: "expense-2", trip_id: DEFAULT_TRIP_ID, category: "입장권", item: "지중미술관", amount: 7500, currency: "JPY", payer: "예지", intended_payer: "예지", participants: ["예지", "승환", "민지"], note: "성인 3명, 12:00 예약, 각 2,500엔" }
   ],
   quick_links: [
     { id: "link-1", trip_id: DEFAULT_TRIP_ID, label: "공유 지도", kind: "map", url: MY_MAPS_URL },

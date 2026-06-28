@@ -40,6 +40,7 @@ import {
   Place,
   QuickLink,
   TableName,
+  Trip,
   TripData
 } from "./lib/types";
 
@@ -52,7 +53,7 @@ const navItems: Array<{ key: ViewKey; label: string; icon: ComponentType<{ size?
   { key: "schedule", label: "일정", icon: CalendarDays },
   { key: "gallery", label: "자료", icon: Images },
   { key: "map", label: "지도/식당", icon: Map },
-  { key: "checklist", label: "체크", icon: ListTodo },
+  { key: "checklist", label: "체크리스트", icon: ListTodo },
   { key: "budget", label: "예산", icon: CreditCard },
   { key: "onsite", label: "현장", icon: MapPin },
   { key: "settings", label: "설정", icon: Settings }
@@ -89,6 +90,15 @@ function itineraryKind(item: Pick<ItineraryItem, "title" | "location">) {
   if (/이동|공항|항|페리|버스|택시|→/.test(text)) return "이동";
   if (/식당|우동|카페|이자카야|저녁|점심|아침/.test(text)) return "식사";
   return "장소";
+}
+
+function looksLikeCoords(value?: string) {
+  return Boolean(value && /^-?\d+(\.\d+)?,-?\d+(\.\d+)?(,0)?$/.test(value.trim()));
+}
+
+function displayPlaceText(value?: string, fallback = "지도 링크 확인") {
+  if (!value || looksLikeCoords(value)) return fallback;
+  return value;
 }
 
 function groupBy<T>(items: T[], getKey: (item: T) => string) {
@@ -298,9 +308,9 @@ export default function Page() {
         {active === "map" && <MapView places={data.places} foods={data.food_candidates} links={data.quick_links} trip={trip} mutate={mutate} />}
         {active === "checklist" && <ChecklistView items={data.checklist_items} mutate={mutate} />}
         {active === "food" && <FoodView foods={data.food_candidates} trip={trip} mutate={mutate} />}
-        {active === "budget" && <BudgetView expenses={data.expenses} members={data.trip_members.map((member) => member.name)} mutate={mutate} />}
+        {active === "budget" && <BudgetView expenses={data.expenses} members={data.trip_members.map((member) => member.name)} trip={trip} mutate={mutate} />}
         {active === "onsite" && <OnsiteView notes={data.onsite_notes} links={data.quick_links} mutate={mutate} />}
-        {active === "settings" && <SettingsView data={data} mode={mode} />}
+        {active === "settings" && <SettingsView data={data} mode={mode} mutate={mutate} />}
       </main>
       <BottomNav active={active} setActive={setActive} />
     </div>
@@ -349,15 +359,23 @@ function NavButton({ item, active, setActive, compact = false }: { item: (typeof
 }
 
 function Header({ trip, onLogout }: { trip: TripData["trips"][number]; onLogout: () => void }) {
+  const cityOptions = trip.cities?.length ? trip.cities : trip.region.split("·").map((city) => city.trim()).filter(Boolean);
   return (
     <header className="hero-photo mb-4 rounded-lg p-4 text-white shadow-soft lg:p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-black text-white/70">{dateLabel(trip.start_date)} - {dateLabel(trip.end_date)}</p>
           <h1 className="mt-1 text-3xl font-black leading-none lg:text-5xl">{trip.name}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-bold text-white/78">
+            <span className="rounded-full bg-white/12 px-2.5 py-1">{trip.country || "국가 미정"}</span>
+            <select className="rounded-full border border-white/15 bg-white/12 px-2.5 py-1 font-black text-white outline-none" aria-label="도시 선택" defaultValue={cityOptions[0] || trip.region}>
+              {cityOptions.map((city, index) => <option className="text-black" key={`${city}-${index}`} value={city}>도시 {index + 1} · {city}</option>)}
+              <option className="text-black" value="add">+ 다음 도시 추가</option>
+            </select>
+          </div>
           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-white/82">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1"><Plane size={14} />가는 편 RS0741 · 10:30 도착</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1"><Plane size={14} />오는 편 RS0742 · 11:40 출발</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1"><Plane size={14} />가는 편 {trip.outbound_flight || "편명 미정"} · {trip.outbound_origin || "출발지"} → {trip.outbound_destination || "도착지"} · {trip.outbound_arrival_time || "도착시간 미정"} 도착</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1"><Plane size={14} />오는 편 {trip.return_flight || "편명 미정"} · {trip.return_origin || "출발지"} → {trip.return_destination || "도착지"} · {trip.return_departure_time || "출발시간 미정"} 출발</span>
           </div>
         </div>
         <button className="btn bg-white/16 px-3 text-white backdrop-blur" onClick={onLogout} type="button" aria-label="로그아웃">
@@ -395,6 +413,22 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
         <Metric title="미완료 준비" value={`${pendingChecks.length}개`} icon={ListTodo} />
         <Metric title="지출" value={`${totalExpense.toLocaleString("ko-KR")} JPY`} icon={CreditCard} />
       </div>
+      <Panel title="숙소 / 이동 기준">
+        <div className="grid gap-2 md:grid-cols-3">
+          <div className="rounded-lg bg-white p-3">
+            <p className="text-xs font-black text-sea">숙소</p>
+            <p className="mt-1 text-sm font-black">{data.trips[0]?.accommodation || "숙소를 설정에서 입력하세요."}</p>
+          </div>
+          <div className="rounded-lg bg-white p-3">
+            <p className="text-xs font-black text-sea">도착</p>
+            <p className="mt-1 text-sm font-black">{data.trips[0]?.outbound_origin || "출발지"} → {data.trips[0]?.outbound_destination || "도착지"} · {data.trips[0]?.outbound_flight || "편명"} · {data.trips[0]?.outbound_arrival_time || "도착시간"} 도착</p>
+          </div>
+          <div className="rounded-lg bg-white p-3">
+            <p className="text-xs font-black text-sea">출발</p>
+            <p className="mt-1 text-sm font-black">{data.trips[0]?.return_origin || "출발지"} → {data.trips[0]?.return_destination || "도착지"} · {data.trips[0]?.return_flight || "편명"} · {data.trips[0]?.return_departure_time || "출발시간"} 출발</p>
+          </div>
+        </div>
+      </Panel>
       <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <Panel title="오늘의 브리핑" action={<button className="btn btn-secondary" onClick={() => setActive("schedule")} type="button">일정 보기</button>}>
           {(todaysItems.length ? todaysItems : data.itinerary_items.slice(0, 4)).map((item) => <ItineraryCard key={item.id} item={item} compact weather={weather.byDate[item.date]} />)}
@@ -416,7 +450,7 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
           {data.quick_links.map((link) => <a className="btn btn-secondary" href={link.url} key={link.id} rel="noreferrer" target="_blank">{link.label}<ExternalLink size={16} /></a>)}
         </div>
       </Panel>
-      <Panel title="미리 조사할 것" titleClassName="research-title">
+      <Panel title="Notes" titleClassName="research-title">
         <div className="grid gap-2">
           {researchNotes.map((note) => (
             <details className="rounded-lg bg-white p-3" key={note.id}>
@@ -535,10 +569,15 @@ function ScheduleView({ items, places, foods, trip, mutate }: { items: Itinerary
   const weather = useWeather();
   const [openDate, setOpenDate] = useState("");
   const [pickerDate, setPickerDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState("all");
+  const [viewMode, setViewMode] = useState<"timeline" | "calendar">("timeline");
   const [draft, setDraft] = useState({ date: "2026-06-22", time_label: "", start_time: "", end_time: "", title: "", description: "", location: "", priority: "필수", reservation_status: "확인 필요", weather_impact: "중간", owner: "다 같이" });
   const sortedItems = useMemo(() => [...items].sort((a, b) => a.date.localeCompare(b.date) || (a.start_time || "99:99").localeCompare(b.start_time || "99:99") || a.sort_order - b.sort_order), [items]);
-  const grouped = useMemo(() => Object.entries(groupBy(sortedItems, (item) => item.date)), [sortedItems]);
-  const dates = grouped.map(([date]) => date);
+  const tripDates = tripDateOptions(trip);
+  const allDates = Array.from(new Set([...tripDates, ...sortedItems.map((item) => item.date)])).sort();
+  const visibleItems = selectedDate === "all" ? sortedItems : sortedItems.filter((item) => item.date === selectedDate);
+  const grouped = useMemo(() => Object.entries(groupBy(visibleItems, (item) => item.date)), [visibleItems]);
+  const dates = allDates;
   if (!dates.includes(draft.date) && dates[0]) draft.date = dates[0];
   const submitDraft = (date = draft.date) => {
     mutate<ItineraryItem>("itinerary_items", "create", { row: { id: makeId("iti"), ...draft, date, sort_order: Date.now() } });
@@ -560,7 +599,24 @@ function ScheduleView({ items, places, foods, trip, mutate }: { items: Itinerary
           submitDraft();
         }} />
       </Panel>
-      {grouped.map(([date, dayItems]) => (
+      <Panel title="보기">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          <button className={`btn shrink-0 ${selectedDate === "all" ? "" : "btn-secondary"}`} type="button" onClick={() => setSelectedDate("all")}>전체</button>
+          {allDates.map((date, index) => (
+            <button className={`btn shrink-0 ${selectedDate === date ? "" : "btn-secondary"}`} key={date} type="button" onClick={() => setSelectedDate(date)}>Day {index + 1} · {dateLabel(date)}</button>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2 md:w-80">
+          <button className={`btn ${viewMode === "timeline" ? "" : "btn-secondary"}`} type="button" onClick={() => setViewMode("timeline")}>타임라인</button>
+          <button className={`btn ${viewMode === "calendar" ? "" : "btn-secondary"}`} type="button" onClick={() => setViewMode("calendar")}>Calendar</button>
+        </div>
+      </Panel>
+      {viewMode === "calendar" ? (
+        <ScheduleCalendar dates={allDates} items={visibleItems} onSelectDate={(date) => {
+          setSelectedDate(date);
+          setViewMode("timeline");
+        }} />
+      ) : grouped.length ? grouped.map(([date, dayItems]) => (
         <Panel title={dateLabel(date)} key={date} action={<div className="flex gap-2"><button className="btn btn-secondary" type="button" onClick={() => setPickerDate(date)}><Plus size={17} />장소/식당</button><button className="btn btn-secondary" type="button" onClick={() => {
           setDraft({ ...draft, date });
           setOpenDate(openDate === date ? "" : date);
@@ -572,10 +628,10 @@ function ScheduleView({ items, places, foods, trip, mutate }: { items: Itinerary
             }} />
           ) : null}
           {(dayItems || []).map((item) => (
-            <ItineraryCard key={item.id} item={item} weather={weather.byDate[item.date]} onDelete={() => mutate<ItineraryItem>("itinerary_items", "delete", { id: item.id })} onStatus={(reservation_status) => mutate<ItineraryItem>("itinerary_items", "update", { id: item.id, patch: { reservation_status } })} />
+            <ItineraryCard key={item.id} item={item} weather={weather.byDate[item.date]} onDelete={() => mutate<ItineraryItem>("itinerary_items", "delete", { id: item.id })} onStatus={(reservation_status) => mutate<ItineraryItem>("itinerary_items", "update", { id: item.id, patch: { reservation_status } })} onPatch={(patch) => mutate<ItineraryItem>("itinerary_items", "update", { id: item.id, patch })} />
           ))}
         </Panel>
-      ))}
+      )) : <Panel title="일정"><Empty text="이 날짜에는 아직 일정이 없어요." /></Panel>}
       {pickerDate ? (
         <SchedulePickerModal
           date={pickerDate}
@@ -594,6 +650,34 @@ function ScheduleView({ items, places, foods, trip, mutate }: { items: Itinerary
 }
 
 type PageMutate = <T extends { id: string }>(table: TableName, action: "create" | "update" | "delete", payload: { row?: Partial<T>; id?: string; patch?: Partial<T> }) => Promise<T | null>;
+
+function ScheduleCalendar({ dates, items, onSelectDate }: { dates: string[]; items: ItineraryItem[]; onSelectDate: (date: string) => void }) {
+  const grouped = groupBy(items, (item) => item.date);
+  return (
+    <Panel title="Calendar view">
+      <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-4">
+        {dates.map((date, index) => {
+          const dayItems = grouped[date] || [];
+          return (
+            <button className="card grid min-h-36 gap-2 p-3 text-left" key={date} type="button" onClick={() => onSelectDate(date)}>
+              <div>
+                <p className="text-xs font-black text-sea">Day {index + 1}</p>
+                <h3 className="font-black">{dateLabel(date)}</h3>
+              </div>
+              <div className="grid gap-1">
+                {dayItems.slice(0, 4).map((item) => (
+                  <p className="truncate rounded bg-black/[0.035] px-2 py-1 text-xs font-bold" key={item.id}>{item.start_time ? `${item.start_time} ` : ""}{item.title}</p>
+                ))}
+                {dayItems.length > 4 ? <p className="text-xs font-black text-black/40">+ {dayItems.length - 4}개 더</p> : null}
+                {!dayItems.length ? <p className="text-xs font-bold text-black/40">일정 없음</p> : null}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </Panel>
+  );
+}
 
 function ScheduleForm({ draft, setDraft, dates, onSubmit, compact = false }: { draft: Partial<ItineraryItem>; setDraft: (draft: any) => void; dates: string[]; onSubmit: (event: FormEvent) => void; compact?: boolean }) {
   return (
@@ -640,7 +724,7 @@ function SchedulePickerModal({ date, trip, places, foods, onClose, onAdd }: { da
               <div className="min-w-0">
                 <p className="text-xs font-black text-sea">{place.category || "장소"}</p>
                 <h3 className="truncate font-black">{place.name}</h3>
-                <p className="truncate text-xs font-semibold text-black/50">{place.sensitive_note || place.reservation_note || place.address}</p>
+                <p className="truncate text-xs font-semibold text-black/50">{place.sensitive_note || place.reservation_note || displayPlaceText(place.address)}</p>
               </div>
               <button className="btn min-h-9 shrink-0 px-3" type="button" onClick={() => onAdd(itineraryFromPlace(place, plan))}>추가</button>
             </article>
@@ -649,7 +733,7 @@ function SchedulePickerModal({ date, trip, places, foods, onClose, onAdd }: { da
               <div className="min-w-0">
                 <p className="text-xs font-black text-coral">{food.category || "식당"}</p>
                 <h3 className="truncate font-black">{food.name}</h3>
-                <p className="truncate text-xs font-semibold text-black/50">{food.note || food.location}</p>
+                <p className="truncate text-xs font-semibold text-black/50">{food.note || displayPlaceText(food.location)}</p>
               </div>
               <button className="btn min-h-9 shrink-0 px-3" type="button" onClick={() => onAdd(itineraryFromFood(food, plan))}>추가</button>
             </article>
@@ -660,7 +744,9 @@ function SchedulePickerModal({ date, trip, places, foods, onClose, onAdd }: { da
   );
 }
 
-function ItineraryCard({ item, compact = false, weather, onDelete, onStatus }: { item: ItineraryItem; compact?: boolean; weather?: DayWeather[string]; onDelete?: () => void; onStatus?: (value: string) => void }) {
+function ItineraryCard({ item, compact = false, weather, onDelete, onStatus, onPatch }: { item: ItineraryItem; compact?: boolean; weather?: DayWeather[string]; onDelete?: () => void; onStatus?: (value: string) => void; onPatch?: (patch: Partial<ItineraryItem>) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState({ title: item.title, description: item.description, location: item.location });
   const timeRange = item.start_time ? `${item.start_time.slice(0, 5)}${item.end_time ? ` - ${item.end_time.slice(0, 5)}` : ""}` : item.time_label;
   const kind = itineraryKind(item);
   const tone = kind === "이동" ? "bg-[#eef7ff] border-sky-200" : kind === "식사" ? "bg-[#fff7ed] border-orange-100" : "bg-white/82 border-black/5";
@@ -675,12 +761,32 @@ function ItineraryCard({ item, compact = false, weather, onDelete, onStatus }: {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-black text-black/40">{dateLabel(item.date)} · {item.time_label || kind}</p>
-            <h3 className="text-base font-black md:text-lg">{kind === "이동" ? "↔ " : ""}{item.title}</h3>
+            {editing ? <input className="field mt-1 min-h-9 px-2 py-1 text-base font-black" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /> : <h3 className="text-base font-black md:text-lg">{kind === "이동" ? "↔ " : ""}{item.title}</h3>}
           </div>
-          {onDelete ? <button className="btn btn-danger min-h-9 px-2" onClick={onDelete} type="button" aria-label="삭제"><Trash2 size={16} /></button> : null}
+          <div className="flex shrink-0 gap-1">
+            {onPatch ? editing ? (
+              <button className="btn btn-secondary min-h-9 px-3 text-sm" onClick={() => {
+                onPatch(draft);
+                setEditing(false);
+              }} type="button">저장</button>
+            ) : <button className="btn btn-secondary min-h-9 px-2" onClick={() => {
+              setDraft({ title: item.title, description: item.description, location: item.location });
+              setEditing(true);
+            }} type="button" aria-label="수정"><Pencil size={16} /></button> : null}
+            {onDelete ? <button className="btn btn-danger min-h-9 px-2" onClick={onDelete} type="button" aria-label="삭제"><Trash2 size={16} /></button> : null}
+          </div>
         </div>
-        <p className="mt-1 text-sm font-semibold text-black/62">{item.description}</p>
-        {!compact ? <p className="mt-1 text-sm font-bold text-black/48">{item.location}</p> : null}
+        {editing ? (
+          <div className="mt-2 grid gap-2">
+            <textarea className="field min-h-20" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
+            <input className="field" value={draft.location} onChange={(event) => setDraft({ ...draft, location: event.target.value })} placeholder="일정 안 장소/메모" />
+          </div>
+        ) : (
+          <>
+            <p className="mt-1 text-sm font-semibold text-black/62">{item.description}</p>
+            {!compact ? <p className="mt-1 text-sm font-bold text-black/48">{displayPlaceText(item.location, "장소는 지도 링크로 확인")}</p> : null}
+          </>
+        )}
         <div className="mt-2 flex flex-wrap gap-2">
           <span className="chip bg-sea/10 text-sea">{item.priority}</span>
           {onStatus ? (
@@ -1007,11 +1113,11 @@ function MapView({ places, foods, links, trip, mutate }: { places: Place[]; food
                 <button className="btn btn-danger min-h-9 px-2" onClick={() => mutate<Place>("places", "delete", { id: place.id })} type="button" aria-label="삭제"><Trash2 size={16} /></button>
               </div>
             </div>
-            <p className="text-sm font-semibold text-black/60">{place.address}</p>
+            <p className="text-sm font-semibold text-black/60">{displayPlaceText(place.address, "주소는 Google Maps에서 확인")}</p>
             <p className="text-sm font-semibold text-black/60">{place.hours} · {place.reservation_note}</p>
             {place.sensitive_note ? <p className="rounded-lg bg-black/[0.035] p-3 text-sm font-bold text-black/65">{place.sensitive_note}</p> : null}
-            <a className="btn btn-secondary min-h-10" href={place.map_url || googleMapsSearchUrl(place.name, place.address)} target="_blank" rel="noreferrer">Google Maps<ExternalLink size={16} /></a>
-            <details className="rounded-lg bg-black/[0.04] p-3 text-sm font-bold"><summary>일본어 주소 보기</summary><p className="mt-2 text-black/60">{place.address || "주소 입력 전"}</p></details>
+            <a className="btn btn-secondary min-h-10" href={place.map_url || googleMapsSearchUrl(place.name, displayPlaceText(place.address, ""))} target="_blank" rel="noreferrer">Google Maps<ExternalLink size={16} /></a>
+            <details className="rounded-lg bg-black/[0.04] p-3 text-sm font-bold"><summary>주소/지도 메모 보기</summary><p className="mt-2 text-black/60">{displayPlaceText(place.address, "주소 입력 전")}</p></details>
             <div className="grid gap-2 rounded-lg bg-black/[0.035] p-2">
               <div className="grid grid-cols-[1fr_0.8fr_0.8fr] gap-2">
                 <select className="field min-h-10 px-2 text-sm" value={placePlans[place.id]?.date || dates[0]} onChange={(event) => setPlacePlans({ ...placePlans, [place.id]: { ...(placePlans[place.id] || { date: dates[0], start_time: "", end_time: "" }), date: event.target.value } })}>
@@ -1201,7 +1307,7 @@ function itineraryFromPlace(place: Place, plan: { date: string; start_time: stri
     end_time: plan.end_time,
     title: place.name,
     description: `${place.category || "장소"} · ${place.reservation_note || place.hours || "메모 없음"}`,
-    location: place.address || place.name,
+    location: displayPlaceText(place.address, place.name),
     priority: "가능하면",
     reservation_status: place.reservation_note || "확인 필요",
     weather_impact: "중간",
@@ -1219,7 +1325,7 @@ function itineraryFromFood(food: FoodCandidate, plan: { date: string; start_time
     end_time: plan.end_time,
     title: food.name,
     description: `${food.category} · ${food.reservation || "예약 확인"} · ${food.note || ""}`,
-    location: food.location,
+    location: displayPlaceText(food.location, food.name),
     priority: "가능하면",
     reservation_status: food.reservation || "확인 필요",
     weather_impact: "중간",
@@ -1273,7 +1379,7 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
         }}>
           <input className="field" placeholder="식당명" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} required />
           <select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })}>{["우동", "이자카야", "카페", "비 오는 날", "기타"].map((item) => <option key={item}>{item}</option>)}</select>
-          <input className="field" placeholder="위치" value={draft.location} onChange={(event) => setDraft({ ...draft, location: event.target.value })} />
+          <input className="field" placeholder="위치/동네" value={draft.location} onChange={(event) => setDraft({ ...draft, location: event.target.value })} />
           <input className="field" placeholder="Google Maps 링크" value={draft.map_url} onChange={(event) => {
             const mapUrl = event.target.value;
             const inferred = inferGoogleMapsName(mapUrl);
@@ -1301,7 +1407,7 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
                   }}>
                     <input className="field" value={editingFood[food.id].name || ""} onChange={(event) => setEditingFood({ ...editingFood, [food.id]: { ...editingFood[food.id], name: event.target.value } })} placeholder="식당명" />
                     <select className="field" value={editingFood[food.id].category || "우동"} onChange={(event) => setEditingFood({ ...editingFood, [food.id]: { ...editingFood[food.id], category: event.target.value } })}>{["우동", "이자카야", "카페", "비 오는 날", "기타"].map((item) => <option key={item}>{item}</option>)}</select>
-                    <input className="field" value={editingFood[food.id].location || ""} onChange={(event) => setEditingFood({ ...editingFood, [food.id]: { ...editingFood[food.id], location: event.target.value } })} placeholder="위치" />
+                    <input className="field" value={editingFood[food.id].location || ""} onChange={(event) => setEditingFood({ ...editingFood, [food.id]: { ...editingFood[food.id], location: event.target.value } })} placeholder="위치/동네" />
                     <input className="field" value={editingFood[food.id].map_url || ""} onChange={(event) => setEditingFood({ ...editingFood, [food.id]: { ...editingFood[food.id], map_url: event.target.value } })} placeholder="Google Maps 링크" />
                     <input className="field" value={editingFood[food.id].reservation || ""} onChange={(event) => setEditingFood({ ...editingFood, [food.id]: { ...editingFood[food.id], reservation: event.target.value } })} placeholder="예약 메모" />
                     <input className="field" value={editingFood[food.id].wait_note || ""} onChange={(event) => setEditingFood({ ...editingFood, [food.id]: { ...editingFood[food.id], wait_note: event.target.value } })} placeholder="웨이팅/영업 메모" />
@@ -1326,11 +1432,11 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
                     <button className="btn btn-danger min-h-8 px-2" onClick={() => mutate<FoodCandidate>("food_candidates", "delete", { id: food.id })} type="button" aria-label="삭제"><Trash2 size={15} /></button>
                   </div>
                 </div>
-                <p className="text-xs font-semibold text-black/60">{food.location || "위치 미정"} · {food.reservation || "예약 확인"}</p>
+                <p className="text-xs font-semibold text-black/60">{displayPlaceText(food.location, "지도 링크 확인")} · {food.reservation || "예약 확인"}</p>
                 <p className="text-xs font-semibold text-black/60">{food.wait_note || "웨이팅 확인"} · 추천 {food.recommender || "다 같이"}</p>
                 {food.note ? <p className="line-clamp-2 text-sm font-bold">{food.note}</p> : null}
                 <div className="grid grid-cols-2 gap-2">
-                  <a className="btn btn-secondary min-h-9" href={food.map_url || googleMapsSearchUrl(food.name, food.location)} target="_blank" rel="noreferrer">지도<ExternalLink size={15} /></a>
+                  <a className="btn btn-secondary min-h-9" href={food.map_url || googleMapsSearchUrl(food.name, displayPlaceText(food.location, ""))} target="_blank" rel="noreferrer">지도<ExternalLink size={15} /></a>
                   <details className="rounded-lg bg-black/[0.035]">
                     <summary className="grid min-h-9 cursor-pointer place-items-center px-2 text-sm font-black">일정에 넣기</summary>
                     <div className="grid gap-2 p-2">
@@ -1372,10 +1478,16 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
   );
 }
 
-function BudgetView({ expenses, members, mutate }: { expenses: Expense[]; members: string[]; mutate: PageMutate }) {
-  const [draft, setDraft] = useState({ category: "식비", item: "", amount: "", currency: "JPY", payer: members[0] || "나", note: "" });
+function BudgetView({ expenses, members, trip, mutate }: { expenses: Expense[]; members: string[]; trip: TripData["trips"][number]; mutate: PageMutate }) {
+  const [draft, setDraft] = useState({ category: "식비", item: "", amount: "", currency: trip.budget_currency || "JPY", payer: members[0] || "나", intended_payer: members[0] || "나", participants: members, note: "" });
   const total = expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
   const share = members.length ? total / members.length : 0;
+  const budget = Number(trip.budget_amount || 0);
+  const percent = budget ? Math.min(100, Math.round((total / budget) * 100)) : 0;
+  const toggleParticipant = (name: string) => {
+    const has = draft.participants.includes(name);
+    setDraft({ ...draft, participants: has ? draft.participants.filter((item) => item !== name) : [...draft.participants, name] });
+  };
   return (
     <section className="grid gap-4">
       <div className="grid gap-3 md:grid-cols-3">
@@ -1383,23 +1495,47 @@ function BudgetView({ expenses, members, mutate }: { expenses: Expense[]; member
         <Metric title="1인 기준" value={`${Math.round(share).toLocaleString("ko-KR")} JPY`} icon={CheckCircle2} />
         <Metric title="항목 수" value={`${expenses.length}개`} icon={ListTodo} />
       </div>
+      <Panel title="예산 진행">
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between text-sm font-black">
+            <span>{budget ? `${budget.toLocaleString("ko-KR")} ${trip.budget_currency || "JPY"} 중 ${percent}%` : "예산을 설정하면 진행률이 보여요"}</span>
+            <span>{total.toLocaleString("ko-KR")} {trip.budget_currency || "JPY"}</span>
+          </div>
+          <div className="h-3 overflow-hidden rounded-full bg-black/8">
+            <div className="h-full rounded-full bg-sea transition-all" style={{ width: `${percent}%` }} />
+          </div>
+        </div>
+      </Panel>
       <Panel title="지출 추가">
         <form className="grid gap-2 md:grid-cols-5" onSubmit={(event) => {
           event.preventDefault();
-          mutate<Expense>("expenses", "create", { row: { id: makeId("expense"), ...draft, amount: Number(draft.amount || 0) } });
-          setDraft({ ...draft, item: "", amount: "", note: "" });
+          const settlementNote = [`정산 예정: ${draft.intended_payer}`, `사용자: ${draft.participants.join(", ")}`, draft.note].filter(Boolean).join("\n");
+          mutate<Expense>("expenses", "create", { row: { id: makeId("expense"), category: draft.category, item: draft.item, amount: Number(draft.amount || 0), currency: draft.currency, payer: draft.payer, note: settlementNote } });
+          setDraft({ ...draft, item: "", amount: "", note: "", participants: members });
         }}>
           <select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })}>{["식비", "교통비", "숙박비", "쇼핑", "간식비", "관광비", "기타"].map((item) => <option key={item}>{item}</option>)}</select>
           <input className="field" placeholder="항목" value={draft.item} onChange={(event) => setDraft({ ...draft, item: event.target.value })} />
           <input className="field" inputMode="numeric" placeholder="금액" value={draft.amount} onChange={(event) => setDraft({ ...draft, amount: event.target.value })} />
           <select className="field" value={draft.payer} onChange={(event) => setDraft({ ...draft, payer: event.target.value })}>{members.map((member) => <option key={member}>{member}</option>)}</select>
+          <select className="field" value={draft.intended_payer} onChange={(event) => setDraft({ ...draft, intended_payer: event.target.value })}>{members.map((member) => <option key={member} value={member}>{member}가 낼 예정</option>)}</select>
           <button className="btn" type="submit"><Plus size={18} />추가</button>
+          <div className="md:col-span-5 grid gap-2 rounded-lg bg-white p-3">
+            <p className="text-xs font-black text-black/45">누구누구가 사용한 항목인지</p>
+            <div className="flex flex-wrap gap-2">
+              {members.map((member) => (
+                <label className="chip cursor-pointer bg-black/[0.045] text-black" key={member}>
+                  <input className="mr-1 accent-sea" type="checkbox" checked={draft.participants.includes(member)} onChange={() => toggleParticipant(member)} />
+                  {member}
+                </label>
+              ))}
+            </div>
+          </div>
         </form>
       </Panel>
       <Panel title="지출 목록">
         {expenses.map((expense) => (
           <div className="flex items-center justify-between gap-3 border-t border-black/5 py-3 first:border-t-0" key={expense.id}>
-            <div><p className="font-black">{expense.category} · {expense.item || "항목 없음"}</p><p className="text-sm font-bold text-black/55">{Number(expense.amount || 0).toLocaleString("ko-KR")} {expense.currency} · 결제 {expense.payer}</p></div>
+            <div><p className="font-black">{expense.category} · {expense.item || "항목 없음"}</p><p className="text-sm font-bold text-black/55">{Number(expense.amount || 0).toLocaleString("ko-KR")} {expense.currency} · 결제 {expense.payer}</p>{expense.note ? <p className="mt-1 whitespace-pre-line text-xs font-bold text-black/45">{expense.note}</p> : null}</div>
             <button className="btn btn-danger min-h-8 px-2" onClick={() => mutate<Expense>("expenses", "delete", { id: expense.id })} type="button"><Trash2 size={15} /></button>
           </div>
         ))}
@@ -1480,9 +1616,95 @@ function OnsiteView({ notes, links, mutate }: { notes: OnsiteNote[]; links: Quic
   );
 }
 
-function SettingsView({ data, mode }: { data: TripData; mode: string }) {
+function SettingsView({ data, mode, mutate }: { data: TripData; mode: string; mutate: PageMutate }) {
+  const trip = data.trips[0] || seedData.trips[0];
+  const [setup, setSetup] = useState({
+    country: trip.country || "일본",
+    cityPreset: "타카마쓰",
+    customCity: "",
+    cities: (trip.cities || trip.region.split("·").map((city) => city.trim()).filter(Boolean)).join(", "),
+    start_date: trip.start_date,
+    end_date: trip.end_date,
+    outbound_origin: trip.outbound_origin || "",
+    outbound_destination: trip.outbound_destination || "",
+    outbound_flight: trip.outbound_flight || "",
+    outbound_arrival_time: trip.outbound_arrival_time || "",
+    return_origin: trip.return_origin || "",
+    return_destination: trip.return_destination || "",
+    return_flight: trip.return_flight || "",
+    return_departure_time: trip.return_departure_time || "",
+    accommodation: trip.accommodation || "",
+    my_maps_url: trip.my_maps_url || data.quick_links.find((link) => link.kind === "map")?.url || "",
+    budget_amount: String(trip.budget_amount || ""),
+    budget_currency: trip.budget_currency || "JPY"
+  });
+  const cityPresets = ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "기타"];
+  const resolvedCity = setup.cityPreset === "기타" ? setup.customCity : setup.cityPreset;
+  const inviteUrl = typeof window !== "undefined" ? window.location.origin : "https://project-6ok16.vercel.app";
   return (
     <section className="grid gap-4">
+      <Panel title="처음 셋업">
+        <form className="grid gap-2 md:grid-cols-4" onSubmit={(event) => {
+          event.preventDefault();
+          const cities = Array.from(new Set([resolvedCity, ...setup.cities.split(",").map((city) => city.trim()).filter(Boolean)].filter(Boolean)));
+          mutate<Trip>("trips", "update", {
+            id: trip.id,
+            patch: {
+              country: setup.country,
+              cities,
+              region: cities.join(" · "),
+              start_date: setup.start_date || trip.start_date,
+              end_date: setup.end_date || setup.start_date || trip.end_date,
+              outbound_origin: setup.outbound_origin,
+              outbound_destination: setup.outbound_destination || resolvedCity,
+              outbound_flight: setup.outbound_flight,
+              outbound_arrival_time: setup.outbound_arrival_time,
+              return_origin: setup.return_origin || resolvedCity,
+              return_destination: setup.return_destination,
+              return_flight: setup.return_flight,
+              return_departure_time: setup.return_departure_time,
+              accommodation: setup.accommodation,
+              my_maps_url: setup.my_maps_url,
+              budget_amount: Number(setup.budget_amount || 0),
+              budget_currency: setup.budget_currency
+            }
+          });
+        }}>
+          <select className="field" value={setup.country} onChange={(event) => setSetup({ ...setup, country: event.target.value })}>
+            {["일본", "한국", "대만", "태국", "프랑스", "이탈리아", "미국", "기타"].map((country) => <option key={country}>{country}</option>)}
+          </select>
+          <select className="field" value={setup.cityPreset} onChange={(event) => setSetup({ ...setup, cityPreset: event.target.value })}>
+            {cityPresets.map((city) => <option key={city}>{city}</option>)}
+          </select>
+          {setup.cityPreset === "기타" ? <input className="field" placeholder="도시 직접 입력" value={setup.customCity} onChange={(event) => setSetup({ ...setup, customCity: event.target.value })} required /> : null}
+          <input className="field" placeholder="경유 도시들 쉼표로 추가" value={setup.cities} onChange={(event) => setSetup({ ...setup, cities: event.target.value })} />
+          <input className="field" type="date" value={setup.start_date} onChange={(event) => setSetup({ ...setup, start_date: event.target.value })} />
+          <input className="field" type="date" value={setup.end_date} onChange={(event) => setSetup({ ...setup, end_date: event.target.value })} />
+          <input className="field" placeholder="가는 편명" value={setup.outbound_flight} onChange={(event) => setSetup({ ...setup, outbound_flight: event.target.value })} />
+          <input className="field" placeholder="가는 편 출발지" value={setup.outbound_origin} onChange={(event) => setSetup({ ...setup, outbound_origin: event.target.value })} />
+          <input className="field" placeholder="가는 편 현지 도착지" value={setup.outbound_destination} onChange={(event) => setSetup({ ...setup, outbound_destination: event.target.value })} />
+          <input className="field" type="time" value={setup.outbound_arrival_time} onChange={(event) => setSetup({ ...setup, outbound_arrival_time: event.target.value })} aria-label="가는 편 현지 도착시간" />
+          <input className="field" placeholder="오는 편명" value={setup.return_flight} onChange={(event) => setSetup({ ...setup, return_flight: event.target.value })} />
+          <input className="field" placeholder="오는 편 현지 출발지" value={setup.return_origin} onChange={(event) => setSetup({ ...setup, return_origin: event.target.value })} />
+          <input className="field" placeholder="오는 편 도착지" value={setup.return_destination} onChange={(event) => setSetup({ ...setup, return_destination: event.target.value })} />
+          <input className="field" type="time" value={setup.return_departure_time} onChange={(event) => setSetup({ ...setup, return_departure_time: event.target.value })} aria-label="오는 편 현지 출발시간" />
+          <input className="field md:col-span-2" placeholder="숙소 / 체크인 기준 메모" value={setup.accommodation} onChange={(event) => setSetup({ ...setup, accommodation: event.target.value })} />
+          <input className="field md:col-span-2" placeholder="Google My Maps 공유 링크" value={setup.my_maps_url} onChange={(event) => setSetup({ ...setup, my_maps_url: event.target.value })} />
+          <input className="field" inputMode="numeric" placeholder="예산" value={setup.budget_amount} onChange={(event) => setSetup({ ...setup, budget_amount: event.target.value })} />
+          <input className="field" placeholder="통화" value={setup.budget_currency} onChange={(event) => setSetup({ ...setup, budget_currency: event.target.value })} />
+          <button className="btn md:col-span-2" type="submit">셋업 저장</button>
+        </form>
+      </Panel>
+      <Panel title="친구 초대">
+        <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+          <div className="rounded-lg bg-white p-3">
+            <p className="text-xs font-black text-sea">공유 링크</p>
+            <p className="break-all text-sm font-bold">{inviteUrl}</p>
+            <p className="mt-1 text-xs font-bold text-black/45">트리플처럼 링크를 보내고, 가족코드는 별도로 알려주면 됩니다. 나중에는 멤버별 권한/이름 선택까지 붙일 수 있어요.</p>
+          </div>
+          <button className="btn" type="button" onClick={() => navigator.clipboard?.writeText(inviteUrl)}>링크 복사</button>
+        </div>
+      </Panel>
       <Panel title="앱 설정">
         <div className="grid gap-3 md:grid-cols-2">
           <div className="card p-4"><p className="text-sm font-black text-sea">저장 모드</p><p className="text-xl font-black">{mode === "supabase" ? "Supabase 연결됨" : "데모 데이터"}</p><p className="mt-2 text-sm font-semibold text-black/55">Supabase 환경변수를 넣으면 서버 API가 클라우드 DB에 저장합니다.</p></div>
