@@ -33,6 +33,24 @@ struct ChecklistScreen: View {
         sortedItems.filter(\.isDone)
     }
 
+    private var ownerSummaries: [(name: String, remaining: Int, total: Int)] {
+        let knownOwners = ["공통"] + store.members.map(\.name)
+        let extraOwners = Set(store.checklist.map(\.owner))
+            .subtracting(knownOwners)
+            .sorted()
+        let owners = (knownOwners + extraOwners).filter { owner in
+            store.checklist.contains { $0.owner == owner }
+        }
+        return owners.map { owner in
+            let ownerItems = store.checklist.filter { $0.owner == owner }
+            return (
+                name: owner,
+                remaining: ownerItems.filter { !$0.isDone }.count,
+                total: ownerItems.count
+            )
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -55,6 +73,19 @@ struct ChecklistScreen: View {
                         }
                         ProgressView(value: progress)
                             .tint(.teal)
+
+                        if !ownerSummaries.isEmpty {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+                                ForEach(ownerSummaries, id: \.name) { summary in
+                                    OwnerProgressChip(
+                                        name: summary.name,
+                                        remaining: summary.remaining,
+                                        total: summary.total
+                                    )
+                                }
+                            }
+                            .padding(.top, 2)
+                        }
                     }
                     .appPanel(cornerRadius: 18)
 
@@ -139,12 +170,12 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: 10) {
             Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.body.weight(.bold))
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 30, height: 30)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -155,18 +186,18 @@ private struct ChecklistItemRow: View {
                     .strikethrough(item.isDone)
                     .foregroundStyle(item.isDone ? .secondary : .primary)
                     .lineLimit(2)
-                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
-                .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            HStack(spacing: 6) {
+            HStack(spacing: 5) {
                 Text(item.owner)
                     .font(.caption2.weight(.black))
                     .lineLimit(1)
-                    .frame(minWidth: 38)
+                    .frame(minWidth: 40)
                     .padding(.horizontal, 7)
-                    .frame(height: 24)
+                    .frame(height: 26)
                     .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
                     .foregroundStyle(ownerTint)
 
@@ -176,16 +207,16 @@ private struct ChecklistItemRow: View {
                     Image(systemName: "pencil")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
+                        .frame(width: 30, height: 30)
                         .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
                 }
                 .buttonStyle(.plain)
             }
-            .frame(height: 30)
+            .frame(height: 32)
         }
-        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 3)
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
         .background(rowBackground, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
@@ -210,6 +241,43 @@ private struct ChecklistItemRow: View {
 
     private var rowBackground: Color {
         item.isDone ? Color.secondary.opacity(0.06) : Color.primary.opacity(0.035)
+    }
+}
+
+private struct OwnerProgressChip: View {
+    var name: String
+    var remaining: Int
+    var total: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(tint.opacity(0.22))
+                .frame(width: 9, height: 9)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(name)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Text("\(remaining)/\(total)")
+                    .font(.caption.weight(.black))
+                    .monospacedDigit()
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var tint: Color {
+        switch name {
+        case "공통": return .teal
+        case "예지": return .pink
+        case "승환": return .blue
+        case "민지": return .orange
+        default: return .secondary
+        }
     }
 }
 
