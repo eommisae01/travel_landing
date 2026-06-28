@@ -105,17 +105,20 @@ struct HomeScreen: View {
                 CopySummaryTile(
                     title: "가는 편",
                     value: flightSummary(trip.outbound),
-                    copyValue: trip.outbound.flightNumber
+                    copyValue: trip.outbound.flightNumber,
+                    iconName: "airplane.departure"
                 )
                 CopySummaryTile(
                     title: "오는 편",
                     value: flightSummary(trip.inbound),
-                    copyValue: trip.inbound.flightNumber
+                    copyValue: trip.inbound.flightNumber,
+                    iconName: "airplane.arrival"
                 )
                 CopySummaryTile(
                     title: "숙소",
                     value: accommodationSummary(trip),
-                    copyValue: trip.accommodationAddress ?? trip.accommodation
+                    copyValue: trip.accommodationAddress ?? trip.accommodation,
+                    iconName: "bed.double"
                 )
             }
         }
@@ -241,25 +244,37 @@ private struct CopySummaryTile: View {
     var title: String
     var value: String
     var copyValue: String
+    var iconName: String
 
     var body: some View {
         Button {
             copyToClipboard(copyValue.isEmpty ? value : copyValue)
         } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(title)
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.teal)
-                    Spacer()
-                    Image(systemName: "doc.on.doc")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.secondary)
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: iconName)
+                    .font(.headline.weight(.bold))
+                    .frame(width: 36, height: 36)
+                    .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
+                    .foregroundStyle(.teal)
+
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack {
+                        Text(title)
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(.teal)
+                        Spacer()
+                        Label("복사", systemImage: "doc.on.doc")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(.secondary.opacity(0.10), in: Capsule())
+                    }
+                    Text(value)
+                        .font(.subheadline.weight(.semibold))
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Text(value)
-                    .font(.subheadline.weight(.semibold))
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -347,10 +362,20 @@ private struct CompactScheduleRow: View {
             }
             .frame(width: 52)
 
+            Circle()
+                .fill(kindColor)
+                .frame(width: 8, height: 8)
+                .padding(.top, 5)
+
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.title)
-                    .font(.subheadline.weight(.black))
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(item.title)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                    Text(item.kind.rawValue)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(kindColor)
+                }
                 if !item.note.isEmpty {
                     Text(item.note)
                         .font(.caption)
@@ -378,13 +403,21 @@ private struct CompactNoteCard: View {
     var note: NoteGroup
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text(note.title)
-                .font(.subheadline.weight(.black))
-            Text(note.body)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "doc.text.image")
+                .font(.subheadline.weight(.bold))
+                .frame(width: 30, height: 30)
+                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+                .foregroundStyle(.teal)
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(note.title)
+                    .font(.subheadline.weight(.black))
+                Text(note.body)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
