@@ -35,6 +35,10 @@ struct ScheduleScreen: View {
                                 .tag(ScheduleViewMode.calendar)
                         }
                         .pickerStyle(.segmented)
+
+                        if !dates.isEmpty {
+                            calendarPreview
+                        }
                     }
                     .appPanel(cornerRadius: 18)
 
@@ -125,6 +129,53 @@ struct ScheduleScreen: View {
             .shadow(color: isSelected ? Color.blue.opacity(0.18) : .clear, radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
+    }
+
+    private var calendarPreview: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("CALENDAR VIEW")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button {
+                    viewMode = .calendar
+                } label: {
+                    Label("크게 보기", systemImage: "arrow.up.left.and.arrow.down.right")
+                        .font(.caption2.weight(.black))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.teal)
+            }
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 92), spacing: 7)], spacing: 7) {
+                ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
+                    let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+                    Button {
+                        selectedDate = date
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Day \(index + 1)")
+                                .font(.caption2.weight(.black))
+                            Text(compactDayLabel(date))
+                                .font(.caption.weight(.black))
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 7)
+                        .background(isSelected ? Color.blue : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(isSelected ? .white : .primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(10)
+        .background(.background.opacity(0.50), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
     }
 
     private var calendarGrid: some View {

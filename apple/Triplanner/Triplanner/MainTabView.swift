@@ -209,17 +209,26 @@ private struct CompactMoreScreen: View {
         Int(store.expenses.reduce(0) { $0 + $1.amount })
     }
 
+    private var noteCount: Int {
+        store.notesForSelectedCity().count
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "More", subtitle: "준비, 예산, 공유 설정을 한곳에서 관리")
+                    ScreenHeader(title: "More", subtitle: "공유 전 확인할 여행 관리 허브")
 
                     MoreSummaryStrip(
                         checklistCount: remainingChecklistCount,
                         expenseTotal: totalExpense,
-                        currency: store.trip?.budgetCurrency ?? "JPY"
+                        currency: store.trip?.budgetCurrency ?? "JPY",
+                        noteCount: noteCount
                     )
+
+                    if let trip = store.trip {
+                        MoreTripCard(trip: trip, currentCity: displayCity(store.currentCity))
+                    }
 
                     VStack(spacing: 8) {
                         NavigationLink {
@@ -256,28 +265,6 @@ private struct CompactMoreScreen: View {
                         }
                     }
                     .appPanel(cornerRadius: 18)
-
-                    if let trip = store.trip {
-                        VStack(alignment: .leading, spacing: 10) {
-                            SectionLabel(title: "TRIP")
-                            HStack(spacing: 10) {
-                                Image(systemName: "mappin.and.ellipse")
-                                    .font(.headline.weight(.bold))
-                                    .frame(width: 36, height: 36)
-                                    .foregroundStyle(.teal)
-                                    .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(displayCity(store.currentCity))
-                                        .font(.headline.weight(.black))
-                                    Text(trip.cities.map(displayCity).joined(separator: " / "))
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(2)
-                                }
-                            }
-                        }
-                        .appPanel(cornerRadius: 18)
-                    }
                 }
                 .readableWidth(680)
                 .padding()
@@ -300,12 +287,90 @@ private struct MoreSummaryStrip: View {
     var checklistCount: Int
     var expenseTotal: Int
     var currency: String
+    var noteCount: Int
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
             MoreMetric(title: "남은 준비", value: "\(checklistCount)", unit: "개", iconName: "checklist", tint: .teal)
             MoreMetric(title: "지출", value: "\(expenseTotal)", unit: currency, iconName: "creditcard", tint: .blue)
+            MoreMetric(title: "자료", value: "\(noteCount)", unit: "개", iconName: "note.text", tint: .purple)
         }
+    }
+}
+
+private struct MoreTripCard: View {
+    var trip: Trip
+    var currentCity: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "mappin.and.ellipse")
+                    .font(.headline.weight(.bold))
+                    .frame(width: 38, height: 38)
+                    .foregroundStyle(.white)
+                    .background(.teal, in: RoundedRectangle(cornerRadius: 13))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(currentCity)
+                        .font(.headline.weight(.black))
+                    Text(trip.cities.map(displayCity).joined(separator: " / "))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                Spacer()
+                Text(trip.country)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.teal)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.teal.opacity(0.11), in: Capsule())
+            }
+
+            VStack(spacing: 8) {
+                MoreTripInfoLine(iconName: "bed.double", title: "숙소", value: trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
+                if let address = trip.accommodationAddress, !address.isEmpty {
+                    MoreTripInfoLine(iconName: "mappin", title: "주소", value: address)
+                }
+                MoreTripInfoLine(iconName: "map", title: "지도", value: trip.myMapsURL.isEmpty ? "My Maps 링크 없음" : "My Maps 연결됨")
+            }
+        }
+        .appPanel(cornerRadius: 18)
+    }
+
+    private func displayCity(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        default: return city.isEmpty ? "Trip" : city
+        }
+    }
+}
+
+private struct MoreTripInfoLine: View {
+    var iconName: String
+    var title: String
+    var value: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.teal)
+                .frame(width: 22)
+            Text(title)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+                .frame(width: 36, alignment: .leading)
+            Text(value)
+                .font(.caption.weight(.semibold))
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
     }
 }
 

@@ -123,7 +123,7 @@ struct HomeScreen: View {
                 cityMenu
                 if let dateRange = dateRange(for: trip) {
                     Label(dateRange, systemImage: "calendar")
-                        .font(.callout.weight(.bold))
+                        .font(.subheadline.weight(.bold))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -131,8 +131,8 @@ struct HomeScreen: View {
             Spacer(minLength: 12)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
+        .padding(.horizontal, isWideLayout ? 24 : 20)
+        .padding(.vertical, isWideLayout ? 22 : 18)
         .background {
             RoundedRectangle(cornerRadius: 24)
                 .fill(.regularMaterial)
@@ -156,7 +156,7 @@ struct HomeScreen: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("탭하면 복사")
+                Text("편명/주소 탭하면 복사")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
@@ -279,8 +279,8 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(cityDisplayName(store.currentCity))
-                    .font(.system(size: isWideLayout ? 58 : 42, weight: .black, design: .rounded))
-                    .minimumScaleFactor(0.78)
+                    .font(.system(size: isWideLayout ? 72 : 46, weight: .black, design: .rounded))
+                    .minimumScaleFactor(0.70)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
                     .font(.callout.weight(.bold))
