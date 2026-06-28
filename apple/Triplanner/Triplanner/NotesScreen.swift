@@ -23,7 +23,7 @@ struct NotesScreen: View {
                     notesOverview
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))")
+                        sectionHeader(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))", count: selectedCityNotes.count)
                         if selectedCityNotes.isEmpty {
                             EmptyStateView(
                                 title: "자료가 비어있어요",
@@ -31,7 +31,7 @@ struct NotesScreen: View {
                                 iconName: "doc.text.image"
                             )
                         } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 9)], spacing: 9) {
                                 ForEach(selectedCityNotes) { note in
                                     noteCard(note)
                                 }
@@ -42,8 +42,8 @@ struct NotesScreen: View {
 
                     if !otherNotes.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
-                            SectionLabel(title: "ALL NOTES")
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+                            sectionHeader(title: "ALL NOTES", count: otherNotes.count)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 9)], spacing: 9) {
                                 ForEach(otherNotes) { note in
                                     noteCard(note)
                                 }
@@ -74,10 +74,23 @@ struct NotesScreen: View {
     }
 
     private var notesOverview: some View {
-        HStack(spacing: 10) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
             NotesMetricCard(title: "현재 도시", value: "\(selectedCityNotes.count)", unit: "개", iconName: "mappin.and.ellipse", tint: .teal)
             NotesMetricCard(title: "전체 자료", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: .blue)
             NotesMetricCard(title: "이미지 묶음", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: .purple)
+        }
+    }
+
+    private func sectionHeader(title: String, count: Int) -> some View {
+        HStack {
+            SectionLabel(title: title)
+            Spacer()
+            Text("\(count)")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(.secondary.opacity(0.10), in: Capsule())
         }
     }
 
@@ -85,14 +98,14 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 11) {
+            VStack(alignment: .leading, spacing: 9) {
                 notePreviewStrip(note)
 
                 Text(note.title)
                     .font(.headline.weight(.black))
                     .lineLimit(1)
                 Text(note.body)
-                    .lineLimit(3)
+                    .lineLimit(2)
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -109,11 +122,11 @@ struct NotesScreen: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 172, alignment: .topLeading)
-            .padding(12)
-            .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 16))
+            .frame(maxWidth: .infinity, minHeight: 148, alignment: .topLeading)
+            .padding(10)
+            .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 14))
             .overlay {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 14)
                     .stroke(.quaternary)
             }
         }
@@ -149,7 +162,7 @@ struct NotesScreen: View {
             }
             .padding(12)
         }
-        .frame(height: 68)
+        .frame(height: 58)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -173,8 +186,8 @@ private struct NotesMetricCard: View {
         HStack(spacing: 10) {
             Image(systemName: iconName)
                 .font(.headline.weight(.bold))
-                .frame(width: 36, height: 36)
-                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                .frame(width: 32, height: 32)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                 .foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -190,11 +203,11 @@ private struct NotesMetricCard: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
-        .padding(11)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+        .padding(10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
         }
     }

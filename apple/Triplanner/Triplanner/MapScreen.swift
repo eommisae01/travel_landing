@@ -20,37 +20,39 @@ struct MapScreen: View {
                     ScreenHeader(title: placesTitle, subtitle: "\(placeCount)개 장소 · 식당, 카페, 환승, 숙소")
 
                     if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
-                        HStack(spacing: 12) {
+                        HStack(spacing: 10) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 14)
+                                RoundedRectangle(cornerRadius: 12)
                                     .fill(.teal.opacity(0.14))
                                 Image(systemName: "map.fill")
-                                    .font(.title3.weight(.black))
+                                    .font(.headline.weight(.black))
                                     .foregroundStyle(.teal)
                             }
-                            .frame(width: 48, height: 48)
+                            .frame(width: 40, height: 40)
 
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("공유 지도")
-                                    .font(.headline.weight(.black))
+                                    .font(.subheadline.weight(.black))
                                 Text("My Maps에서 고른 장소와 앱 메모를 함께 관리")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
-                                    .lineLimit(2)
+                                    .lineLimit(1)
                             }
                             Spacer()
                             Link(destination: url) {
-                                Label("열기", systemImage: "arrow.up.right")
+                                Image(systemName: "arrow.up.right")
                                     .font(.caption.weight(.black))
+                                    .frame(width: 30, height: 30)
                             }
-                            .buttonStyle(.borderedProminent)
+                            .background(.teal, in: RoundedRectangle(cornerRadius: 10))
+                            .foregroundStyle(.white)
                         }
-                        .padding(12)
+                        .padding(10)
                         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
                     }
 
                     ForEach(groupedPlaces, id: \.0) { category, places in
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 9) {
                             HStack {
                                 Text(category)
                                     .font(.headline.weight(.black))
@@ -62,7 +64,7 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 7)], spacing: 7) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 126), spacing: 7)], spacing: 7) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -129,12 +131,15 @@ struct PlaceRow: View {
     @State private var isScheduling = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 5) {
                         Text(place.category)
                             .font(.caption2.weight(.black))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(categoryColor.opacity(0.12), in: Capsule())
                             .foregroundStyle(categoryColor)
                         if place.isFavorite {
                             Image(systemName: "star.fill")
@@ -147,7 +152,7 @@ struct PlaceRow: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                HStack(spacing: 5) {
+                HStack(spacing: 4) {
                     Button {
                         isEditing = true
                     } label: {
@@ -171,17 +176,19 @@ struct PlaceRow: View {
                     .buttonStyle(.plain)
                 }
             }
-            if !place.mapNote.isEmpty {
-                Label(place.mapNote, systemImage: "map")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            if !place.appNote.isEmpty {
-                Text(place.appNote)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                if !place.mapNote.isEmpty {
+                    Label(place.mapNote, systemImage: "map")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                if !place.appNote.isEmpty {
+                    Text(place.appNote)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
             Spacer(minLength: 0)
             HStack(spacing: 6) {
@@ -190,7 +197,7 @@ struct PlaceRow: View {
                         Label("지도", systemImage: "map")
                             .frame(maxWidth: .infinity)
                     }
-                    .padding(.vertical, 7)
+                    .padding(.vertical, 6)
                     .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
                 }
                 Button {
@@ -199,13 +206,13 @@ struct PlaceRow: View {
                     Label("일정", systemImage: "calendar.badge.plus")
                         .frame(maxWidth: .infinity)
                 }
-                .padding(.vertical, 7)
+                .padding(.vertical, 6)
                     .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
             }
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
-        .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 78, alignment: .topLeading)
         .padding(8)
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
