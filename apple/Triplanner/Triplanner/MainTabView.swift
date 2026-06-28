@@ -173,8 +173,18 @@ private struct SidebarMenuRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Label(section.title, systemImage: section.iconName)
-                .font(.headline.weight(.semibold))
+            Image(systemName: section.iconName)
+                .font(.subheadline.weight(.bold))
+                .frame(width: 22)
+                .foregroundStyle(.teal)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(section.title)
+                    .font(.headline.weight(.semibold))
+                Text(section.sidebarSubtitle)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
             Spacer()
             if let count {
                 Text("\(count)")
@@ -292,7 +302,7 @@ private struct MoreSummaryStrip: View {
     var currency: String
 
     var body: some View {
-        HStack(spacing: 10) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
             MoreMetric(title: "남은 준비", value: "\(checklistCount)", unit: "개", iconName: "checklist", tint: .teal)
             MoreMetric(title: "지출", value: "\(expenseTotal)", unit: currency, iconName: "creditcard", tint: .blue)
         }
@@ -406,6 +416,18 @@ private enum AppSection: String, CaseIterable, Identifiable {
         case .checklist: return "checklist"
         case .budget: return "creditcard"
         case .settings: return "gearshape"
+        }
+    }
+
+    var sidebarSubtitle: String {
+        switch self {
+        case .home: return "오늘 볼 것"
+        case .schedule: return "타임라인"
+        case .map: return "장소 후보"
+        case .notes: return "자료 보드"
+        case .checklist: return "준비 항목"
+        case .budget: return "지출 관리"
+        case .settings: return "여행 정보"
         }
     }
 
