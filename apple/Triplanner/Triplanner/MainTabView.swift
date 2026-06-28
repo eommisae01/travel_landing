@@ -47,8 +47,7 @@ struct MainTabView: View {
 
                 Section("메뉴") {
                     ForEach(AppSection.allCases) { section in
-                        Label(section.title, systemImage: section.iconName)
-                            .font(.headline.weight(.semibold))
+                        SidebarMenuRow(section: section, count: badgeCount(for: section))
                             .tag(section)
                     }
                 }
@@ -78,6 +77,23 @@ struct MainTabView: View {
             return "\(start.dayLabel) - \(end.dayLabel)"
         }
         return trip.country
+    }
+
+    private func badgeCount(for section: AppSection) -> Int? {
+        switch section {
+        case .schedule:
+            return store.scheduleItemsForSelectedCity().count
+        case .map:
+            return store.placesForSelectedCity().count
+        case .notes:
+            return store.notesForSelectedCity().count
+        case .checklist:
+            return store.checklist.filter { !$0.isDone }.count
+        case .budget:
+            return store.expenses.count
+        case .home, .settings:
+            return nil
+        }
     }
 
     private func displayCity(_ city: String) -> String {
@@ -124,12 +140,13 @@ private struct SidebarTripSummary: View {
             HStack(spacing: 10) {
                 Image(systemName: "mappin.and.ellipse")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(.teal)
-                    .frame(width: 28, height: 28)
+                    .foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(.teal, in: RoundedRectangle(cornerRadius: 11))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(city)
-                        .font(.headline.weight(.black))
+                        .font(.title3.weight(.black))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
@@ -144,8 +161,30 @@ private struct SidebarTripSummary: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 4)
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct SidebarMenuRow: View {
+    var section: AppSection
+    var count: Int?
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Label(section.title, systemImage: section.iconName)
+                .font(.headline.weight(.semibold))
+            Spacer()
+            if let count {
+                Text("\(count)")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
+        }
     }
 }
 
@@ -165,6 +204,12 @@ private struct CompactMoreScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: "More", subtitle: "준비, 예산, 공유 설정을 한곳에서 관리")
+
+                    MoreSummaryStrip(
+                        checklistCount: remainingChecklistCount,
+                        expenseTotal: totalExpense,
+                        currency: store.trip?.budgetCurrency ?? "JPY"
+                    )
 
                     VStack(spacing: 8) {
                         NavigationLink {
@@ -200,7 +245,7 @@ private struct CompactMoreScreen: View {
                             )
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     if let trip = store.trip {
                         VStack(alignment: .leading, spacing: 10) {
@@ -221,7 +266,7 @@ private struct CompactMoreScreen: View {
                                 }
                             }
                         }
-                        .appPanel()
+                        .appPanel(cornerRadius: 18)
                     }
                 }
                 .readableWidth(680)
@@ -241,6 +286,57 @@ private struct CompactMoreScreen: View {
     }
 }
 
+private struct MoreSummaryStrip: View {
+    var checklistCount: Int
+    var expenseTotal: Int
+    var currency: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            MoreMetric(title: "남은 준비", value: "\(checklistCount)", unit: "개", iconName: "checklist", tint: .teal)
+            MoreMetric(title: "지출", value: "\(expenseTotal)", unit: currency, iconName: "creditcard", tint: .blue)
+        }
+    }
+}
+
+private struct MoreMetric: View {
+    var title: String
+    var value: String
+    var unit: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconName)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(tint)
+                .frame(width: 34, height: 34)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(value)
+                        .font(.headline.weight(.black))
+                    Text(unit)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+        .padding(10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.quaternary)
+        }
+    }
+}
+
 private struct MoreRow: View {
     var title: String
     var subtitle: String
@@ -252,8 +348,8 @@ private struct MoreRow: View {
             Image(systemName: iconName)
                 .font(.headline.weight(.bold))
                 .frame(width: 38, height: 38)
-                .foregroundStyle(tint)
-                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                .foregroundStyle(.white)
+                .background(tint, in: RoundedRectangle(cornerRadius: 12))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
@@ -269,8 +365,12 @@ private struct MoreRow: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, minHeight: 54, alignment: .center)
-        .padding(10)
-        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 14))
+        .padding(11)
+        .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
     }
 }
 
