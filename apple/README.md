@@ -21,6 +21,19 @@ travel_landing/
 
 앱에 예전 빈 데이터가 보이면 `Settings` 탭에서 데모 데이터를 다시 불러오면 됩니다.
 
+## iPhone / iPad 시뮬레이터가 안 보일 때
+
+Xcode 상단의 실행 대상이 `My Mac`만 보이면 iOS/iPadOS 시뮬레이터 런타임이 설치되지 않았거나, 프로젝트 지원 대상이 Mac으로만 잡혀 있을 가능성이 큽니다.
+
+1. Xcode 상단 메뉴에서 `Xcode > Settings... > Platforms`를 엽니다.
+2. `iOS`가 설치되어 있는지 확인합니다. 없으면 iOS Simulator runtime을 내려받습니다.
+3. `Window > Devices and Simulators`를 엽니다.
+4. `Simulators` 탭에서 `+`를 눌러 `iPhone 16`, `iPhone SE`, `iPad Pro` 같은 기기를 추가합니다.
+5. 왼쪽 프로젝트 파일 `Triplanner`를 누르고, target `Triplanner`의 `General`에서 `Supported Destinations`에 iPhone, iPad, Mac이 들어있는지 확인합니다.
+6. 상단 실행 대상 드롭다운에서 원하는 시뮬레이터를 고른 뒤 실행합니다.
+
+그래도 Mac만 보이면 `Product > Destination > Manage Run Destinations...`에서 iPhone/iPad 시뮬레이터 표시가 꺼져 있지 않은지 확인합니다.
+
 ## 앱 v1 화면
 
 - Onboarding: 여행지, 기간, 비행편, My Maps 링크 입력. 여행지 외에는 Skip 가능.
