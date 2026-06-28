@@ -25,12 +25,8 @@ struct MainTabView: View {
                 .tabItem { Label(AppSection.map.title, systemImage: AppSection.map.iconName) }
             NotesScreen()
                 .tabItem { Label(AppSection.notes.title, systemImage: AppSection.notes.iconName) }
-            ChecklistScreen()
-                .tabItem { Label(AppSection.checklist.title, systemImage: AppSection.checklist.iconName) }
-            BudgetScreen()
-                .tabItem { Label(AppSection.budget.title, systemImage: AppSection.budget.iconName) }
-            SettingsScreen()
-                .tabItem { Label(AppSection.settings.title, systemImage: AppSection.settings.iconName) }
+            CompactMoreScreen()
+                .tabItem { Label("더보기", systemImage: "ellipsis.circle") }
         }
     }
 
@@ -150,6 +146,131 @@ private struct SidebarTripSummary: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct CompactMoreScreen: View {
+    @EnvironmentObject private var store: TripStore
+
+    private var remainingChecklistCount: Int {
+        store.checklist.filter { !$0.isDone }.count
+    }
+
+    private var totalExpense: Int {
+        Int(store.expenses.reduce(0) { $0 + $1.amount })
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(title: "More", subtitle: "준비, 예산, 공유 설정을 한곳에서 관리")
+
+                    VStack(spacing: 8) {
+                        NavigationLink {
+                            ChecklistScreen()
+                        } label: {
+                            MoreRow(
+                                title: "체크리스트",
+                                subtitle: "남은 준비 \(remainingChecklistCount)개",
+                                iconName: "checklist",
+                                tint: .teal
+                            )
+                        }
+
+                        NavigationLink {
+                            BudgetScreen()
+                        } label: {
+                            MoreRow(
+                                title: "예산",
+                                subtitle: "현재 지출 \(totalExpense) \(store.trip?.budgetCurrency ?? "JPY")",
+                                iconName: "creditcard",
+                                tint: .blue
+                            )
+                        }
+
+                        NavigationLink {
+                            SettingsScreen()
+                        } label: {
+                            MoreRow(
+                                title: "설정",
+                                subtitle: "항공편, 숙소, 공유 지도",
+                                iconName: "gearshape",
+                                tint: .purple
+                            )
+                        }
+                    }
+                    .appPanel()
+
+                    if let trip = store.trip {
+                        VStack(alignment: .leading, spacing: 10) {
+                            SectionLabel(title: "TRIP")
+                            HStack(spacing: 10) {
+                                Image(systemName: "mappin.and.ellipse")
+                                    .font(.headline.weight(.bold))
+                                    .frame(width: 36, height: 36)
+                                    .foregroundStyle(.teal)
+                                    .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(displayCity(store.currentCity))
+                                        .font(.headline.weight(.black))
+                                    Text(trip.cities.map(displayCity).joined(separator: " / "))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(2)
+                                }
+                            }
+                        }
+                        .appPanel()
+                    }
+                }
+                .readableWidth(680)
+                .padding()
+            }
+            .navigationTitle("더보기")
+        }
+    }
+
+    private func displayCity(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        default: return city.isEmpty ? "Trip" : city
+        }
+    }
+}
+
+private struct MoreRow: View {
+    var title: String
+    var subtitle: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: iconName)
+                .font(.headline.weight(.bold))
+                .frame(width: 38, height: 38)
+                .foregroundStyle(tint)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.headline.weight(.black))
+                Text(subtitle)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, minHeight: 54, alignment: .center)
+        .padding(10)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 14))
     }
 }
 
