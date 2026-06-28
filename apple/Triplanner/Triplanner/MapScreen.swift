@@ -15,25 +15,40 @@ struct MapScreen: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
-                    Section("공유 지도") {
-                        Link(destination: url) {
-                            Label("Google My Maps 열기", systemImage: "map")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("공유 지도")
+                                .font(.headline.weight(.black))
+                            HStack {
+                                Link(destination: url) {
+                                    Label("Google My Maps 열기", systemImage: "map")
+                                }
+                                Spacer()
+                                Label("자동 동기화 예정", systemImage: "arrow.triangle.2.circlepath")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .font(.subheadline.weight(.bold))
                         }
-                        Label("자동 동기화는 다음 단계에서 서버 함수로 연결", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(.secondary)
+                        .padding(12)
+                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
                     }
-                }
 
-                ForEach(groupedPlaces, id: \.0) { category, places in
-                    Section(category) {
-                        ForEach(places) { place in
-                            PlaceRow(place: place)
+                    ForEach(groupedPlaces, id: \.0) { category, places in
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(category)
+                                .font(.headline.weight(.black))
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 10)], spacing: 10) {
+                                ForEach(places) { place in
+                                    PlaceRow(place: place)
+                                }
+                            }
                         }
                     }
                 }
+                .padding()
             }
             .navigationTitle("지도 / 식당")
             .toolbar {
@@ -58,11 +73,12 @@ struct PlaceRow: View {
     var place: PlaceCandidate
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(place.name)
-                        .font(.headline.weight(.black))
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
                     Text(place.category)
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.secondary)
@@ -77,7 +93,8 @@ struct PlaceRow: View {
             }
             if !place.appNote.isEmpty {
                 Text(place.appNote)
-                    .font(.subheadline)
+                    .font(.caption)
+                    .lineLimit(2)
             }
             HStack {
                 if let url = URL(string: place.mapURL) {
@@ -89,7 +106,13 @@ struct PlaceRow: View {
             }
             .font(.caption.weight(.bold))
         }
-        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
+        .padding(10)
+        .background(.background, in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(.quaternary)
+        }
     }
 }
 

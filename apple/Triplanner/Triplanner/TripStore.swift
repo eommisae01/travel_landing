@@ -13,7 +13,7 @@ final class TripStore: ObservableObject {
         var expenses: [ExpenseItem]
     }
 
-    private let storageKey = "travelplanner.snapshot.v1"
+    private let storageKey = "travelplanner.snapshot.v2"
 
     @Published var trip: Trip?
     @Published var members: [TripMember] = []
@@ -49,6 +49,7 @@ final class TripStore: ObservableObject {
             startDate: startDate,
             endDate: endDate,
             accommodation: "",
+            accommodationAddress: nil,
             myMapsURL: myMapsURL,
             outbound: FlightInfo(flightNumber: flightNumber, origin: "", destination: destination, localDeparture: "", localArrival: ""),
             inbound: FlightInfo(flightNumber: "", origin: destination, destination: "", localDeparture: "", localArrival: ""),
@@ -202,10 +203,11 @@ final class TripStore: ObservableObject {
         let demoTrip = Trip(
             name: "타카마쓰 가족여행",
             country: "일본",
-            cities: ["타카마쓰", "나오시마"],
+            cities: ["타카마쓰", "나오시마", "도쿄"],
             startDate: Date.from("2026-06-22"),
             endDate: Date.from("2026-06-24"),
             accommodation: "리쓰린코엔 기타구치역 근처 숙소",
+            accommodationAddress: "Kagawa, Takamatsu, Ritsurincho area",
             myMapsURL: "https://www.google.com/maps/d/u/0/viewer?mid=1njIQAzxY74XFmaChyqYaY-q7t1KsC-M",
             outbound: FlightInfo(flightNumber: "RS0741", origin: "서울", destination: "타카마쓰", localDeparture: "", localArrival: "10:30"),
             inbound: FlightInfo(flightNumber: "RS0742", origin: "타카마쓰", destination: "서울", localDeparture: "11:40", localArrival: ""),
@@ -223,7 +225,10 @@ final class TripStore: ObservableObject {
             ScheduleItem(date: Date.from("2026-06-22"), startTime: "14:00", endTime: "16:00", title: "리쓰린 공원", note: "첫날은 무리하지 않고 산책 중심. 날씨 좋으면 핵심 일정.", placeName: "리쓰린 공원", sourceMapNote: "My Maps 장소", kind: .place),
             ScheduleItem(date: Date.from("2026-06-23"), startTime: "10:14", endTime: "11:04", title: "페리: 타카마쓰항 → 나오시마", note: "성인 편도 520엔, 추천편", placeName: "타카마쓰항", sourceMapNote: "", kind: .move),
             ScheduleItem(date: Date.from("2026-06-23"), startTime: "11:05", endTime: "11:45", title: "미야노우라항 → 츠츠지소 → 지중미술관", note: "2번 정류장으로 이동. 시내버스 100엔 후 베네세 무료 셔틀 환승.", placeName: "미야노우라항 2번 정류장", sourceMapNote: "버스 대기 시간이 핵심", kind: .move),
-            ScheduleItem(date: Date.from("2026-06-23"), startTime: "12:00", endTime: "13:30", title: "지중미술관 예약", note: "성인 3명, 각 ¥2,500", placeName: "지중미술관", sourceMapNote: "My Maps에서 가져온 장소", kind: .place)
+            ScheduleItem(date: Date.from("2026-06-23"), startTime: "12:00", endTime: "13:30", title: "지중미술관 예약", note: "성인 3명, 각 ¥2,500", placeName: "지중미술관", sourceMapNote: "My Maps에서 가져온 장소", kind: .place),
+            ScheduleItem(date: Date.from("2026-06-25"), startTime: "09:30", endTime: "11:00", title: "도쿄역 주변 산책", note: "가상 도쿄 일정. 도시 드롭다운 전환 확인용.", placeName: "도쿄역", sourceMapNote: "테스트 데이터", kind: .place),
+            ScheduleItem(date: Date.from("2026-06-25"), startTime: "12:00", endTime: "13:00", title: "긴자 점심 후보", note: "식당 후보에서 확정 예정.", placeName: "긴자", sourceMapNote: "테스트 데이터", kind: .food),
+            ScheduleItem(date: Date.from("2026-06-25"), startTime: "15:00", endTime: "17:00", title: "시부야 이동", note: "패드 가로 화면 확인용 이동 일정.", placeName: "시부야", sourceMapNote: "테스트 데이터", kind: .move)
         ]
         places = [
             PlaceCandidate(name: "지중미술관", category: "미술관", mapURL: "https://www.google.com/maps/search/?api=1&query=Chichu%20Art%20Museum", mapNote: "예약 필요", appNote: "12:00 예약 완료", isFavorite: true),
@@ -234,13 +239,17 @@ final class TripStore: ObservableObject {
             PlaceCandidate(name: "베네세 하우스 뮤지엄", category: "미술관", mapURL: "https://www.google.com/maps/search/?api=1&query=Benesse%20House%20Museum", mapNote: "08:00-21:00", appNote: "관람 1시간 30분 후보", isFavorite: false),
             PlaceCandidate(name: "우동 바카이치다이", category: "우동", mapURL: "https://www.google.com/maps/search/?api=1&query=Udon%20Bakaichidai%20Takamatsu", mapNote: "My Maps 식당", appNote: "오픈런 후보", isFavorite: true),
             PlaceCandidate(name: "호네츠키도리 잇카쿠", category: "식당", mapURL: "https://www.google.com/maps/search/?api=1&query=Ikkaku%20Takamatsu", mapNote: "My Maps 식당", appNote: "저녁 후보", isFavorite: false),
-            PlaceCandidate(name: "As canele &. 瓦町店", category: "디저트", mapURL: "https://www.google.com/maps/search/?api=1&query=As%20canele%20Takamatsu", mapNote: "까눌레", appNote: "간식 후보", isFavorite: false)
+            PlaceCandidate(name: "As canele &. 瓦町店", category: "디저트", mapURL: "https://www.google.com/maps/search/?api=1&query=As%20canele%20Takamatsu", mapNote: "까눌레", appNote: "간식 후보", isFavorite: false),
+            PlaceCandidate(name: "도쿄역", category: "도쿄 · 장소", mapURL: "https://www.google.com/maps/search/?api=1&query=Tokyo%20Station", mapNote: "가상 도쿄 여행", appNote: "도시 전환 확인용 출발점", isFavorite: true),
+            PlaceCandidate(name: "긴자 식당 후보", category: "도쿄 · 식당", mapURL: "https://www.google.com/maps/search/?api=1&query=Ginza%20restaurant", mapNote: "가상 도쿄 여행", appNote: "점심 후보", isFavorite: false),
+            PlaceCandidate(name: "시부야 스카이", category: "도쿄 · 전망", mapURL: "https://www.google.com/maps/search/?api=1&query=Shibuya%20Sky", mapNote: "가상 도쿄 여행", appNote: "저녁 전후 후보", isFavorite: false)
         ]
         notes = [
             NoteGroup(title: "페리시간표", body: "다카마쓰 → 나오시마: 10:14 → 11:04 추천.\n나오시마 → 다카마쓰: 17:00 → 17:50 추천.\n페리 약 50분, 성인 편도 520엔. 고속선은 약 30분, 성인 1,220엔.", imageNames: []),
             NoteGroup(title: "나오시마 버스", body: "미야노우라항 2번 정류장 → 츠츠지소. 시내버스 100엔, 하차할 때 지불.\n츠츠지소에서 베네세 구역 무료 셔틀버스 탑승.\n버스 기다리는 시간과의 싸움이라 페리 도착 후 바로 정류장으로 이동.", imageNames: []),
             NoteGroup(title: "미술관 운영시간", body: "지중미술관: 10:00-17:00, 예약 필요.\n이우환 미술관: 10:00-17:00.\n베네세 하우스 뮤지엄: 08:00-21:00.\nValley Gallery: 09:30-16:00.", imageNames: []),
-            NoteGroup(title: "공항 환전/ATM", body: "타카마쓰 공항 국제선 쪽 114Bank Money Exchange와 은행 ATM 위치 확인. 사진 기준 9:00-21:00. 트래블카드 출금/환전 확인.", imageNames: [])
+            NoteGroup(title: "공항 환전/ATM", body: "타카마쓰 공항 국제선 쪽 114Bank Money Exchange와 은행 ATM 위치 확인. 사진 기준 9:00-21:00. 트래블카드 출금/환전 확인.", imageNames: []),
+            NoteGroup(title: "도쿄 테스트 Notes", body: "도쿄 도시 드롭다운을 눌렀을 때 홈의 TODAY NOTES가 바뀌는지 확인하기 위한 가상 자료입니다.", imageNames: [])
         ]
         checklist = [
             ChecklistItem(title: "여권", owner: "공통", isDone: false),

@@ -8,6 +8,7 @@ struct Trip: Identifiable, Codable, Equatable {
     var startDate: Date?
     var endDate: Date?
     var accommodation: String
+    var accommodationAddress: String?
     var myMapsURL: String
     var outbound: FlightInfo
     var inbound: FlightInfo
@@ -96,4 +97,3 @@ extension Date {
         formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().weekday(.abbreviated))
     }
 }
-
