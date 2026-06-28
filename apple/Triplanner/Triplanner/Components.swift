@@ -28,16 +28,24 @@ struct ScreenHeader: View {
     var subtitle: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 30, weight: .black, design: .rounded))
-            if !subtitle.isEmpty {
-                Text(subtitle)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+        HStack(alignment: .bottom, spacing: 12) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(title)
+                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.86)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 2)
     }
 }
 
@@ -58,25 +66,31 @@ struct EmptyStateView: View {
     var iconName: String
 
     var body: some View {
-        VStack(spacing: 10) {
+        HStack(alignment: .center, spacing: 12) {
             Image(systemName: iconName)
-                .font(.title2.weight(.bold))
+                .font(.headline.weight(.bold))
                 .foregroundStyle(.teal)
                 .frame(width: 42, height: 42)
                 .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
 
-            VStack(spacing: 3) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.subheadline.weight(.black))
                 Text(message)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 112)
+        .frame(maxWidth: .infinity, minHeight: 88, alignment: .center)
         .padding(14)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.quaternary)
+        }
     }
 }
 
@@ -85,6 +99,10 @@ extension View {
         self
             .padding(14)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(.quaternary)
+            }
     }
 
     func readableWidth(_ width: CGFloat = 980) -> some View {
