@@ -39,18 +39,24 @@ struct ChecklistScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: "Checklist", subtitle: "남은 준비 \(remainingCount)개 · 완료 \(doneCount)개")
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("준비 진행률")
-                                .font(.caption.weight(.black))
-                                .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(alignment: .firstTextBaseline) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("READY")
+                                    .font(.caption.weight(.black))
+                                    .foregroundStyle(.secondary)
+                                Text("\(remainingCount)개 남음")
+                                    .font(.title3.weight(.black))
+                            }
                             Spacer()
                             Text("\(Int(progress * 100))%")
-                                .font(.headline.weight(.black))
+                                .font(.title2.weight(.black))
+                                .foregroundStyle(progress >= 1 ? .teal : .primary)
                         }
                         ProgressView(value: progress)
+                            .tint(.teal)
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     ChecklistSection(title: "남은 준비", subtitle: "\(remainingItems.count)개", items: remainingItems, tint: .teal) { item in
                         store.toggleChecklist(item)
@@ -91,16 +97,17 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.headline.weight(.black))
-                    Text(subtitle)
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.secondary)
-                }
+                Text(title)
+                    .font(.headline.weight(.black))
                 Spacer()
+                Text(subtitle)
+                    .font(.caption.weight(.black))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(tint.opacity(0.12), in: Capsule())
+                    .foregroundStyle(tint)
             }
 
             if items.isEmpty {
@@ -110,7 +117,7 @@ private struct ChecklistSection: View {
                     iconName: "checklist"
                 )
             } else {
-                VStack(spacing: 4) {
+                VStack(spacing: 6) {
                     ForEach(items) { item in
                         ChecklistItemRow(item: item, tint: tint) {
                             action(item)
@@ -119,7 +126,7 @@ private struct ChecklistSection: View {
                 }
             }
         }
-        .appPanel()
+        .appPanel(cornerRadius: 18)
     }
 }
 
@@ -131,31 +138,37 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(alignment: .center, spacing: 9) {
             Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.title3.weight(.bold))
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 30, height: 30)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             Button(action: action) {
-                Text(item.title)
-                    .font(.subheadline.weight(.semibold))
-                    .strikethrough(item.isDone)
-                    .foregroundStyle(item.isDone ? .secondary : .primary)
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(alignment: .center, spacing: 8) {
+                    Text(item.title)
+                        .font(.subheadline.weight(.semibold))
+                        .strikethrough(item.isDone)
+                        .foregroundStyle(item.isDone ? .secondary : .primary)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity, minHeight: 30, alignment: .center)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             Text(item.owner)
                 .font(.caption.weight(.black))
                 .lineLimit(1)
+                .frame(minWidth: 42)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(ownerTint.opacity(0.12), in: Capsule())
+                .frame(height: 26)
+                .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
                 .foregroundStyle(ownerTint)
 
             Button {
@@ -164,15 +177,20 @@ private struct ChecklistItemRow: View {
                 Image(systemName: "pencil")
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 30, height: 30)
+                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
             }
             .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
         .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 11))
-        .opacity(item.isDone ? 0.58 : 1)
+        .padding(.vertical, 4)
+        .background(rowBackground, in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(item.isDone ? Color.secondary.opacity(0.10) : tint.opacity(0.10))
+        }
+        .opacity(item.isDone ? 0.66 : 1)
         .sheet(isPresented: $isEditing) {
             ChecklistEditorSheet(existingItem: item)
                 .environmentObject(store)
@@ -187,6 +205,10 @@ private struct ChecklistItemRow: View {
         case "민지": return .orange
         default: return .secondary
         }
+    }
+
+    private var rowBackground: Color {
+        item.isDone ? Color.secondary.opacity(0.06) : Color.primary.opacity(0.035)
     }
 }
 
@@ -211,15 +233,16 @@ struct ChecklistEditorSheet: View {
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "ITEM")
                         HStack(spacing: 10) {
-                            Label("항목", systemImage: "checklist")
-                                .font(.caption.weight(.black))
-                                .foregroundStyle(.secondary)
-                                .frame(width: 70, alignment: .leading)
+                            Image(systemName: "checklist")
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(.teal)
+                                .frame(width: 34, height: 34)
+                                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
                             TextField("예: 항공권 확인", text: $title)
                                 .textFieldStyle(.roundedBorder)
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "OWNER")
@@ -239,7 +262,7 @@ struct ChecklistEditorSheet: View {
                             }
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
                 }
                 .readableWidth(620)
                 .padding()
