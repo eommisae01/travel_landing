@@ -16,24 +16,7 @@ struct SettingsScreen: View {
                     ScreenHeader(title: "Settings", subtitle: "공유 전 꼭 확인할 여행 기본 정보")
 
                     if let trip = store.trip {
-                        HStack(spacing: 12) {
-                            Image(systemName: "person.2.badge.gearshape")
-                                .font(.title3.weight(.black))
-                                .foregroundStyle(.teal)
-                                .frame(width: 46, height: 46)
-                                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 15))
-
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(trip.name)
-                                    .font(.headline.weight(.black))
-                                Text("\(trip.country) · \(trip.cities.joined(separator: " / "))")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(2)
-                            }
-                            Spacer()
-                        }
-                        .appPanel(cornerRadius: 18)
+                        SettingsTripHero(trip: trip, currentCity: store.currentCity)
                     }
 
                     if horizontalSizeClass == .compact {
@@ -53,13 +36,13 @@ struct SettingsScreen: View {
                         SettingsField(title: "이름", iconName: "bed.double", placeholder: "숙소 이름", text: $accommodation)
                         SettingsField(title: "주소", iconName: "mappin", placeholder: "숙소 주소", text: $accommodationAddress, axis: .vertical)
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "MAP")
                         SettingsField(title: "링크", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL, axis: .vertical)
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "INVITE")
@@ -71,9 +54,9 @@ struct SettingsScreen: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
-                    HStack {
+                    HStack(spacing: 10) {
                         Button {
                             store.updateOutboundFlight(outboundFlight)
                             store.updateInboundFlight(inboundFlight)
@@ -83,6 +66,7 @@ struct SettingsScreen: View {
                         } label: {
                             Label("저장", systemImage: "checkmark")
                                 .frame(maxWidth: .infinity)
+                                .font(.headline.weight(.black))
                         }
                         .buttonStyle(.borderedProminent)
 
@@ -92,8 +76,11 @@ struct SettingsScreen: View {
                         } label: {
                             Label("데모 리셋", systemImage: "arrow.counterclockwise")
                                 .frame(maxWidth: .infinity)
+                                .font(.headline.weight(.black))
                         }
+                        .buttonStyle(.bordered)
                     }
+                    .padding(.top, 2)
                 }
                 .readableWidth(820)
                 .padding()
@@ -114,6 +101,53 @@ struct SettingsScreen: View {
     }
 }
 
+private struct SettingsTripHero: View {
+    var trip: Trip
+    var currentCity: String
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "person.2.badge.gearshape")
+                .font(.title3.weight(.black))
+                .foregroundStyle(.white)
+                .frame(width: 48, height: 48)
+                .background(.teal, in: RoundedRectangle(cornerRadius: 16))
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(displayCity(currentCity))
+                    .font(.title2.weight(.black))
+                    .lineLimit(1)
+                Text("\(trip.country) · \(trip.cities.map(displayCity).joined(separator: " / "))")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Spacer()
+            Text("LOCAL")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.teal)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(.teal.opacity(0.12), in: Capsule())
+        }
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .overlay {
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(.quaternary)
+        }
+    }
+
+    private func displayCity(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        default: return city.isEmpty ? "Trip" : city
+        }
+    }
+}
+
 private struct FlightEditorCard: View {
     var title: String
     @Binding var flight: FlightInfo
@@ -121,9 +155,19 @@ private struct FlightEditorCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                SectionLabel(title: title.uppercased())
-                Image(systemName: "airplane")
+                Image(systemName: title.contains("오는") ? "airplane.arrival" : "airplane.departure")
+                    .font(.headline.weight(.bold))
+                    .frame(width: 34, height: 34)
+                    .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
                     .foregroundStyle(.teal)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline.weight(.black))
+                    Text("편명과 현지 출발/도착 시간")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
             }
 
             SettingsField(title: "편명", iconName: "number", placeholder: "편명", text: $flight.flightNumber)
@@ -139,7 +183,7 @@ private struct FlightEditorCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .appPanel()
+        .appPanel(cornerRadius: 18)
     }
 }
 
@@ -152,11 +196,12 @@ private struct SettingsField: View {
 
     var body: some View {
         HStack(alignment: axis == .vertical ? .top : .center, spacing: 10) {
-            Label(title, systemImage: iconName)
-                .font(.caption.weight(.black))
-                .foregroundStyle(.secondary)
-                .frame(width: 70, alignment: .leading)
-                .padding(.top, axis == .vertical ? 7 : 0)
+            Image(systemName: iconName)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.teal)
+                .frame(width: 32, height: 32)
+                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .padding(.top, axis == .vertical ? 1 : 0)
             TextField(placeholder, text: $text, axis: axis)
                 .textFieldStyle(.roundedBorder)
                 .lineLimit(axis == .vertical ? 2...5 : 1...1)

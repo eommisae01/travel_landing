@@ -26,24 +26,7 @@ struct OnboardingView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "sparkles")
-                                .font(.title2.weight(.black))
-                                .foregroundStyle(.teal)
-                                .frame(width: 46, height: 46)
-                                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 15))
-
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("새 여행 만들기")
-                                    .font(.system(size: 30, weight: .black, design: .rounded))
-                                Text("여행지만 정하면 시작할 수 있고, 나머지는 나중에 채워도 됩니다.")
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .appPanel(cornerRadius: 20)
+                    OnboardingHero()
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
                         OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "미정" : destination, iconName: "mappin.and.ellipse")
@@ -54,10 +37,11 @@ struct OnboardingView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "01 DESTINATION")
                         HStack(spacing: 10) {
-                            Label("국가", systemImage: "globe.asia.australia")
-                                .font(.caption.weight(.black))
-                                .foregroundStyle(.secondary)
-                                .frame(width: 70, alignment: .leading)
+                            Image(systemName: "globe.asia.australia")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(.teal)
+                                .frame(width: 32, height: 32)
+                                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
                             Picker("국가", selection: $country) {
                                 ForEach(countries, id: \.self) { Text($0) }
                             }
@@ -85,7 +69,7 @@ struct OnboardingView: View {
                             LabeledOnboardingField(title: "도시", iconName: "pencil", placeholder: "도시 직접 입력", text: $customCity)
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
@@ -103,7 +87,7 @@ struct OnboardingView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "03 FLIGHT")
@@ -112,7 +96,7 @@ struct OnboardingView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "04 MAP")
@@ -121,7 +105,7 @@ struct OnboardingView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     Button {
                         startTrip()
@@ -129,7 +113,7 @@ struct OnboardingView: View {
                         Label(destination.isEmpty ? "여행지 입력 필요" : "\(destination) 여행 시작", systemImage: "arrow.right")
                             .font(.headline.weight(.black))
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 10)
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(!canStart)
@@ -153,6 +137,33 @@ struct OnboardingView: View {
     }
 }
 
+private struct OnboardingHero: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "sparkles")
+                .font(.title2.weight(.black))
+                .foregroundStyle(.white)
+                .frame(width: 50, height: 50)
+                .background(.teal, in: RoundedRectangle(cornerRadius: 17))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("새 여행 만들기")
+                    .font(.system(size: 30, weight: .black, design: .rounded))
+                Text("여행지만 정하면 시작할 수 있고, 나머지는 나중에 채워도 됩니다.")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(18)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(.quaternary)
+        }
+    }
+}
+
 private struct OnboardingSummaryChip: View {
     var title: String
     var value: String
@@ -163,6 +174,8 @@ private struct OnboardingSummaryChip: View {
             Image(systemName: iconName)
                 .font(.caption.weight(.black))
                 .foregroundStyle(.teal)
+                .frame(width: 26, height: 26)
+                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.caption2.weight(.black))
@@ -175,7 +188,12 @@ private struct OnboardingSummaryChip: View {
         }
         .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
         .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
     }
 }
 
@@ -187,10 +205,11 @@ private struct LabeledOnboardingField: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Label(title, systemImage: iconName)
-                .font(.caption.weight(.black))
-                .foregroundStyle(.secondary)
-                .frame(width: 70, alignment: .leading)
+            Image(systemName: iconName)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.teal)
+                .frame(width: 32, height: 32)
+                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             TextField(placeholder, text: $text)
                 .textFieldStyle(.roundedBorder)
         }
