@@ -52,6 +52,34 @@ struct SectionLabel: View {
     }
 }
 
+struct EmptyStateView: View {
+    var title: String
+    var message: String
+    var iconName: String
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Image(systemName: iconName)
+                .font(.title2.weight(.bold))
+                .foregroundStyle(.teal)
+                .frame(width: 42, height: 42)
+                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+
+            VStack(spacing: 3) {
+                Text(title)
+                    .font(.subheadline.weight(.black))
+                Text(message)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 112)
+        .padding(14)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+}
+
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self

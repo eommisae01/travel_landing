@@ -137,7 +137,11 @@ struct HomeScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("TODAY")
             if cityScheduleItems.isEmpty {
-                EmptyHint(text: "선택한 도시의 일정이 아직 없습니다.")
+                EmptyStateView(
+                    title: "오늘 일정이 비어있어요",
+                    message: "장소나 이동 계획을 일정에 추가하면 여기서 바로 보입니다.",
+                    iconName: "calendar"
+                )
             } else {
                 ForEach(cityScheduleItems.prefix(5)) { item in
                     CompactScheduleRow(item: item)
@@ -151,7 +155,11 @@ struct HomeScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("TODAY NOTES")
             if cityNotes.isEmpty {
-                EmptyHint(text: "오늘 바로 참고할 자료를 Notes에 추가해보세요.")
+                EmptyStateView(
+                    title: "오늘 볼 자료가 없어요",
+                    message: "시간표, 예약 캡처, 현장 메모를 Notes에 모아두세요.",
+                    iconName: "note.text"
+                )
             } else {
                 ForEach(cityNotes.prefix(3)) { note in
                     CompactNoteCard(note: note)
@@ -384,18 +392,6 @@ private struct CompactNoteCard: View {
     }
 }
 
-private struct EmptyHint: View {
-    var text: String
-
-    var body: some View {
-        Text(text)
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, minHeight: 64, alignment: .center)
-            .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 12))
-    }
-}
-
 private extension View {
     func panelStyle() -> some View {
         self
@@ -419,7 +415,11 @@ private struct ChecklistSummarySheet: View {
                     ScreenHeader(title: "남은 준비", subtitle: "\(remaining.count)개 항목")
 
                     if remaining.isEmpty {
-                        EmptyHint(text: "남은 준비가 없습니다.")
+                        EmptyStateView(
+                            title: "남은 준비 없음",
+                            message: "지금 상태로는 출발 준비가 깔끔합니다.",
+                            iconName: "checkmark.circle"
+                        )
                     } else {
                         VStack(spacing: 6) {
                             ForEach(remaining) { item in

@@ -81,11 +81,11 @@ struct BudgetScreen: View {
 
                     SectionLabel(title: "EXPENSES")
                     if store.expenses.isEmpty {
-                        Text("아직 입력된 지출이 없습니다.")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, minHeight: 88)
-                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                        EmptyStateView(
+                            title: "지출이 비어있어요",
+                            message: "항공권, 숙소, 식비처럼 함께 볼 비용을 추가하면 예산 진행률이 계산됩니다.",
+                            iconName: "creditcard"
+                        )
                     } else {
                         VStack(spacing: 6) {
                             ForEach(store.expenses) { expense in

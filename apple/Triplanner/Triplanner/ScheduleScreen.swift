@@ -34,11 +34,11 @@ struct ScheduleScreen: View {
                         calendarGrid
                     } else {
                         if visibleItems.isEmpty {
-                            Text("선택한 도시의 일정이 아직 없습니다.")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, minHeight: 120)
-                                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                            EmptyStateView(
+                                title: "일정이 비어있어요",
+                                message: "지도나 장소 후보에서 바로 일정에 추가할 수 있습니다.",
+                                iconName: "calendar.badge.plus"
+                            )
                         } else {
                             VStack(spacing: 0) {
                                 ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in

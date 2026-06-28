@@ -51,11 +51,11 @@ struct MapScreen: View {
                         }
                     }
                     if groupedPlaces.isEmpty {
-                        Text("선택한 도시의 장소가 아직 없습니다.")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, minHeight: 120)
-                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                        EmptyStateView(
+                            title: "장소가 비어있어요",
+                            message: "지도 링크나 식당 후보를 추가하면 도시별로 모아볼 수 있습니다.",
+                            iconName: "map"
+                        )
                     }
                 }
                 .readableWidth(1120)

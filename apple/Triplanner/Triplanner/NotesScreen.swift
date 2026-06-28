@@ -23,11 +23,11 @@ struct NotesScreen: View {
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))")
                         if selectedCityNotes.isEmpty {
-                            Text("선택한 도시와 연결된 자료가 아직 없습니다.")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, minHeight: 80)
-                                .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 12))
+                            EmptyStateView(
+                                title: "자료가 비어있어요",
+                                message: "시간표, 예약 캡처, 현장 메모를 도시별 보드로 모아둘 수 있습니다.",
+                                iconName: "doc.text.image"
+                            )
                         } else {
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
                                 ForEach(selectedCityNotes) { note in

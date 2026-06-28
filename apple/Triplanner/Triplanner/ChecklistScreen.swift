@@ -104,11 +104,11 @@ private struct ChecklistSection: View {
             }
 
             if items.isEmpty {
-                Text("항목 없음")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
-                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+                EmptyStateView(
+                    title: "항목 없음",
+                    message: "새 준비 항목을 추가하면 여기서 바로 체크할 수 있습니다.",
+                    iconName: "checklist"
+                )
             } else {
                 VStack(spacing: 4) {
                     ForEach(items) { item in
