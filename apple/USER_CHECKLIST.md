@@ -34,6 +34,31 @@
 5. Xcode에서 `apple/Triplanner/Triplanner.xcodeproj` 열기
 6. GitHub Desktop에서 `Fetch origin` 또는 `Pull origin`으로 최신 코드 받기
 
+## 현재 상태 확인
+
+터미널을 쓸 수 있으면 저장소 폴더에서 아래 상태만 확인하면 됩니다.
+
+```bash
+git status
+```
+
+`nothing to commit, working tree clean` 또는 GitHub Desktop에서 `No local changes`가 보이면 최신 작업이 잘 정리된 상태입니다.
+
+Xcode에서 프로젝트가 이상하게 보이면 새 프로젝트를 만들지 말고, 이 파일을 먼저 확인합니다.
+
+```text
+apple/Triplanner/Triplanner.xcodeproj
+```
+
+## 다시 Codex에게 맡길 때 첫 메시지
+
+```text
+이 저장소는 여행 계획 앱 프로젝트야.
+먼저 HANDOFF.md, apple/README.md, apple/USER_CHECKLIST.md, apple/NEXT_STEPS.md를 읽고 이어서 도와줘.
+현재 Apple 앱 위치는 apple/Triplanner/Triplanner.xcodeproj이고, iPhone/iPad/Mac SwiftUI 앱으로 확장 중이야.
+우선순위는 Notes 사진 묶음, Supabase 동기화, My Maps 자동 동기화, 친구 초대 기능이야.
+```
+
 ## 앞으로 개발 우선순위
 
 1. Notes에 사진 여러 장 묶음 추가
