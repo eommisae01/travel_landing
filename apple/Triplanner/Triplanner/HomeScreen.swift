@@ -33,20 +33,22 @@ struct HomeScreen: View {
             ScrollView {
                 if let trip = store.trip {
                     if isWideLayout {
-                        HStack(alignment: .top, spacing: 18) {
-                            VStack(alignment: .leading, spacing: 14) {
-                                cityHero(trip)
-                                travelPanel(trip)
-                            }
-                            .frame(maxWidth: 430)
+                        VStack(alignment: .leading, spacing: 16) {
+                            cityHero(trip)
+                            travelPanel(trip)
 
-                            VStack(alignment: .leading, spacing: 14) {
-                                statusStrip
-                                todayPanel
+                            HStack(alignment: .top, spacing: 14) {
+                                VStack(alignment: .leading, spacing: 14) {
+                                    statusStrip
+                                    todayPanel
+                                }
+                                .frame(maxWidth: .infinity)
+
                                 notesPanel
+                                    .frame(maxWidth: 420)
                             }
-                            .frame(maxWidth: .infinity)
                         }
+                        .readableWidth(1160)
                         .padding(22)
                     } else {
                         VStack(alignment: .leading, spacing: 16) {

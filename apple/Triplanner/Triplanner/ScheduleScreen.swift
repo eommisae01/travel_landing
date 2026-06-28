@@ -40,9 +40,12 @@ struct ScheduleScreen: View {
                                 .frame(maxWidth: .infinity, minHeight: 120)
                                 .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
                         } else {
-                            ForEach(visibleItems) { item in
-                                ScheduleRow(item: item)
+                            VStack(spacing: 0) {
+                                ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
+                                    ScheduleRow(item: item, isLast: index == visibleItems.count - 1)
+                                }
                             }
+                            .appPanel()
                         }
                     }
                 }
@@ -162,9 +165,10 @@ private enum ScheduleViewMode: Hashable {
 
 struct ScheduleRow: View {
     var item: ScheduleItem
+    var isLast = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
                     .font(.caption.weight(.black))
@@ -177,14 +181,36 @@ struct ScheduleRow: View {
             }
             .frame(width: 58)
 
-            Circle()
-                .fill(kindColor)
-                .frame(width: 9, height: 9)
-                .padding(.top, 4)
+            ZStack(alignment: .top) {
+                if !isLast {
+                    Rectangle()
+                        .fill(kindColor.opacity(0.28))
+                        .frame(width: 2, height: 78)
+                        .padding(.top, 16)
+                }
+                Circle()
+                    .fill(.background)
+                    .frame(width: 14, height: 14)
+                    .overlay {
+                        Circle()
+                            .stroke(kindColor, lineWidth: 3)
+                    }
+                    .padding(.top, 1)
+            }
+            .frame(minHeight: 74, alignment: .top)
+            .frame(width: 18)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.title)
-                    .font(.headline.weight(.black))
+                HStack(spacing: 8) {
+                    Text(item.title)
+                        .font(.headline.weight(.black))
+                    Text(item.kind.rawValue)
+                        .font(.caption2.weight(.black))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(kindColor.opacity(0.14), in: Capsule())
+                        .foregroundStyle(kindColor)
+                }
                 if !item.placeName.isEmpty {
                     Text(item.placeName)
                         .font(.subheadline.weight(.bold))
@@ -193,16 +219,21 @@ struct ScheduleRow: View {
                 if !item.note.isEmpty {
                     Text(item.note)
                         .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 14)
+            .overlay(alignment: .bottom) {
+                if !isLast {
+                    Rectangle()
+                        .fill(.quaternary)
+                        .frame(height: 1)
                 }
             }
             Spacer()
         }
-        .padding(12)
-        .background(kindColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 14))
-        .overlay {
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(.quaternary)
-        }
+        .padding(.vertical, 10)
     }
 
     private var kindColor: Color {

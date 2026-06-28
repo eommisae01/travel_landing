@@ -118,13 +118,18 @@ struct PlaceRow: View {
             }
             HStack {
                 if let url = URL(string: place.mapURL) {
-                    Link("Google Maps", destination: url)
+                    Link(destination: url) {
+                        Label("지도", systemImage: "map")
+                    }
                 }
-                Button("일정에 넣기") {
+                Button {
                     store.addSchedule(from: place, date: Date())
+                } label: {
+                    Label("일정", systemImage: "calendar.badge.plus")
                 }
             }
             .font(.caption2.weight(.bold))
+            .labelStyle(.titleAndIcon)
         }
         .frame(maxWidth: .infinity, minHeight: 76, alignment: .topLeading)
         .padding(8)
