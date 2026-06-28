@@ -282,10 +282,14 @@ struct NoteDetailView: View {
     var note: NoteGroup
     @State private var selectedImageIndex: Int?
 
+    private var imageColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 172), spacing: 10)]
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 14) {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "doc.text.image")
                             .font(.title3.weight(.black))
@@ -295,7 +299,8 @@ struct NoteDetailView: View {
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text(note.title)
-                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .font(.system(size: 26, weight: .black, design: .rounded))
+                                .lineLimit(2)
                             Text(note.imageNames.isEmpty ? "텍스트 자료" : "\(note.imageNames.count)장의 자료 묶음")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.secondary)
@@ -303,34 +308,45 @@ struct NoteDetailView: View {
 
                         Spacer()
                     }
+
+                    Text(note.body)
+                        .font(.body)
+                        .lineSpacing(3)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(12)
+                        .background(.background.opacity(0.54), in: RoundedRectangle(cornerRadius: 14))
                 }
                 .appPanel(cornerRadius: 18)
 
-                Text(note.body)
-                    .font(.body)
-                    .lineSpacing(3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
-
-                SectionLabel(title: "IMAGE BUNDLE")
-
-                if note.imageNames.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.largeTitle)
-                            .foregroundStyle(.teal)
-                        Text("페리 시간표, 예약 캡처, 현장 사진을 여러 장 묶어서 넘겨볼 수 있게 만들 예정입니다.")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        SectionLabel(title: "IMAGE BUNDLE")
+                        Spacer()
+                        if !note.imageNames.isEmpty {
+                            Label("\(note.imageNames.count)장", systemImage: "photo.stack")
+                                .font(.caption2.weight(.black))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                                .background(.secondary.opacity(0.10), in: Capsule())
+                        }
                     }
-                    .frame(maxWidth: .infinity, minHeight: 160)
-                    .padding()
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
-                } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
+
+                    if note.imageNames.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.largeTitle)
+                                .foregroundStyle(.teal)
+                            Text("시간표나 예약 캡처 이름을 추가하면 이곳에서 묶음 자료처럼 넘겨볼 수 있습니다.")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 150)
+                        .padding()
+                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    } else {
+                        LazyVGrid(columns: imageColumns, spacing: 10) {
                             ForEach(Array(note.imageNames.enumerated()), id: \.offset) { index, imageName in
                                 Button {
                                     selectedImageIndex = index
@@ -340,9 +356,9 @@ struct NoteDetailView: View {
                                 .buttonStyle(.plain)
                             }
                         }
-                        .padding(.vertical, 2)
                     }
                 }
+                .appPanel(cornerRadius: 18)
             }
             .readableWidth()
             .padding()
@@ -385,8 +401,9 @@ private struct NoteImageTile: View {
     var index: Int
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 18)
+        VStack(alignment: .leading, spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
                 .fill(
                     LinearGradient(
                         colors: [
@@ -398,29 +415,36 @@ private struct NoteImageTile: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .overlay(alignment: .topTrailing) {
-                    Text(String(format: "%02d", index + 1))
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary)
-                        .padding(10)
-                }
 
-            VStack(alignment: .leading, spacing: 9) {
                 Image(systemName: "photo")
-                    .font(.title2.weight(.bold))
+                    .font(.title.weight(.bold))
                     .foregroundStyle(.teal)
+            }
+            .frame(height: 104)
+            .overlay(alignment: .topTrailing) {
+                Text(String(format: "%02d", index + 1))
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 4)
+                    .background(.background.opacity(0.66), in: Capsule())
+                    .padding(8)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(imageName)
-                    .font(.headline.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .lineLimit(2)
-                Text("탭해서 크게 보기")
-                    .font(.caption.weight(.semibold))
+                Label("크게 보기", systemImage: "arrow.up.left.and.arrow.down.right")
+                    .font(.caption2.weight(.bold))
                     .foregroundStyle(.secondary)
             }
-            .padding(16)
         }
-        .frame(width: 250, height: 210)
+        .frame(maxWidth: .infinity, minHeight: 164, alignment: .topLeading)
+        .padding(10)
+        .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(.quaternary)
         }
     }
@@ -434,54 +458,73 @@ private struct NoteImagePreview: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                LinearGradient(
-                    colors: [Color.teal.opacity(0.20), Color.blue.opacity(0.10), Color.secondary.opacity(0.08)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-
-                VStack(spacing: 16) {
+            VStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(note.title)
+                        .font(.headline.weight(.black))
                     Text("\(index + 1) / \(note.imageNames.count)")
-                        .font(.caption.weight(.black))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(.background.opacity(0.60), in: Capsule())
+                        .font(.caption.weight(.bold))
                         .foregroundStyle(.secondary)
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: 58, weight: .bold))
-                        .foregroundStyle(.teal)
-                    Text(currentImageName)
-                        .font(.title.weight(.black))
-                        .multilineTextAlignment(.center)
-                    Text("나중에 실제 사진 파일을 연결하면 이 자리에서 크게 확인합니다.")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                    HStack(spacing: 10) {
-                        Button {
-                            index = max(index - 1, 0)
-                        } label: {
-                            Label("이전", systemImage: "chevron.left")
-                                .frame(width: 112)
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(index == 0)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 22)
+                        .fill(.regularMaterial)
+                    VStack(spacing: 14) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 56, weight: .bold))
+                            .foregroundStyle(.teal)
+                        Text(currentImageName)
+                            .font(.title2.weight(.black))
+                            .multilineTextAlignment(.center)
+                        Text("실제 사진 파일 연결 전까지는 자료 이름을 기준으로 묶음을 확인합니다.")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(24)
+                }
+                .frame(maxWidth: .infinity, minHeight: 310)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(.quaternary)
+                }
 
-                        Button {
-                            index = min(index + 1, max(note.imageNames.count - 1, 0))
-                        } label: {
-                            Label("다음", systemImage: "chevron.right")
-                                .frame(width: 112)
+                if note.imageNames.count > 1 {
+                    HStack(spacing: 6) {
+                        ForEach(note.imageNames.indices, id: \.self) { itemIndex in
+                            Circle()
+                                .fill(itemIndex == index ? Color.teal : Color.secondary.opacity(0.28))
+                                .frame(width: itemIndex == index ? 8 : 6, height: itemIndex == index ? 8 : 6)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(index >= note.imageNames.count - 1)
                     }
                 }
-                .padding()
+
+                HStack(spacing: 10) {
+                    Button {
+                        index = max(index - 1, 0)
+                    } label: {
+                        Label("이전", systemImage: "chevron.left")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(index == 0)
+
+                    Button {
+                        index = min(index + 1, max(note.imageNames.count - 1, 0))
+                    } label: {
+                        Label("다음", systemImage: "chevron.right")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(index >= note.imageNames.count - 1)
+                }
             }
+            .padding()
+            .frame(maxWidth: 680)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .background(Color.secondary.opacity(0.035))
             .navigationTitle("자료 보기")
             .onAppear {
                 index = min(max(initialIndex, 0), max(note.imageNames.count - 1, 0))
