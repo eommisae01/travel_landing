@@ -165,6 +165,13 @@ final class TripStore: ObservableObject {
         save()
     }
 
+    func updateAccommodationAddress(_ value: String) {
+        guard var current = trip else { return }
+        current.accommodationAddress = value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : value
+        trip = current
+        save()
+    }
+
     func updateMyMapsURL(_ value: String) {
         guard var current = trip else { return }
         current.myMapsURL = value

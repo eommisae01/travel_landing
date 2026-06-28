@@ -16,20 +16,35 @@ struct NotesScreen: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section(store.currentCity.isEmpty ? "선택 도시 자료" : "\(displayCity(store.currentCity)) 자료") {
-                    ForEach(selectedCityNotes) { note in
-                        noteLink(note)
-                    }
-                }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(title: "Notes", subtitle: "시간표, 예약, 현장 정보를 묶어두는 자료 보드")
 
-                if !otherNotes.isEmpty {
-                    Section("전체 자료") {
-                        ForEach(otherNotes) { note in
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))")
+                        if selectedCityNotes.isEmpty {
+                            Text("선택한 도시와 연결된 자료가 아직 없습니다.")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 80)
+                        }
+                        ForEach(selectedCityNotes) { note in
                             noteLink(note)
                         }
                     }
+                    .appPanel()
+
+                    if !otherNotes.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            SectionLabel(title: "ALL NOTES")
+                            ForEach(otherNotes) { note in
+                                noteLink(note)
+                            }
+                        }
+                        .appPanel()
+                    }
                 }
+                .padding()
             }
             .navigationTitle("Notes")
             .toolbar {
@@ -52,7 +67,7 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(note.title)
                     .font(.headline.weight(.black))
                 Text(note.body)
@@ -60,7 +75,11 @@ struct NotesScreen: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(10)
+            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 12))
         }
+        .buttonStyle(.plain)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -136,13 +155,13 @@ struct NoteDetailView: View {
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
-                        ForEach(note.imageNames, id: \.self) { imageName in
-                            Image(imageName)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 260, height: 220)
-                                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
-                        }
+                            ForEach(note.imageNames, id: \.self) { imageName in
+                                Image(imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 260, height: 220)
+                                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
+                            }
                         }
                     }
                 }
