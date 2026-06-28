@@ -76,7 +76,7 @@ struct ChecklistScreen: View {
                 }
             }
             .sheet(isPresented: $addSheetOpen) {
-                AddChecklistSheet()
+                ChecklistEditorSheet()
                     .environmentObject(store)
             }
         }
@@ -124,41 +124,77 @@ private struct ChecklistSection: View {
 }
 
 private struct ChecklistItemRow: View {
+    @EnvironmentObject private var store: TripStore
     var item: ChecklistItem
     var tint: Color = .teal
     var action: () -> Void
+    @State private var isEditing = false
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 10) {
+        HStack(spacing: 10) {
+            Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.headline.weight(.bold))
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+
+            Button(action: action) {
                 Text(item.title)
                     .font(.subheadline.weight(.semibold))
                     .strikethrough(item.isDone)
                     .foregroundStyle(item.isDone ? .secondary : .primary)
-                Spacer()
-                Text(item.owner)
-                    .font(.caption.weight(.black))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.secondary.opacity(0.10), in: Capsule())
-                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, minHeight: 32, alignment: .center)
-            .padding(.horizontal, 8)
-            .background(.background.opacity(0.48), in: RoundedRectangle(cornerRadius: 10))
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+
+            Text(item.owner)
+                .font(.caption.weight(.black))
+                .lineLimit(1)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(ownerTint.opacity(0.12), in: Capsule())
+                .foregroundStyle(ownerTint)
+
+            Button {
+                isEditing = true
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 11))
         .opacity(item.isDone ? 0.58 : 1)
+        .sheet(isPresented: $isEditing) {
+            ChecklistEditorSheet(existingItem: item)
+                .environmentObject(store)
+        }
+    }
+
+    private var ownerTint: Color {
+        switch item.owner {
+        case "공통": return .teal
+        case "예지": return .pink
+        case "승환": return .blue
+        case "민지": return .orange
+        default: return .secondary
+        }
     }
 }
 
-struct AddChecklistSheet: View {
+struct ChecklistEditorSheet: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.dismiss) private var dismiss
+    var existingItem: ChecklistItem?
+
     @State private var title = ""
     @State private var owner = "공통"
 
@@ -170,12 +206,18 @@ struct AddChecklistSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ScreenHeader(title: "준비 추가", subtitle: "담당자를 정해두면 가족별로 챙기기 쉽습니다.")
+                    ScreenHeader(title: existingItem == nil ? "준비 추가" : "준비 수정", subtitle: "담당자를 정해두면 가족별로 챙기기 쉽습니다.")
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "ITEM")
-                        TextField("예: 항공권 확인", text: $title)
-                            .textFieldStyle(.roundedBorder)
+                        HStack(spacing: 10) {
+                            Label("항목", systemImage: "checklist")
+                                .font(.caption.weight(.black))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 70, alignment: .leading)
+                            TextField("예: 항공권 확인", text: $title)
+                                .textFieldStyle(.roundedBorder)
+                        }
                     }
                     .appPanel()
 
@@ -187,10 +229,10 @@ struct AddChecklistSheet: View {
                                     owner = name
                                 } label: {
                                     Text(name)
-                                        .font(.subheadline.weight(.black))
+                                        .font(.caption.weight(.black))
                                         .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 8)
-                                        .background(owner == name ? Color.teal : Color.secondary.opacity(0.12), in: Capsule())
+                                        .padding(.vertical, 9)
+                                        .background(owner == name ? Color.teal : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(owner == name ? .white : .primary)
                                 }
                                 .buttonStyle(.plain)
@@ -202,18 +244,27 @@ struct AddChecklistSheet: View {
                 .readableWidth(620)
                 .padding()
             }
-            .navigationTitle("체크리스트 추가")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("추가") {
-                        store.addChecklist(title: title, owner: owner)
+                    Button(existingItem == nil ? "추가" : "저장") {
+                        if let existingItem {
+                            store.updateChecklist(existingItem, title: title, owner: owner)
+                        } else {
+                            store.addChecklist(title: title, owner: owner)
+                        }
                         dismiss()
                     }
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+            }
+            .onAppear {
+                guard let existingItem else { return }
+                title = existingItem.title
+                owner = existingItem.owner
             }
         }
     }

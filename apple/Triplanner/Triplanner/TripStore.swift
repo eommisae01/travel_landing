@@ -169,6 +169,14 @@ final class TripStore: ObservableObject {
         save()
     }
 
+    func updateChecklist(_ item: ChecklistItem, title: String, owner: String) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty, let index = checklist.firstIndex(of: item) else { return }
+        checklist[index].title = trimmedTitle
+        checklist[index].owner = owner.isEmpty ? "공통" : owner
+        save()
+    }
+
     func addExpense(
         category: String,
         title: String,

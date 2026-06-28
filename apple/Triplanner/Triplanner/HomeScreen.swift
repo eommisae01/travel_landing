@@ -466,21 +466,24 @@ private struct ChecklistSummarySheet: View {
                             ForEach(remaining) { item in
                                 HStack(spacing: 10) {
                                     Image(systemName: "circle")
-                                        .font(.headline.weight(.bold))
+                                        .font(.title3.weight(.bold))
                                         .foregroundStyle(.secondary)
+                                        .frame(width: 28, height: 28)
                                     Text(item.title)
                                         .font(.subheadline.weight(.semibold))
+                                        .lineLimit(2)
                                     Spacer()
                                     Text(item.owner)
                                         .font(.caption.weight(.black))
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
-                                        .background(.secondary.opacity(0.10), in: Capsule())
-                                        .foregroundStyle(.secondary)
+                                        .background(ownerTint(item.owner).opacity(0.12), in: Capsule())
+                                        .foregroundStyle(ownerTint(item.owner))
                                 }
-                                .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
+                                .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
                                 .padding(.horizontal, 10)
-                                .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 10))
+                                .padding(.vertical, 5)
+                                .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 11))
                             }
                         }
                         .appPanel()
@@ -495,6 +498,16 @@ private struct ChecklistSummarySheet: View {
                     Button("닫기") { dismiss() }
                 }
             }
+        }
+    }
+
+    private func ownerTint(_ owner: String) -> Color {
+        switch owner {
+        case "공통": return .teal
+        case "예지": return .pink
+        case "승환": return .blue
+        case "민지": return .orange
+        default: return .secondary
         }
     }
 }
