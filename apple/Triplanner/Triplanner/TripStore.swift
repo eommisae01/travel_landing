@@ -144,6 +144,17 @@ final class TripStore: ObservableObject {
         save()
     }
 
+    func updatePlace(_ place: PlaceCandidate, name: String, category: String, mapURL: String, mapNote: String, appNote: String) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty, let index = places.firstIndex(of: place) else { return }
+        places[index].name = trimmedName
+        places[index].category = category.isEmpty ? "장소" : category
+        places[index].mapURL = mapURL
+        places[index].mapNote = mapNote
+        places[index].appNote = appNote
+        save()
+    }
+
     func addNote(title: String, body: String, imageNames: [String] = []) {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTitle.isEmpty else { return }

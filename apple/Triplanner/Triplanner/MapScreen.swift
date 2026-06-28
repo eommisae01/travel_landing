@@ -20,22 +20,30 @@ struct MapScreen: View {
                     ScreenHeader(title: placesTitle, subtitle: "\(placeCount)개 장소 · 지도, 식당, 카페, 환승")
 
                     if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text("공유 지도")
-                                        .font(.headline.weight(.black))
-                                    Text("My Maps 링크와 앱 메모를 함께 관리")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                Link(destination: url) {
-                                    Label("열기", systemImage: "map")
-                                        .font(.caption.weight(.black))
-                                }
-                                .buttonStyle(.bordered)
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(.teal.opacity(0.14))
+                                Image(systemName: "map.fill")
+                                    .font(.title3.weight(.black))
+                                    .foregroundStyle(.teal)
                             }
+                            .frame(width: 48, height: 48)
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("공유 지도")
+                                    .font(.headline.weight(.black))
+                                Text("My Maps에서 고른 장소와 앱 메모를 함께 관리")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+                            Spacer()
+                            Link(destination: url) {
+                                Label("열기", systemImage: "arrow.up.right")
+                                    .font(.caption.weight(.black))
+                            }
+                            .buttonStyle(.borderedProminent)
                         }
                         .padding(12)
                         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
@@ -83,7 +91,7 @@ struct MapScreen: View {
                 }
             }
             .sheet(isPresented: $addSheetOpen) {
-                AddPlaceSheet()
+                PlaceEditorSheet()
                     .environmentObject(store)
             }
         }
@@ -110,29 +118,50 @@ struct MapScreen: View {
 struct PlaceRow: View {
     @EnvironmentObject private var store: TripStore
     var place: PlaceCandidate
+    @State private var isEditing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 9) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 5) {
+                        Text(place.category)
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(categoryColor)
+                        if place.isFavorite {
+                            Image(systemName: "star.fill")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.yellow)
+                        }
+                    }
                     Text(place.name)
                         .font(.footnote.weight(.black))
                         .lineLimit(2)
-                    if !place.mapNote.isEmpty {
-                        Text(place.mapNote)
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
                 }
                 Spacer()
-                Button {
-                    store.toggleFavorite(place)
-                } label: {
-                    Image(systemName: place.isFavorite ? "star.fill" : "star")
-                        .foregroundStyle(place.isFavorite ? .yellow : .secondary)
+                HStack(spacing: 7) {
+                    Button {
+                        isEditing = true
+                    } label: {
+                        Image(systemName: "pencil")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        store.toggleFavorite(place)
+                    } label: {
+                        Image(systemName: place.isFavorite ? "star.fill" : "star")
+                            .foregroundStyle(place.isFavorite ? .yellow : .secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+            }
+            if !place.mapNote.isEmpty {
+                Label(place.mapNote, systemImage: "map")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             if !place.appNote.isEmpty {
                 Text(place.appNote)
@@ -141,34 +170,57 @@ struct PlaceRow: View {
                     .lineLimit(2)
             }
             Spacer(minLength: 0)
-            HStack {
+            HStack(spacing: 6) {
                 if let url = URL(string: place.mapURL) {
                     Link(destination: url) {
                         Label("지도", systemImage: "map")
+                            .frame(maxWidth: .infinity)
                     }
+                    .padding(.vertical, 7)
+                    .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
                 }
                 Button {
                     store.addSchedule(from: place, date: Date())
                 } label: {
                     Label("일정", systemImage: "calendar.badge.plus")
+                        .frame(maxWidth: .infinity)
                 }
+                .padding(.vertical, 7)
+                .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             }
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
-        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
-        .padding(8)
+        .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
+        .padding(10)
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.quaternary)
         }
+        .sheet(isPresented: $isEditing) {
+            PlaceEditorSheet(existingPlace: place)
+                .environmentObject(store)
+        }
+    }
+
+    private var categoryColor: Color {
+        switch place.category {
+        case let value where value.contains("식") || value.contains("우동"): return .orange
+        case let value where value.contains("카페") || value.contains("디저트"): return .pink
+        case let value where value.contains("환승"): return .blue
+        case let value where value.contains("숙소"): return .purple
+        case let value where value.contains("미술관") || value.contains("전망"): return .teal
+        default: return .teal
+        }
     }
 }
 
-struct AddPlaceSheet: View {
+struct PlaceEditorSheet: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.dismiss) private var dismiss
+    var existingPlace: PlaceCandidate?
+
     @State private var name = ""
     @State private var category = "장소"
     @State private var mapURL = ""
@@ -181,14 +233,12 @@ struct AddPlaceSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ScreenHeader(title: "장소 추가", subtitle: "지도 링크와 앱 메모를 분리해서 저장합니다.")
+                    ScreenHeader(title: existingPlace == nil ? "장소 추가" : "장소 수정", subtitle: "지도 메모와 앱 메모를 분리해서 관리")
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "PLACE")
-                        TextField("장소명", text: $name)
-                            .textFieldStyle(.roundedBorder)
-                        TextField("Google Maps 링크", text: $mapURL)
-                            .textFieldStyle(.roundedBorder)
+                        LabeledPlaceField(title: "이름", iconName: "mappin", placeholder: "장소명", text: $name)
+                        LabeledPlaceField(title: "지도", iconName: "link", placeholder: "Google Maps 링크", text: $mapURL)
                     }
                     .appPanel()
 
@@ -200,10 +250,10 @@ struct AddPlaceSheet: View {
                                     category = item
                                 } label: {
                                     Text(item)
-                                        .font(.subheadline.weight(.black))
+                                        .font(.caption.weight(.black))
                                         .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 8)
-                                        .background(category == item ? Color.teal : Color.secondary.opacity(0.12), in: Capsule())
+                                        .padding(.vertical, 9)
+                                        .background(category == item ? Color.teal : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(category == item ? .white : .primary)
                                 }
                                 .buttonStyle(.plain)
@@ -212,31 +262,63 @@ struct AddPlaceSheet: View {
                     }
                     .appPanel()
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "MEMO")
                         TextField("지도에서 가져온 메모", text: $mapNote, axis: .vertical)
                             .textFieldStyle(.roundedBorder)
+                            .lineLimit(2...4)
                         TextField("앱에서 추가할 메모", text: $appNote, axis: .vertical)
                             .textFieldStyle(.roundedBorder)
+                            .lineLimit(3...6)
                     }
                     .appPanel()
                 }
                 .readableWidth(680)
                 .padding()
             }
-            .navigationTitle("장소 추가")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("추가") {
-                        store.addPlace(name: name, category: category, mapURL: mapURL, mapNote: mapNote, appNote: appNote)
+                    Button(existingPlace == nil ? "추가" : "저장") {
+                        if let existingPlace {
+                            store.updatePlace(existingPlace, name: name, category: category, mapURL: mapURL, mapNote: mapNote, appNote: appNote)
+                        } else {
+                            store.addPlace(name: name, category: category, mapURL: mapURL, mapNote: mapNote, appNote: appNote)
+                        }
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
+            .onAppear {
+                guard let existingPlace else { return }
+                name = existingPlace.name
+                category = existingPlace.category
+                mapURL = existingPlace.mapURL
+                mapNote = existingPlace.mapNote
+                appNote = existingPlace.appNote
+            }
+        }
+    }
+}
+
+private struct LabeledPlaceField: View {
+    var title: String
+    var iconName: String
+    var placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Label(title, systemImage: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+                .frame(width: 70, alignment: .leading)
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.roundedBorder)
         }
     }
 }
