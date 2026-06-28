@@ -70,6 +70,7 @@ struct NotesScreen: View {
                     .environmentObject(store)
             }
         }
+        .appScreenBackground()
     }
 
     private var notesOverview: some View {

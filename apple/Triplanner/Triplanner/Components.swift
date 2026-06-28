@@ -105,6 +105,16 @@ extension View {
             }
     }
 
+    func appScreenBackground() -> some View {
+        self
+            .background {
+                Color.secondary
+                    .opacity(0.035)
+                    .ignoresSafeArea()
+            }
+            .tint(.teal)
+    }
+
     func readableWidth(_ width: CGFloat = 980) -> some View {
         self
             .frame(maxWidth: width, alignment: .topLeading)

@@ -80,6 +80,7 @@ struct HomeScreen: View {
                     .environmentObject(store)
             }
         }
+        .appScreenBackground()
     }
 
     private func cityHero(_ trip: Trip) -> some View {

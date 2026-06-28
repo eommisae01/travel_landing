@@ -45,17 +45,7 @@ struct ScheduleScreen: View {
                                 iconName: "calendar.badge.plus"
                             )
                         } else {
-            VStack(spacing: 0) {
-                ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
-                    ScheduleRow(item: item, isLast: index == visibleItems.count - 1)
-                }
-            }
-            .padding(10)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
-            .overlay {
-                RoundedRectangle(cornerRadius: 22)
-                    .stroke(.quaternary)
-            }
+                            timelineList
                         }
                     }
                 }
@@ -77,6 +67,7 @@ struct ScheduleScreen: View {
                     .environmentObject(store)
             }
         }
+        .appScreenBackground()
     }
 
     private var scheduleTitle: String {
@@ -215,6 +206,20 @@ struct ScheduleScreen: View {
             }
         }
         .appPanel(cornerRadius: 18)
+    }
+
+    private var timelineList: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
+                ScheduleRow(item: item, isLast: index == visibleItems.count - 1)
+            }
+        }
+        .padding(10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(.quaternary)
+        }
     }
 
     private func items(on date: Date) -> [ScheduleItem] {

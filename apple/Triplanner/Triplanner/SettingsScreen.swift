@@ -90,6 +90,7 @@ struct SettingsScreen: View {
                 syncFields()
             }
         }
+        .appScreenBackground()
     }
 
     private func syncFields() {

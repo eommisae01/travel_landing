@@ -86,6 +86,7 @@ struct ChecklistScreen: View {
                     .environmentObject(store)
             }
         }
+        .appScreenBackground()
     }
 }
 

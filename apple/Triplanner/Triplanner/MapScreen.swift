@@ -101,6 +101,7 @@ struct MapScreen: View {
                     .environmentObject(store)
             }
         }
+        .appScreenBackground()
     }
 
     private var placeCount: Int {

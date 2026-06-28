@@ -142,6 +142,7 @@ struct BudgetScreen: View {
                     .environmentObject(store)
             }
         }
+        .appScreenBackground()
     }
 
     private var spendingTint: Color {

@@ -11,6 +11,6 @@ struct RootView: View {
                 OnboardingView()
             }
         }
+        .tint(.teal)
     }
 }
-
