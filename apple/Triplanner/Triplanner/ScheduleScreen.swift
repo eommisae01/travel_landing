@@ -28,10 +28,13 @@ struct ScheduleScreen: View {
                         SectionLabel(title: "DAYS")
                         filterBar
 
-                        HStack(spacing: 8) {
-                            modeButton(.timeline, title: "Timeline", iconName: "list.bullet.rectangle")
-                            modeButton(.calendar, title: "Calendar View", iconName: "calendar")
+                        Picker("보기 방식", selection: $viewMode) {
+                            Label("Timeline", systemImage: "list.bullet.rectangle")
+                                .tag(ScheduleViewMode.timeline)
+                            Label("Calendar", systemImage: "calendar")
+                                .tag(ScheduleViewMode.calendar)
                         }
+                        .pickerStyle(.segmented)
                     }
                     .appPanel(cornerRadius: 18)
 
@@ -90,8 +93,8 @@ struct ScheduleScreen: View {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     let dayItems = items(on: date)
                     dayFilterButton(
-                        title: "Day \(index + 1) (\(compactDayLabel(date)))",
-                        subtitle: "\(dayItems.count)개 일정",
+                        title: "Day \(index + 1)",
+                        subtitle: "\(compactDayLabel(date)) · \(dayItems.count)개",
                         isSelected: selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
                     ) {
                         selectedDate = date
@@ -110,7 +113,7 @@ struct ScheduleScreen: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
             }
-            .frame(width: title == "전체" ? 96 : 142, alignment: .leading)
+            .frame(width: title == "전체" ? 96 : 124, alignment: .leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
             .background(isSelected ? Color.blue : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
@@ -124,21 +127,6 @@ struct ScheduleScreen: View {
         .buttonStyle(.plain)
     }
 
-    private func modeButton(_ mode: ScheduleViewMode, title: String, iconName: String) -> some View {
-        let isSelected = viewMode == mode
-        return Button {
-            viewMode = mode
-        } label: {
-            Label(title, systemImage: iconName)
-                .font(.caption.weight(.black))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(isSelected ? Color.teal : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
-                .foregroundStyle(isSelected ? .white : .primary)
-        }
-        .buttonStyle(.plain)
-    }
-
     private var calendarGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -148,7 +136,7 @@ struct ScheduleScreen: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.secondary)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 154), spacing: 10)], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 9)], spacing: 9) {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     let dayItems = items(on: date)
                     let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
@@ -209,16 +197,50 @@ struct ScheduleScreen: View {
     }
 
     private var timelineList: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
-                ScheduleRow(item: item, isLast: index == visibleItems.count - 1)
+        VStack(alignment: .leading, spacing: 12) {
+            if selectedDate == nil {
+                ForEach(timelineDates, id: \.self) { date in
+                    timelineSection(date: date, items: items(on: date))
+                }
+            } else {
+                timelineSection(date: selectedDate ?? Date(), items: visibleItems)
             }
         }
-        .padding(10)
+        .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
         .overlay {
             RoundedRectangle(cornerRadius: 22)
                 .stroke(.quaternary)
+        }
+    }
+
+    private var timelineDates: [Date] {
+        dates.filter { !items(on: $0).isEmpty }
+    }
+
+    private func timelineSection(date: Date, items: [ScheduleItem]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(dayTitle(for: date))
+                    .font(.subheadline.weight(.black))
+                Text(compactDayLabel(date))
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(items.count)개")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
+            .padding(.horizontal, 4)
+
+            VStack(spacing: 0) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    ScheduleRow(item: item, isLast: index == items.count - 1)
+                }
+            }
         }
     }
 
@@ -240,6 +262,13 @@ struct ScheduleScreen: View {
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "M.d E"
         return formatter.string(from: date)
+    }
+
+    private func dayTitle(for date: Date) -> String {
+        guard let index = dates.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: date) }) else {
+            return "Day"
+        }
+        return "Day \(index + 1)"
     }
 
     private func displayCity(_ city: String) -> String {
