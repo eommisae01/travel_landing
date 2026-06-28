@@ -36,33 +36,45 @@ struct BudgetScreen: View {
                     ScreenHeader(title: "Budget", subtitle: "여행 지출과 예상 부담을 한눈에 확인")
 
                     VStack(alignment: .leading, spacing: 14) {
-                        HStack(alignment: .top, spacing: 12) {
+                        HStack(alignment: .center, spacing: 12) {
                             Image(systemName: "creditcard.fill")
                                 .font(.title3.weight(.black))
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(.white)
                                 .frame(width: 46, height: 46)
-                                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 15))
+                                .background(spendingTint, in: RoundedRectangle(cornerRadius: 15))
 
                             VStack(alignment: .leading, spacing: 4) {
                                 SectionLabel(title: "SPENT")
                                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                                     Text("\(Int(total))")
-                                        .font(.system(size: 44, weight: .black, design: .rounded))
+                                        .font(.system(size: 40, weight: .black, design: .rounded))
                                     Text(store.trip?.budgetCurrency ?? "JPY")
                                         .font(.headline.weight(.black))
                                         .foregroundStyle(.secondary)
                                 }
                             }
                             Spacer()
-                            Text(budget > 0 ? "\(Int(progress * 100))%" : "미정")
-                                .font(.caption.weight(.black))
-                                .foregroundStyle(.teal)
-                                .padding(.horizontal, 9)
-                                .padding(.vertical, 5)
-                                .background(.teal.opacity(0.12), in: Capsule())
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text(budget > 0 ? "\(Int(progress * 100))%" : "미정")
+                                    .font(.title3.weight(.black))
+                                    .foregroundStyle(spendingTint)
+                                Text("사용률")
+                                    .font(.caption2.weight(.black))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                        ProgressView(value: progress)
-                            .tint(.teal)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            ProgressView(value: progress)
+                                .tint(spendingTint)
+                            HStack {
+                                Text("0")
+                                Spacer()
+                                Text(budget > 0 ? "\(Int(budget)) \(store.trip?.budgetCurrency ?? "JPY")" : "예산 미정")
+                            }
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
+                        }
 
                         HStack(spacing: 8) {
                             BudgetStat(title: "예산", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
@@ -70,7 +82,7 @@ struct BudgetScreen: View {
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     if !categoryTotals.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
@@ -93,7 +105,7 @@ struct BudgetScreen: View {
                                 }
                             }
                         }
-                        .appPanel()
+                        .appPanel(cornerRadius: 18)
                     }
 
                     SectionLabel(title: "EXPENSES")
@@ -104,12 +116,12 @@ struct BudgetScreen: View {
                             iconName: "creditcard"
                         )
                     } else {
-                        VStack(spacing: 6) {
+                        VStack(spacing: 8) {
                             ForEach(store.expenses) { expense in
                                 ExpenseRow(expense: expense)
                             }
                         }
-                        .appPanel()
+                        .appPanel(cornerRadius: 18)
                     }
                 }
                 .readableWidth(900)
@@ -130,6 +142,12 @@ struct BudgetScreen: View {
                     .environmentObject(store)
             }
         }
+    }
+
+    private var spendingTint: Color {
+        if budget <= 0 { return .teal }
+        if progress >= 0.9 { return .orange }
+        return .teal
     }
 }
 
@@ -163,33 +181,34 @@ private struct ExpenseRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: iconName)
                 .font(.headline.weight(.bold))
-                .frame(width: 34, height: 34)
-                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .frame(width: 38, height: 38)
+                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
                 .foregroundStyle(categoryColor)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(expense.title)
-                    .font(.subheadline.weight(.black))
-                    .lineLimit(1)
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(expense.title)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
                     Text(expense.category)
                         .font(.caption2.weight(.black))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(categoryColor.opacity(0.12), in: Capsule())
                         .foregroundStyle(categoryColor)
-                    Text("결제 \(expense.paidBy)")
-                    Text("예정 \(expense.intendedPayer)")
                 }
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                Text(expense.participants.joined(separator: ", "))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    PersonInfoChip(title: "결제", value: expense.paidBy, tint: .teal)
+                    PersonInfoChip(title: "부담", value: expense.intendedPayer, tint: .blue)
+                    ParticipantsInfoChip(names: expense.participants)
+                }
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: 5) {
                 Text("\(Int(expense.amount))")
                     .font(.headline.weight(.black))
                 Text(expense.currency)
@@ -202,13 +221,18 @@ private struct ExpenseRow: View {
                 Image(systemName: "pencil")
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 30, height: 30)
+                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
             }
             .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 52, alignment: .center)
-        .padding(10)
-        .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 64, alignment: .topLeading)
+        .padding(11)
+        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(categoryColor.opacity(0.12))
+        }
         .sheet(isPresented: $isEditing) {
             ExpenseEditorSheet(existingExpense: expense)
                 .environmentObject(store)
@@ -233,6 +257,47 @@ private struct ExpenseRow: View {
         case "쇼핑": return .pink
         default: return .secondary
         }
+    }
+}
+
+private struct PersonInfoChip: View {
+    var title: String
+    var value: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Text(title)
+                .foregroundStyle(.secondary)
+            Text(value.isEmpty ? "미정" : value)
+                .foregroundStyle(tint)
+        }
+        .font(.caption2.weight(.black))
+        .lineLimit(1)
+        .padding(.horizontal, 7)
+        .frame(height: 24)
+        .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+private struct ParticipantsInfoChip: View {
+    var names: [String]
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "person.2")
+                .font(.caption2.weight(.black))
+            Text(names.isEmpty ? "전체" : names.prefix(2).joined(separator: ", "))
+                .lineLimit(1)
+            if names.count > 2 {
+                Text("+\(names.count - 2)")
+            }
+        }
+        .font(.caption2.weight(.black))
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 7)
+        .frame(height: 24)
+        .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -287,7 +352,7 @@ private struct ExpenseEditorSheet: View {
                             }
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "DETAIL")
@@ -299,7 +364,7 @@ private struct ExpenseEditorSheet: View {
                                 .frame(maxWidth: 96)
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     if !memberNames.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -309,7 +374,7 @@ private struct ExpenseEditorSheet: View {
                             Divider()
                             ParticipantChipSection(title: "USED BY", names: memberNames, selection: $selectedParticipants)
                         }
-                        .appPanel()
+                        .appPanel(cornerRadius: 18)
                     }
                 }
                 .readableWidth(620)
@@ -396,10 +461,11 @@ private struct LabeledExpenseField: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Label(title, systemImage: iconName)
-                .font(.caption.weight(.black))
-                .foregroundStyle(.secondary)
-                .frame(width: 64, alignment: .leading)
+            Image(systemName: iconName)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.teal)
+                .frame(width: 32, height: 32)
+                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             TextField(placeholder, text: $text)
                 #if os(iOS)
                 .keyboardType(title == "금액" ? .decimalPad : .default)
