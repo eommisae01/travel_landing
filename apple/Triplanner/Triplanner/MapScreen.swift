@@ -68,6 +68,12 @@ struct MapScreen: View {
                                 }
                             }
                         }
+                        .padding(12)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(.quaternary)
+                        }
                     }
                     if groupedPlaces.isEmpty {
                         EmptyStateView(
@@ -119,6 +125,7 @@ struct PlaceRow: View {
     @EnvironmentObject private var store: TripStore
     var place: PlaceCandidate
     @State private var isEditing = false
+    @State private var isScheduling = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
@@ -139,11 +146,14 @@ struct PlaceRow: View {
                             .lineLimit(1)
                 }
                 Spacer()
-                HStack(spacing: 7) {
+                HStack(spacing: 5) {
                     Button {
                         isEditing = true
                     } label: {
                         Image(systemName: "pencil")
+                            .font(.caption.weight(.black))
+                            .frame(width: 26, height: 26)
+                            .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -152,6 +162,9 @@ struct PlaceRow: View {
                         store.toggleFavorite(place)
                     } label: {
                         Image(systemName: place.isFavorite ? "star.fill" : "star")
+                            .font(.caption.weight(.black))
+                            .frame(width: 26, height: 26)
+                            .background((place.isFavorite ? Color.yellow : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
                             .foregroundStyle(place.isFavorite ? .yellow : .secondary)
                     }
                     .buttonStyle(.plain)
@@ -176,23 +189,23 @@ struct PlaceRow: View {
                         Label("지도", systemImage: "map")
                             .frame(maxWidth: .infinity)
                     }
-                    .padding(.vertical, 7)
+                    .padding(.vertical, 8)
                     .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
                 }
                 Button {
-                    store.addSchedule(from: place, date: Date())
+                    isScheduling = true
                 } label: {
                     Label("일정", systemImage: "calendar.badge.plus")
                         .frame(maxWidth: .infinity)
                 }
-                .padding(.vertical, 7)
+                .padding(.vertical, 8)
                     .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
             }
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
         .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
-        .padding(9)
+        .padding(10)
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
@@ -200,6 +213,10 @@ struct PlaceRow: View {
         }
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
+                .environmentObject(store)
+        }
+        .sheet(isPresented: $isScheduling) {
+            PlaceScheduleSheet(place: place)
                 .environmentObject(store)
         }
     }
@@ -212,6 +229,173 @@ struct PlaceRow: View {
         case let value where value.contains("숙소"): return .purple
         case let value where value.contains("미술관") || value.contains("전망"): return .teal
         default: return .teal
+        }
+    }
+}
+
+struct PlaceScheduleSheet: View {
+    @EnvironmentObject private var store: TripStore
+    @Environment(\.dismiss) private var dismiss
+
+    var place: PlaceCandidate
+
+    @State private var date = Date()
+    @State private var startTime = ""
+    @State private var endTime = ""
+    @State private var note = ""
+    @State private var didLoad = false
+
+    private var dateOptions: [Date] {
+        guard let trip = store.trip, let start = trip.startDate, let end = trip.endDate else {
+            return []
+        }
+        let calendar = Calendar.current
+        let startDay = calendar.startOfDay(for: start)
+        let endDay = calendar.startOfDay(for: end)
+        let dayCount = calendar.dateComponents([.day], from: startDay, to: endDay).day ?? 0
+        return (0...max(dayCount, 0)).compactMap { calendar.date(byAdding: .day, value: $0, to: startDay) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(title: "일정에 넣기", subtitle: place.name)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "WHEN")
+                        if dateOptions.isEmpty {
+                            DatePicker("날짜", selection: $date, displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                        } else {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+                                ForEach(Array(dateOptions.enumerated()), id: \.offset) { index, option in
+                                    Button {
+                                        date = option
+                                    } label: {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Day \(index + 1)")
+                                                .font(.caption2.weight(.black))
+                                            Text(compactDayLabel(option))
+                                                .font(.caption.weight(.black))
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 8)
+                                        .background(isSameDay(option, date) ? Color.teal : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+                                        .foregroundStyle(isSameDay(option, date) ? .white : .primary)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+
+                        HStack(spacing: 10) {
+                            LabeledPlaceField(title: "시작", iconName: "clock", placeholder: "12:00", text: $startTime)
+                            LabeledPlaceField(title: "종료", iconName: "clock.badge.checkmark", placeholder: "13:00", text: $endTime)
+                        }
+                    }
+                    .appPanel(cornerRadius: 18)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionLabel(title: "PLACE")
+                        HStack(spacing: 10) {
+                            Image(systemName: placeIcon)
+                                .font(.headline.weight(.bold))
+                                .frame(width: 38, height: 38)
+                                .background(placeTint.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                                .foregroundStyle(placeTint)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(place.name)
+                                    .font(.headline.weight(.black))
+                                Text(place.category)
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        if !place.mapNote.isEmpty {
+                            Label(place.mapNote, systemImage: "map")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .appPanel(cornerRadius: 18)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionLabel(title: "MEMO")
+                        TextField("일정에 같이 남길 메모", text: $note, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                            .lineLimit(3...6)
+                    }
+                    .appPanel(cornerRadius: 18)
+                }
+                .readableWidth(620)
+                .padding()
+            }
+            .navigationTitle("일정에 넣기")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("취소") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("추가") {
+                        addToSchedule()
+                    }
+                }
+            }
+            .onAppear(perform: loadDefaults)
+        }
+    }
+
+    private func loadDefaults() {
+        guard !didLoad else { return }
+        didLoad = true
+        date = dateOptions.first ?? Date()
+        note = place.appNote
+    }
+
+    private func addToSchedule() {
+        store.addScheduleItem(
+            date: date,
+            startTime: startTime,
+            endTime: endTime,
+            title: place.name,
+            note: note,
+            placeName: place.name,
+            sourceMapNote: place.mapNote,
+            kind: place.category.contains("식") || place.category.contains("카페") || place.category.contains("우동") ? .food : .place
+        )
+        dismiss()
+    }
+
+    private func isSameDay(_ lhs: Date, _ rhs: Date) -> Bool {
+        Calendar.current.isDate(lhs, inSameDayAs: rhs)
+    }
+
+    private func compactDayLabel(_ value: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M.d E"
+        return formatter.string(from: value)
+    }
+
+    private var placeTint: Color {
+        switch place.category {
+        case let value where value.contains("식") || value.contains("우동"): return .orange
+        case let value where value.contains("카페") || value.contains("디저트"): return .pink
+        case let value where value.contains("환승"): return .blue
+        case let value where value.contains("숙소"): return .purple
+        default: return .teal
+        }
+    }
+
+    private var placeIcon: String {
+        switch place.category {
+        case let value where value.contains("식") || value.contains("우동"): return "fork.knife"
+        case let value where value.contains("카페") || value.contains("디저트"): return "cup.and.saucer"
+        case let value where value.contains("환승"): return "bus"
+        case let value where value.contains("숙소"): return "bed.double"
+        default: return "mappin"
         }
     }
 }
