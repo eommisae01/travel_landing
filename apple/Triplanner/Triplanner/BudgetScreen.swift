@@ -21,6 +21,19 @@ struct BudgetScreen: View {
         max(budget - total, 0)
     }
 
+    private var overBudget: Double {
+        max(total - budget, 0)
+    }
+
+    private var balanceTitle: String {
+        budget > 0 && total > budget ? "초과 금액" : "남은 금액"
+    }
+
+    private var balanceValue: String {
+        guard budget > 0 else { return "-" }
+        return "\(Int(total > budget ? overBudget : remainingBudget))"
+    }
+
     private var categoryTotals: [(String, Double)] {
         Dictionary(grouping: store.expenses, by: \.category)
             .map { category, items in
@@ -78,7 +91,7 @@ struct BudgetScreen: View {
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
                             BudgetStat(title: "예산", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
-                            BudgetStat(title: "남은 금액", value: budget > 0 ? "\(Int(remainingBudget))" : "-", unit: store.trip?.budgetCurrency ?? "JPY")
+                            BudgetStat(title: balanceTitle, value: balanceValue, unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
                     }
@@ -189,11 +202,11 @@ private struct ExpenseRow: View {
                 .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
                 .foregroundStyle(categoryColor)
 
-            VStack(alignment: .leading, spacing: 7) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline, spacing: 7) {
                     Text(expense.title)
                         .font(.subheadline.weight(.black))
-                        .lineLimit(1)
+                        .lineLimit(2)
                     Text(expense.category)
                         .font(.caption2.weight(.black))
                         .padding(.horizontal, 7)
@@ -202,35 +215,39 @@ private struct ExpenseRow: View {
                         .foregroundStyle(categoryColor)
                 }
 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 6)], spacing: 6) {
-                    PersonInfoChip(title: "결제", value: expense.paidBy, tint: .teal)
-                    PersonInfoChip(title: "부담", value: expense.intendedPayer, tint: .blue)
-                    ParticipantsInfoChip(names: expense.participants)
+                VStack(alignment: .leading, spacing: 5) {
+                    ExpenseMetaLine(title: "결제", value: expense.paidBy, iconName: "creditcard", tint: .teal)
+                    ExpenseMetaLine(title: "부담", value: expense.intendedPayer, iconName: "person.crop.circle.badge.checkmark", tint: .blue)
+                    ExpenseMetaLine(title: "사용", value: participantText, iconName: "person.2", tint: .secondary)
                 }
-                .frame(maxWidth: 260, alignment: .leading)
             }
+
             Spacer()
-            VStack(alignment: .trailing, spacing: 5) {
-                Text("\(Int(expense.amount))")
-                    .font(.headline.weight(.black))
-                Text(expense.currency)
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.secondary)
+
+            VStack(alignment: .trailing, spacing: 8) {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(Int(expense.amount))")
+                        .font(.headline.weight(.black))
+                        .monospacedDigit()
+                    Text(expense.currency)
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                }
+                Button {
+                    isEditing = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, height: 30)
+                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+                }
+                .buttonStyle(.plain)
             }
-            .frame(minWidth: 58, alignment: .trailing)
-            Button {
-                isEditing = true
-            } label: {
-                Image(systemName: "pencil")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
-            }
-            .buttonStyle(.plain)
+            .frame(minWidth: 66, alignment: .trailing)
         }
-        .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
-        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 86, alignment: .topLeading)
+        .padding(11)
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
         .overlay {
             RoundedRectangle(cornerRadius: 14)
@@ -261,46 +278,33 @@ private struct ExpenseRow: View {
         default: return .secondary
         }
     }
-}
 
-private struct PersonInfoChip: View {
-    var title: String
-    var value: String
-    var tint: Color
-
-    var body: some View {
-        HStack(spacing: 3) {
-            Text(title)
-                .foregroundStyle(.secondary)
-            Text(value.isEmpty ? "미정" : value)
-                .foregroundStyle(tint)
-        }
-        .font(.caption2.weight(.black))
-        .lineLimit(1)
-        .padding(.horizontal, 7)
-        .frame(height: 24)
-        .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+    private var participantText: String {
+        if expense.participants.isEmpty { return "전체" }
+        return expense.participants.joined(separator: ", ")
     }
 }
 
-private struct ParticipantsInfoChip: View {
-    var names: [String]
+private struct ExpenseMetaLine: View {
+    var title: String
+    var value: String
+    var iconName: String
+    var tint: Color
 
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "person.2")
+        HStack(spacing: 5) {
+            Image(systemName: iconName)
                 .font(.caption2.weight(.black))
-            Text(names.isEmpty ? "전체" : names.prefix(2).joined(separator: ", "))
+                .frame(width: 14)
+            Text(title)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+            Text(value.isEmpty ? "미정" : value)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(tint == .secondary ? .secondary : tint)
                 .lineLimit(1)
-            if names.count > 2 {
-                Text("+\(names.count - 2)")
-            }
         }
-        .font(.caption2.weight(.black))
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 7)
-        .frame(height: 24)
-        .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
