@@ -24,6 +24,40 @@ struct HomeScreen: View {
         store.notesForSelectedCity()
     }
 
+    private var focusDate: Date? {
+        let calendar = Calendar.current
+        if let trip = store.trip,
+           let start = trip.startDate,
+           let end = trip.endDate {
+            let today = calendar.startOfDay(for: Date())
+            let startDay = calendar.startOfDay(for: start)
+            let endDay = calendar.startOfDay(for: end)
+            if today >= startDay && today <= endDay {
+                return today
+            }
+        }
+        return cityScheduleItems.first.map { calendar.startOfDay(for: $0.date) }
+    }
+
+    private var focusItems: [ScheduleItem] {
+        guard let focusDate else { return Array(cityScheduleItems.prefix(5)) }
+        return cityScheduleItems.filter { Calendar.current.isDate($0.date, inSameDayAs: focusDate) }
+    }
+
+    private var focusNotes: [NoteGroup] {
+        let relevantNotes = cityNotes.filter { note in
+            guard !focusItems.isEmpty else { return true }
+            let noteText = normalized(note.title + " " + note.body)
+            return focusItems.contains { item in
+                noteText.contains(normalized(item.title))
+                || (!item.placeName.isEmpty && noteText.contains(normalized(item.placeName)))
+                || (!item.kind.rawValue.isEmpty && noteText.contains(normalized(item.kind.rawValue)))
+                || (!item.sourceMapNote.isEmpty && noteText.contains(normalized(item.sourceMapNote)))
+            }
+        }
+        return relevantNotes.isEmpty ? Array(cityNotes.prefix(2)) : relevantNotes
+    }
+
     private var isWideLayout: Bool {
         horizontalSizeClass != .compact
     }
@@ -168,21 +202,21 @@ struct HomeScreen: View {
             HStack {
                 sectionTitle("TODAY")
                 Spacer()
-                Text("\(cityScheduleItems.prefix(5).count)")
+                Text(todaySummary)
                     .font(.caption2.weight(.black))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(.secondary.opacity(0.10), in: Capsule())
                     .foregroundStyle(.secondary)
             }
-            if cityScheduleItems.isEmpty {
+            if focusItems.isEmpty {
                 EmptyStateView(
                     title: "오늘 일정이 비어있어요",
                     message: "장소나 이동 계획을 일정에 추가하면 여기서 바로 보입니다.",
                     iconName: "calendar"
                 )
             } else {
-                ForEach(cityScheduleItems.prefix(5)) { item in
+                ForEach(focusItems.prefix(5)) { item in
                     CompactScheduleRow(item: item)
                 }
             }
@@ -192,19 +226,33 @@ struct HomeScreen: View {
 
     private var notesPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("TODAY NOTES")
-            Text("현재 선택한 도시에서 오늘 확인하기 좋은 자료만 먼저 보여줍니다.")
+            HStack {
+                sectionTitle("TODAY NOTES")
+                Spacer()
+                Text(focusDate.map(compactDateLabel) ?? "전체")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
+            Text("선택한 도시와 오늘 일정에 맞는 자료를 우선 보여줍니다.")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
-            if cityNotes.isEmpty {
+            if focusNotes.isEmpty {
                 EmptyStateView(
                     title: "오늘 볼 자료가 없어요",
                     message: "시간표, 예약 캡처, 현장 메모를 Notes에 모아두세요.",
                     iconName: "note.text"
                 )
             } else {
-                ForEach(cityNotes.prefix(3)) { note in
-                    CompactNoteCard(note: note)
+                ForEach(focusNotes.prefix(3)) { note in
+                    NavigationLink {
+                        NoteDetailView(note: note)
+                    } label: {
+                        CompactNoteCard(note: note)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -246,6 +294,18 @@ struct HomeScreen: View {
         return "\(start.dayLabel) - \(end.dayLabel)"
     }
 
+    private var todaySummary: String {
+        guard let focusDate else { return "\(focusItems.count)개" }
+        return "\(compactDateLabel(focusDate)) · \(focusItems.count)개"
+    }
+
+    private func compactDateLabel(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M.d E"
+        return formatter.string(from: date)
+    }
+
     private func cityDisplayName(_ city: String) -> String {
         switch city {
         case "타카마쓰": return "Takamatsu"
@@ -258,6 +318,13 @@ struct HomeScreen: View {
         case "서울": return "Seoul"
         default: return city.isEmpty ? "Trip" : city
         }
+    }
+
+    private func normalized(_ value: String) -> String {
+        value
+            .lowercased()
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "\n", with: "")
     }
 
     private func sectionTitle(_ title: String) -> some View {
@@ -562,6 +629,11 @@ private struct CompactNoteCard: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
+            Spacer(minLength: 6)
+            Image(systemName: "chevron.right")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+                .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 10)
