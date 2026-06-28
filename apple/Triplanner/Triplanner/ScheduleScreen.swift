@@ -46,6 +46,7 @@ struct ScheduleScreen: View {
                         }
                     }
                 }
+                .readableWidth()
                 .padding()
             }
             .navigationTitle("일정")

@@ -58,6 +58,7 @@ struct MapScreen: View {
                             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
                     }
                 }
+                .readableWidth(1120)
                 .padding()
             }
             .navigationTitle("지도 / 식당")

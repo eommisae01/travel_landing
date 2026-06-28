@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @EnvironmentObject private var store: TripStore
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedSection: AppSection = .home
 
@@ -33,16 +34,67 @@ struct MainTabView: View {
 
     private var sidebarLayout: some View {
         NavigationSplitView {
-            List(AppSection.allCases, selection: $selectedSection) { section in
-                Label(section.title, systemImage: section.iconName)
-                    .font(.headline.weight(.semibold))
-                    .tag(section)
+            List(selection: $selectedSection) {
+                Section {
+                    SidebarTripSummary(
+                        city: displayCity(store.currentCity),
+                        subtitle: tripSubtitle
+                    )
+                    .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14))
+                }
+
+                Section("메뉴") {
+                    ForEach(AppSection.allCases) { section in
+                        Label(section.title, systemImage: section.iconName)
+                            .font(.headline.weight(.semibold))
+                            .tag(section)
+                    }
+                }
             }
             .navigationTitle("Triplanner")
             .listStyle(.sidebar)
         } detail: {
             selectedSection.view
         }
+    }
+
+    private var tripSubtitle: String {
+        guard let trip = store.trip else { return "" }
+        if let start = trip.startDate, let end = trip.endDate {
+            return "\(start.dayLabel) - \(end.dayLabel)"
+        }
+        return trip.country
+    }
+
+    private func displayCity(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        default: return city.isEmpty ? "Trip" : city
+        }
+    }
+}
+
+private struct SidebarTripSummary: View {
+    var city: String
+    var subtitle: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(city)
+                .font(.title2.weight(.black))
+                .lineLimit(1)
+            if !subtitle.isEmpty {
+                Text(subtitle)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }
 

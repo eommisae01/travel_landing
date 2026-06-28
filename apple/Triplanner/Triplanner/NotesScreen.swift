@@ -44,6 +44,7 @@ struct NotesScreen: View {
                         .appPanel()
                     }
                 }
+                .readableWidth()
                 .padding()
             }
             .navigationTitle("Notes")

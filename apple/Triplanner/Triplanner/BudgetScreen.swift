@@ -55,6 +55,7 @@ struct BudgetScreen: View {
                     }
                     .appPanel()
                 }
+                .readableWidth(900)
                 .padding()
             }
             .navigationTitle("예산")

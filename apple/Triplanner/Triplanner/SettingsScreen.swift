@@ -60,6 +60,7 @@ struct SettingsScreen: View {
                         }
                     }
                 }
+                .readableWidth(820)
                 .padding()
             }
             .navigationTitle("설정")

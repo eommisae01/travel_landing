@@ -54,6 +54,7 @@ struct ChecklistScreen: View {
                     }
                     .appPanel()
                 }
+                .readableWidth(860)
                 .padding()
             }
             .navigationTitle("체크리스트")

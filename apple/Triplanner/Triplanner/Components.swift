@@ -58,4 +58,10 @@ extension View {
             .padding(14)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
     }
+
+    func readableWidth(_ width: CGFloat = 980) -> some View {
+        self
+            .frame(maxWidth: width, alignment: .topLeading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
 }
