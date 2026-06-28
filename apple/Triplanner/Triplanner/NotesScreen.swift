@@ -20,6 +20,8 @@ struct NotesScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: "Notes", subtitle: "시간표, 예약, 현장 정보를 묶어두는 자료 보드")
 
+                    notesOverview
+
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))")
                         if selectedCityNotes.isEmpty {
@@ -36,7 +38,7 @@ struct NotesScreen: View {
                             }
                         }
                     }
-                    .appPanel()
+                    .appPanel(cornerRadius: 18)
 
                     if !otherNotes.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
@@ -47,7 +49,7 @@ struct NotesScreen: View {
                                 }
                             }
                         }
-                        .appPanel()
+                        .appPanel(cornerRadius: 18)
                     }
                 }
                 .readableWidth()
@@ -70,60 +72,83 @@ struct NotesScreen: View {
         }
     }
 
+    private var notesOverview: some View {
+        HStack(spacing: 10) {
+            NotesMetricCard(title: "현재 도시", value: "\(selectedCityNotes.count)", unit: "개", iconName: "mappin.and.ellipse", tint: .teal)
+            NotesMetricCard(title: "전체 자료", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: .blue)
+            NotesMetricCard(title: "이미지 묶음", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: .purple)
+        }
+    }
+
     private func noteCard(_ note: NoteGroup) -> some View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Image(systemName: "doc.text.image")
-                        .font(.headline.weight(.bold))
-                        .frame(width: 34, height: 34)
-                        .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
-                        .foregroundStyle(.teal)
-                    Spacer()
-                    if !note.imageNames.isEmpty {
-                        Label("\(note.imageNames.count)", systemImage: "photo")
-                            .font(.caption2.weight(.black))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 4)
-                            .background(.secondary.opacity(0.10), in: Capsule())
-                    }
-                }
+            VStack(alignment: .leading, spacing: 11) {
+                notePreviewStrip(note)
+
                 Text(note.title)
                     .font(.headline.weight(.black))
+                    .lineLimit(1)
                 Text(note.body)
                     .lineLimit(3)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                if !note.imageNames.isEmpty {
-                    HStack(spacing: -6) {
-                        ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
-                            MiniImageBadge(title: imageName, index: index)
-                        }
-                        if note.imageNames.count > 3 {
-                            Text("+\(note.imageNames.count - 3)")
-                                .font(.caption2.weight(.black))
-                                .frame(width: 30, height: 30)
-                                .background(.secondary.opacity(0.14), in: Circle())
-                        }
-                    }
-                    .padding(.top, 2)
-                }
+
                 Spacer(minLength: 0)
-                Text("열기")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.teal)
+                HStack {
+                    Label(note.imageNames.isEmpty ? "텍스트" : "\(note.imageNames.count)장", systemImage: note.imageNames.isEmpty ? "text.alignleft" : "photo")
+                        .font(.caption2.weight(.black))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(.secondary.opacity(0.10), in: Capsule())
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                }
             }
-            .frame(maxWidth: .infinity, minHeight: 142, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 172, alignment: .topLeading)
             .padding(12)
-            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
+            .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 16))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(.quaternary)
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private func notePreviewStrip(_ note: NoteGroup) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(
+                    LinearGradient(
+                        colors: note.imageNames.isEmpty
+                            ? [Color.secondary.opacity(0.10), Color.secondary.opacity(0.05)]
+                            : [Color.teal.opacity(0.22), Color.blue.opacity(0.13), Color.purple.opacity(0.10)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            HStack(spacing: -8) {
+                if note.imageNames.isEmpty {
+                    Image(systemName: "doc.text")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 42, height: 42)
+                        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 12))
+                } else {
+                    ForEach(Array(note.imageNames.prefix(4).enumerated()), id: \.offset) { index, imageName in
+                        MiniImageBadge(title: imageName, index: index)
+                    }
+                }
+                Spacer()
+            }
+            .padding(12)
+        }
+        .frame(height: 68)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -132,6 +157,44 @@ struct NotesScreen: View {
         case "나오시마": return "Naoshima"
         case "도쿄": return "Tokyo"
         default: return city
+        }
+    }
+}
+
+private struct NotesMetricCard: View {
+    var title: String
+    var value: String
+    var unit: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconName)
+                .font(.headline.weight(.bold))
+                .frame(width: 36, height: 36)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                .foregroundStyle(tint)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(value)
+                        .font(.headline.weight(.black))
+                    Text(unit)
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
+        .padding(11)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.quaternary)
         }
     }
 }
@@ -203,7 +266,7 @@ struct AddNoteSheet: View {
 
 struct NoteDetailView: View {
     var note: NoteGroup
-    @State private var selectedImageName: String?
+    @State private var selectedImageIndex: Int?
 
     var body: some View {
         ScrollView {
@@ -227,14 +290,14 @@ struct NoteDetailView: View {
                         Spacer()
                     }
                 }
-                .appPanel()
+                .appPanel(cornerRadius: 18)
 
                 Text(note.body)
                     .font(.body)
                     .lineSpacing(3)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
 
                 SectionLabel(title: "IMAGE BUNDLE")
 
@@ -254,11 +317,11 @@ struct NoteDetailView: View {
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(note.imageNames, id: \.self) { imageName in
+                            ForEach(Array(note.imageNames.enumerated()), id: \.offset) { index, imageName in
                                 Button {
-                                    selectedImageName = imageName
+                                    selectedImageIndex = index
                                 } label: {
-                                    NoteImageTile(imageName: imageName, index: note.imageNames.firstIndex(of: imageName) ?? 0)
+                                    NoteImageTile(imageName: imageName, index: index)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -272,15 +335,15 @@ struct NoteDetailView: View {
         }
         .navigationTitle("")
         .sheet(isPresented: Binding(
-            get: { selectedImageName != nil },
+            get: { selectedImageIndex != nil },
             set: { isPresented in
                 if !isPresented {
-                    selectedImageName = nil
+                    selectedImageIndex = nil
                 }
             }
         )) {
-            if let selectedImageName {
-                NoteImagePreview(imageName: selectedImageName)
+            if let selectedImageIndex {
+                NoteImagePreview(note: note, initialIndex: selectedImageIndex)
             }
         }
     }
@@ -294,10 +357,11 @@ private struct MiniImageBadge: View {
         Text(String(title.prefix(1)))
             .font(.caption2.weight(.black))
             .foregroundStyle(.teal)
-            .frame(width: 30, height: 30)
-            .background(.teal.opacity(index == 0 ? 0.18 : 0.12), in: Circle())
+            .frame(width: 34, height: 34)
+            .background(.background.opacity(index == 0 ? 0.84 : 0.68), in: RoundedRectangle(cornerRadius: 11))
             .overlay {
-                Circle().stroke(.background, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 11)
+                    .stroke(.background, lineWidth: 2)
             }
     }
 }
@@ -350,7 +414,9 @@ private struct NoteImageTile: View {
 
 private struct NoteImagePreview: View {
     @Environment(\.dismiss) private var dismiss
-    var imageName: String
+    var note: NoteGroup
+    var initialIndex: Int
+    @State private var index = 0
 
     var body: some View {
         NavigationStack {
@@ -363,25 +429,59 @@ private struct NoteImagePreview: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: 16) {
+                    Text("\(index + 1) / \(note.imageNames.count)")
+                        .font(.caption.weight(.black))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.background.opacity(0.60), in: Capsule())
+                        .foregroundStyle(.secondary)
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 58, weight: .bold))
                         .foregroundStyle(.teal)
-                    Text(imageName)
+                    Text(currentImageName)
                         .font(.title.weight(.black))
                         .multilineTextAlignment(.center)
                     Text("나중에 실제 사진 파일을 연결하면 이 자리에서 크게 확인합니다.")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+
+                    HStack(spacing: 10) {
+                        Button {
+                            index = max(index - 1, 0)
+                        } label: {
+                            Label("이전", systemImage: "chevron.left")
+                                .frame(width: 112)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(index == 0)
+
+                        Button {
+                            index = min(index + 1, max(note.imageNames.count - 1, 0))
+                        } label: {
+                            Label("다음", systemImage: "chevron.right")
+                                .frame(width: 112)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(index >= note.imageNames.count - 1)
+                    }
                 }
                 .padding()
             }
             .navigationTitle("자료 보기")
+            .onAppear {
+                index = min(max(initialIndex, 0), max(note.imageNames.count - 1, 0))
+            }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("닫기") { dismiss() }
                 }
             }
         }
+    }
+
+    private var currentImageName: String {
+        guard note.imageNames.indices.contains(index) else { return "자료" }
+        return note.imageNames[index]
     }
 }
