@@ -1,13 +1,13 @@
 # 작업 인수인계 메모
 
-이 저장소는 타카마쓰 / 나오시마 가족여행을 가족이 함께 확인하고 수정하기 위한 Next.js + Supabase 기반 협업 웹앱입니다. 새 기기나 새 Codex 대화에서 이어서 작업할 때는 이 파일을 먼저 읽으면 됩니다.
+이 저장소는 타카마쓰 / 나오시마 가족여행에서 출발한 여행 계획 앱 프로젝트입니다. 현재는 기존 Next.js + Supabase 웹앱과 새 Apple 생태계 SwiftUI 앱을 같은 GitHub repository 안에서 함께 관리합니다. 새 기기나 새 Codex 대화에서 이어서 작업할 때는 이 파일을 먼저 읽으면 됩니다.
 
 ## 현재 목표
 
-- 가족들이 휴대폰, 아이패드, 노트북에서 같은 여행 계획을 확인하고 수정할 수 있게 합니다.
-- 핵심 화면은 홈, 일정, 지도/식당, 체크리스트, 자료보드, 예산, 현장정보, 설정입니다.
-- 가족코드로 들어가고, 실제 데이터는 Supabase에 저장합니다.
-- Vercel 배포와 GitHub 저장소가 연결되어 있어 `main` 브랜치에 push하면 자동 배포됩니다.
+- 웹앱은 Vercel/Supabase 기반의 실험 및 공유용 화면으로 유지합니다.
+- Apple 앱은 iPhone, iPad, Mac에서 쓰는 실제 앱 방향으로 확장합니다.
+- 핵심 화면은 홈, 일정, 지도/식당, Notes, 체크리스트, 예산, 설정입니다.
+- 최종 데이터 저장은 Supabase 중심으로 두어 나중에 웹/Android도 연결할 수 있게 합니다.
 
 ## 현재 연결 상태
 
@@ -15,15 +15,17 @@
 - Vercel 배포 주소: `https://project-6ok16.vercel.app`
 - 로컬 작업 위치 예시: `/Users/yz/Documents/GitHub/travel_landing`
 - Supabase는 설정이 진행되어 있고, schema/seed는 사용자가 한 번 실행했습니다.
+- Apple 앱 Xcode 프로젝트: `apple/Triplanner/Triplanner.xcodeproj`
 
 새 맥북에서는 GitHub Desktop으로 `eommisae01/travel_landing`을 clone하면 코드 작업을 이어갈 수 있습니다. Vercel과 Supabase는 클라우드라서 같은 계정/설정이면 그대로 이어집니다.
 
 ## 새 Codex 대화에서 첫 메시지 예시
 
 ```text
-이 저장소는 가족여행 협업 웹앱이야.
-먼저 HANDOFF.md, README.md, family-share-setup.md, deploy-vercel-github.md, supabase/schema.sql, supabase/restore-full-data.sql을 읽고 이어서 도와줘.
-현재 앱은 Next.js + Supabase + Vercel 구조이고, 기능은 홈/일정/지도·식당/체크리스트/자료보드/예산/현장정보/AI 추천도우미야.
+이 저장소는 가족여행 앱 프로젝트야.
+먼저 HANDOFF.md, README.md, apple/README.md, apple/NEXT_STEPS.md, supabase/schema.sql을 읽고 이어서 도와줘.
+현재 구조는 app/의 Next.js 웹앱과 apple/Triplanner/의 iPhone/iPad/Mac SwiftUI 앱이 같은 repository에 있는 형태야.
+우선순위는 Apple 앱에 Supabase, My Maps 동기화, 사진/자료 묶음, 초대 기능을 붙이는 거야.
 ```
 
 ## 새 맥북에서 작업 이어가기
@@ -34,7 +36,7 @@
 4. 코드 수정 후 GitHub Desktop에서 commit
 5. `Push origin` 누르면 GitHub로 올라가고 Vercel이 자동 배포
 
-로컬에서 직접 실행하려면 터미널에서 저장소 폴더로 이동한 뒤 아래를 실행합니다.
+웹앱을 로컬에서 직접 실행하려면 터미널에서 저장소 폴더로 이동한 뒤 아래를 실행합니다.
 
 ```bash
 pnpm install
@@ -42,6 +44,14 @@ pnpm dev
 ```
 
 브라우저에서 `http://localhost:3000` 또는 `http://127.0.0.1:3000`을 엽니다.
+
+Apple 앱은 Xcode에서 아래 프로젝트를 엽니다.
+
+```text
+apple/Triplanner/Triplanner.xcodeproj
+```
+
+실행 대상은 iPhone Simulator, iPad Simulator, My Mac 중 하나를 고릅니다.
 
 ## 환경변수
 
@@ -87,6 +97,8 @@ supabase/restore-full-data.sql
 
 ## 현재 구현된 기능 요약
 
+### 웹앱
+
 - 홈: 브리핑, 날씨/준비/오늘 일정, AI 추천도우미, 미리 조사할 것
 - 일정: 날짜별 타임라인, 날짜별 추가 버튼, 장소/식당을 일정에 삽입
 - 지도/식당: 장소와 식당 후보를 한 화면에서 관리, Google Maps 링크, 별표, 수정/삭제, 일정에 넣기
@@ -95,6 +107,20 @@ supabase/restore-full-data.sql
 - 예산: 지출 입력/수정/삭제
 - 현장정보: 공항, 페리, 버스, 셔틀, 예약 등 현장용 메모를 추가/수정/삭제
 - AI 추천도우미: OpenAI API key가 있으면 식당/카페/관광지/동선 추천 생성
+
+### Apple 앱
+
+- Xcode 멀티플랫폼 SwiftUI 프로젝트 생성 완료: `apple/Triplanner`
+- iPhone / iPad / Mac 대상 SwiftUI 타입체크 통과
+- 탭: 홈, 일정, 지도/식당, Notes, 체크리스트, 예산, 설정
+- 로컬 저장: `UserDefaults` snapshot으로 체크/별표/추가 데이터 유지
+- 홈: 숙소, 항공편, 일정 브리핑, Notes, 지출/준비 요약
+- 일정: 전체 / Day별 / Calendar view
+- 지도/식당: 카테고리별 장소, Google Maps 링크, 별표, 일정에 넣기, 장소 추가
+- Notes: 노트 추가, 사진 묶음 자리
+- 체크리스트: 추가, 완료 토글, 완료 항목 아래 정렬
+- 예산: 진행률, 결제자/부담 예정자/사용자 표시
+- 설정: 숙소/My Maps 링크 수정, 데모 데이터 리셋, 초대 링크 자리
 
 ## 최근 사용자가 중요하게 말한 개선점
 
@@ -122,6 +148,10 @@ supabase/restore-full-data.sql
 - `family-share-setup.md`: 가족 공유와 Supabase 설정 안내
 - `deploy-vercel-github.md`: GitHub/Vercel 배포 안내
 - `figma-redesign-brief.md`: Figma 디자인 리디자인 요청문
+- `apple/README.md`: Apple 앱 실행 및 구조 안내
+- `apple/NEXT_STEPS.md`: Apple 앱 다음 개발 순서
+- `apple/Triplanner/Triplanner.xcodeproj`: Xcode 프로젝트
+- `apple/Triplanner/Triplanner/*.swift`: Apple 앱 SwiftUI 소스
 
 ## 배포 흐름
 
@@ -134,6 +164,8 @@ supabase/restore-full-data.sql
 5. `Ready`가 되면 `https://project-6ok16.vercel.app`에서 확인
 
 Supabase 데이터만 바꾸는 경우에는 GitHub/Vercel 배포가 필요 없습니다. Supabase SQL Editor나 앱 화면에서 저장하면 바로 DB에 반영됩니다.
+
+Apple 앱 코드를 바꾼 뒤에는 GitHub Desktop에서 같은 `travel_landing` repository에 commit/push합니다. Xcode가 `apple/Triplanner` 안에 별도 Git repository를 만들면 안 됩니다. 현재는 중첩 `.git`을 제거했고, `apple/Triplanner`는 바깥 repository에 포함됩니다.
 
 ## 주의할 점
 
