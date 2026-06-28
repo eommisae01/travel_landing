@@ -83,48 +83,78 @@ struct HomeScreen: View {
     }
 
     private func cityHero(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            cityMenu
-            if let dateRange = dateRange(for: trip) {
-                Text(dateRange)
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(.secondary)
+        HStack(alignment: .bottom, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                cityMenu
+                if let dateRange = dateRange(for: trip) {
+                    Label(dateRange, systemImage: "calendar")
+                        .font(.callout.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer(minLength: 12)
+
+            HStack(spacing: 8) {
+                MiniHeroMetric(title: "일정", value: "\(cityScheduleItems.count)")
+                MiniHeroMetric(title: "Notes", value: "\(cityNotes.count)")
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .padding(20)
+        .background {
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.regularMaterial)
+        }
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.teal)
+                .frame(width: 5)
+                .padding(.vertical, 18)
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(.quaternary)
+        }
     }
 
     private func travelPanel(_ trip: Trip) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("TRAVEL")
-                .font(.caption.weight(.black))
-                .foregroundStyle(.secondary)
+            HStack {
+                Text("TRAVEL")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("탭하면 복사")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
             VStack(spacing: 10) {
-                CopySummaryTile(
+                FlightSummaryTile(
                     title: "가는 편",
-                    value: flightSummary(trip.outbound),
-                    copyValue: trip.outbound.flightNumber,
-                    iconName: "airplane.departure"
+                    flight: trip.outbound,
+                    iconName: "airplane.departure",
+                    tint: .teal
                 )
-                CopySummaryTile(
+                FlightSummaryTile(
                     title: "오는 편",
-                    value: flightSummary(trip.inbound),
-                    copyValue: trip.inbound.flightNumber,
-                    iconName: "airplane.arrival"
+                    flight: trip.inbound,
+                    iconName: "airplane.arrival",
+                    tint: .blue
                 )
-                CopySummaryTile(
-                    title: "숙소",
-                    value: accommodationSummary(trip),
-                    copyValue: trip.accommodationAddress ?? trip.accommodation,
-                    iconName: "bed.double"
-                )
+                AccommodationSummaryTile(trip: trip)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(.quaternary)
+        }
     }
 
     private var statusStrip: some View {
@@ -138,7 +168,16 @@ struct HomeScreen: View {
 
     private var todayPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("TODAY")
+            HStack {
+                sectionTitle("TODAY")
+                Spacer()
+                Text("\(cityScheduleItems.prefix(5).count)")
+                    .font(.caption2.weight(.black))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+                    .foregroundStyle(.secondary)
+            }
             if cityScheduleItems.isEmpty {
                 EmptyStateView(
                     title: "오늘 일정이 비어있어요",
@@ -156,7 +195,7 @@ struct HomeScreen: View {
 
     private var notesPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("TODAY NOTES")
+            sectionTitle("FIELD NOTES")
             if cityNotes.isEmpty {
                 EmptyStateView(
                     title: "오늘 볼 자료가 없어요",
@@ -200,19 +239,6 @@ struct HomeScreen: View {
         }
     }
 
-    private func flightSummary(_ flight: FlightInfo) -> String {
-        let route = "\(flight.origin.isEmpty ? "출발지" : flight.origin) → \(flight.destination.isEmpty ? "도착지" : flight.destination)"
-        let departure = flight.localDeparture.isEmpty ? "출발시간 입력 전" : "출발 \(flight.localDeparture)"
-        let arrival = flight.localArrival.isEmpty ? "도착시간 입력 전" : "도착 \(flight.localArrival)"
-        return "\(flight.flightNumber.isEmpty ? "편명 입력 전" : flight.flightNumber)\n\(route)\n\(departure) · \(arrival)"
-    }
-
-    private func accommodationSummary(_ trip: Trip) -> String {
-        let name = trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation
-        guard let address = trip.accommodationAddress, !address.isEmpty else { return name }
-        return "\(name)\n\(address)"
-    }
-
     private func dateRange(for trip: Trip) -> String? {
         guard let start = trip.startDate, let end = trip.endDate else { return nil }
         return "\(start.dayLabel) - \(end.dayLabel)"
@@ -240,51 +266,146 @@ struct HomeScreen: View {
     }
 }
 
-private struct CopySummaryTile: View {
+private struct MiniHeroMetric: View {
     var title: String
     var value: String
-    var copyValue: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.headline.weight(.black))
+            Text(title)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+        }
+        .frame(width: 58, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.background.opacity(0.56), in: RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+private struct FlightSummaryTile: View {
+    var title: String
+    var flight: FlightInfo
     var iconName: String
+    var tint: Color
 
     var body: some View {
         Button {
-            copyToClipboard(copyValue.isEmpty ? value : copyValue)
+            copyToClipboard(flight.flightNumber.isEmpty ? "\(flight.origin) \(flight.destination)" : flight.flightNumber)
         } label: {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
                 Image(systemName: iconName)
                     .font(.headline.weight(.bold))
-                    .frame(width: 36, height: 36)
-                    .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
-                    .foregroundStyle(.teal)
+                    .frame(width: 38, height: 38)
+                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                    .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: 7) {
-                    HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
                         Text(title)
                             .font(.caption.weight(.black))
-                            .foregroundStyle(.teal)
-                        Spacer()
-                        Label("복사", systemImage: "doc.on.doc")
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(tint)
+                        Text(flight.flightNumber.isEmpty ? "편명 입력 전" : flight.flightNumber)
+                            .font(.caption.weight(.black))
                             .padding(.horizontal, 7)
                             .padding(.vertical, 3)
-                            .background(.secondary.opacity(0.10), in: Capsule())
+                            .background(tint.opacity(0.12), in: Capsule())
+                            .foregroundStyle(tint)
                     }
-                    Text(value)
-                        .font(.subheadline.weight(.semibold))
-                        .lineSpacing(2)
-                        .fixedSize(horizontal: false, vertical: true)
+                    Text(routeText)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                    HStack(spacing: 8) {
+                        TimeBadge(title: "출발", value: flight.localDeparture)
+                        Image(systemName: "arrow.right")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
+                        TimeBadge(title: "도착", value: flight.localArrival)
+                    }
                 }
+                Spacer(minLength: 6)
+                Image(systemName: "doc.on.doc")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(14)
-        .background(.background.opacity(0.78), in: RoundedRectangle(cornerRadius: 14))
+        .padding(12)
+        .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(.quaternary)
         }
+    }
+
+    private var routeText: String {
+        "\(flight.origin.isEmpty ? "출발지" : flight.origin) → \(flight.destination.isEmpty ? "도착지" : flight.destination)"
+    }
+}
+
+private struct AccommodationSummaryTile: View {
+    var trip: Trip
+
+    var body: some View {
+        Button {
+            copyToClipboard(trip.accommodationAddress ?? trip.accommodation)
+        } label: {
+            HStack(alignment: .center, spacing: 12) {
+                Image(systemName: "bed.double")
+                    .font(.headline.weight(.bold))
+                    .frame(width: 38, height: 38)
+                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                    .foregroundStyle(.purple)
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("숙소")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.purple)
+                    Text(trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                    if let address = trip.accommodationAddress, !address.isEmpty {
+                        Text(address)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                Spacer(minLength: 6)
+                Image(systemName: "doc.on.doc")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .padding(12)
+        .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.quaternary)
+        }
+    }
+}
+
+private struct TimeBadge: View {
+    var title: String
+    var value: String
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Text(title)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+            Text(value.isEmpty ? "--:--" : value)
+                .font(.caption.weight(.black))
+        }
+        .padding(.horizontal, 7)
+        .padding(.vertical, 4)
+        .background(.secondary.opacity(0.10), in: Capsule())
     }
 }
 
@@ -339,9 +460,13 @@ private struct StatChipContent: View {
             }
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+        .padding(11)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.quaternary)
+        }
     }
 }
 
@@ -385,8 +510,13 @@ private struct CompactScheduleRow: View {
             }
             Spacer()
         }
-        .padding(10)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .background(kindColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(kindColor.opacity(0.10))
+        }
     }
 
     private var kindColor: Color {
@@ -428,8 +558,13 @@ private struct CompactNoteCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(.quaternary)
+        }
     }
 }
 
