@@ -129,10 +129,10 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack {
                 Text(title)
-                    .font(.headline.weight(.black))
+                    .font(.subheadline.weight(.black))
                 Spacer()
                 Text(subtitle)
                     .font(.caption.weight(.black))
@@ -149,7 +149,7 @@ private struct ChecklistSection: View {
                     iconName: "checklist"
                 )
             } else {
-                VStack(spacing: 4) {
+                VStack(spacing: 3) {
                     ForEach(items) { item in
                         ChecklistItemRow(item: item, tint: tint) {
                             action(item)
@@ -170,12 +170,12 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: 8) {
             Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.title3.weight(.bold))
+                    .font(.body.weight(.bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 30, height: 30)
+                    .frame(width: 26, height: 26)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -185,19 +185,19 @@ private struct ChecklistItemRow: View {
                     .font(.subheadline.weight(.semibold))
                     .strikethrough(item.isDone)
                     .foregroundStyle(item.isDone ? .secondary : .primary)
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            HStack(spacing: 5) {
+            HStack(spacing: 4) {
                 Text(item.owner)
                     .font(.caption2.weight(.black))
                     .lineLimit(1)
                     .frame(minWidth: 40)
-                    .padding(.horizontal, 7)
-                    .frame(height: 26)
+                    .padding(.horizontal, 6)
+                    .frame(height: 24)
                     .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
                     .foregroundStyle(ownerTint)
 
@@ -207,19 +207,19 @@ private struct ChecklistItemRow: View {
                     Image(systemName: "pencil")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
-                        .frame(width: 30, height: 30)
-                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+                        .frame(width: 26, height: 26)
+                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
             }
-            .frame(height: 32)
+            .frame(height: 28)
         }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(rowBackground, in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 3)
+        .background(rowBackground, in: RoundedRectangle(cornerRadius: 10))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 10)
                 .stroke(item.isDone ? Color.secondary.opacity(0.10) : tint.opacity(0.10))
         }
         .opacity(item.isDone ? 0.66 : 1)

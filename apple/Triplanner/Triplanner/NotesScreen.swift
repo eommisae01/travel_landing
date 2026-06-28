@@ -18,7 +18,7 @@ struct NotesScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Notes", subtitle: "시간표, 예약, 현장 정보를 묶어두는 자료 보드")
+                    ScreenHeader(title: "Notes", subtitle: "시간표, 예약, 현장 정보를 묶어두는 보드")
 
                     notesOverview
 
@@ -31,7 +31,7 @@ struct NotesScreen: View {
                                 iconName: "doc.text.image"
                             )
                         } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 9)], spacing: 9) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 166), spacing: 8)], spacing: 8) {
                                 ForEach(selectedCityNotes) { note in
                                     noteCard(note)
                                 }
@@ -43,7 +43,7 @@ struct NotesScreen: View {
                     if !otherNotes.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
                             sectionHeader(title: "ALL NOTES", count: otherNotes.count)
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 9)], spacing: 9) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 166), spacing: 8)], spacing: 8) {
                                 ForEach(otherNotes) { note in
                                     noteCard(note)
                                 }
@@ -74,7 +74,7 @@ struct NotesScreen: View {
     }
 
     private var notesOverview: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 136), spacing: 8)], spacing: 8) {
             NotesMetricCard(title: "현재 도시", value: "\(selectedCityNotes.count)", unit: "개", iconName: "mappin.and.ellipse", tint: .teal)
             NotesMetricCard(title: "전체 자료", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: .blue)
             NotesMetricCard(title: "이미지 묶음", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: .purple)
@@ -98,11 +98,11 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 9) {
+            VStack(alignment: .leading, spacing: 7) {
                 notePreviewStrip(note)
 
                 Text(note.title)
-                    .font(.headline.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .lineLimit(1)
                 Text(note.body)
                     .lineLimit(2)
@@ -114,7 +114,7 @@ struct NotesScreen: View {
                     Label(note.imageNames.isEmpty ? "텍스트" : "\(note.imageNames.count)장", systemImage: note.imageNames.isEmpty ? "text.alignleft" : "photo")
                         .font(.caption2.weight(.black))
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
+                        .padding(.vertical, 4)
                         .background(.secondary.opacity(0.10), in: Capsule())
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -122,11 +122,11 @@ struct NotesScreen: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 148, alignment: .topLeading)
-            .padding(10)
-            .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 14))
+            .frame(maxWidth: .infinity, minHeight: 124, alignment: .topLeading)
+            .padding(9)
+            .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 13))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 13)
                     .stroke(.quaternary)
             }
         }
@@ -135,7 +135,7 @@ struct NotesScreen: View {
 
     private func notePreviewStrip(_ note: NoteGroup) -> some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(
                     LinearGradient(
                         colors: note.imageNames.isEmpty
@@ -151,8 +151,8 @@ struct NotesScreen: View {
                     Image(systemName: "doc.text")
                         .font(.title2.weight(.bold))
                         .foregroundStyle(.secondary)
-                        .frame(width: 42, height: 42)
-                        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 12))
+                        .frame(width: 34, height: 34)
+                        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 10))
                 } else {
                     ForEach(Array(note.imageNames.prefix(4).enumerated()), id: \.offset) { index, imageName in
                         MiniImageBadge(title: imageName, index: index)
@@ -160,9 +160,9 @@ struct NotesScreen: View {
                 }
                 Spacer()
             }
-            .padding(12)
+            .padding(9)
         }
-        .frame(height: 58)
+        .frame(height: 46)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -185,9 +185,9 @@ private struct NotesMetricCard: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: iconName)
-                .font(.headline.weight(.bold))
-                .frame(width: 32, height: 32)
-                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .font(.subheadline.weight(.bold))
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 9))
                 .foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -203,11 +203,11 @@ private struct NotesMetricCard: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
-        .padding(10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+        .padding(9)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(.quaternary)
         }
     }

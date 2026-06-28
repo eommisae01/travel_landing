@@ -129,7 +129,7 @@ struct BudgetScreen: View {
                             iconName: "creditcard"
                         )
                     } else {
-                        VStack(spacing: 8) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 8)], spacing: 8) {
                             ForEach(store.expenses) { expense in
                                 ExpenseRow(expense: expense)
                             }
@@ -195,15 +195,15 @@ private struct ExpenseRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: iconName)
-                .font(.headline.weight(.bold))
-                .frame(width: 34, height: 34)
-                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
-                .foregroundStyle(categoryColor)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 9) {
+                Image(systemName: iconName)
+                    .font(.subheadline.weight(.bold))
+                    .frame(width: 30, height: 30)
+                    .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                    .foregroundStyle(categoryColor)
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .firstTextBaseline, spacing: 7) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(expense.title)
                         .font(.subheadline.weight(.black))
                         .lineLimit(2)
@@ -215,16 +215,8 @@ private struct ExpenseRow: View {
                         .foregroundStyle(categoryColor)
                 }
 
-                VStack(alignment: .leading, spacing: 5) {
-                    ExpenseMetaLine(title: "결제", value: expense.paidBy, iconName: "creditcard", tint: .teal)
-                    ExpenseMetaLine(title: "부담", value: expense.intendedPayer, iconName: "person.crop.circle.badge.checkmark", tint: .blue)
-                    ExpenseMetaLine(title: "사용", value: participantText, iconName: "person.2", tint: .secondary)
-                }
-            }
+                Spacer(minLength: 6)
 
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 8) {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("\(Int(expense.amount))")
                         .font(.headline.weight(.black))
@@ -233,6 +225,16 @@ private struct ExpenseRow: View {
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
                 }
+            }
+
+            VStack(alignment: .leading, spacing: 5) {
+                ExpenseMetaLine(title: "결제", value: expense.paidBy, iconName: "creditcard", tint: .teal)
+                ExpenseMetaLine(title: "부담", value: expense.intendedPayer, iconName: "person.crop.circle.badge.checkmark", tint: .blue)
+                ExpenseMetaLine(title: "사용", value: participantText, iconName: "person.2", tint: .secondary)
+            }
+
+            HStack {
+                Spacer()
                 Button {
                     isEditing = true
                 } label: {
@@ -244,13 +246,12 @@ private struct ExpenseRow: View {
                 }
                 .buttonStyle(.plain)
             }
-            .frame(minWidth: 66, alignment: .trailing)
         }
-        .frame(maxWidth: .infinity, minHeight: 86, alignment: .topLeading)
-        .padding(11)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity, minHeight: 142, alignment: .topLeading)
+        .padding(10)
+        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(categoryColor.opacity(0.12))
         }
         .sheet(isPresented: $isEditing) {
