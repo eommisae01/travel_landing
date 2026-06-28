@@ -17,23 +17,25 @@ struct MapScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    Text(store.currentCity.isEmpty ? "Places" : "\(displayCity(store.currentCity)) Places")
-                        .font(.title2.weight(.black))
+                    ScreenHeader(title: placesTitle, subtitle: "\(placeCount)개 장소 · 지도, 식당, 카페, 환승")
 
                     if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("공유 지도")
-                                .font(.headline.weight(.black))
                             HStack {
-                                Link(destination: url) {
-                                    Label("Google My Maps 열기", systemImage: "map")
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("공유 지도")
+                                        .font(.headline.weight(.black))
+                                    Text("My Maps 링크와 앱 메모를 함께 관리")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Label("자동 동기화 예정", systemImage: "arrow.triangle.2.circlepath")
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(.secondary)
+                                Link(destination: url) {
+                                    Label("열기", systemImage: "map")
+                                        .font(.caption.weight(.black))
+                                }
+                                .buttonStyle(.bordered)
                             }
-                            .font(.subheadline.weight(.bold))
                         }
                         .padding(12)
                         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
@@ -41,8 +43,17 @@ struct MapScreen: View {
 
                     ForEach(groupedPlaces, id: \.0) { category, places in
                         VStack(alignment: .leading, spacing: 10) {
-                            Text(category)
-                                .font(.headline.weight(.black))
+                            HStack {
+                                Text(category)
+                                    .font(.headline.weight(.black))
+                                Spacer()
+                                Text("\(places.count)")
+                                    .font(.caption.weight(.black))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(.secondary.opacity(0.10), in: Capsule())
+                                    .foregroundStyle(.secondary)
+                            }
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 172), spacing: 8)], spacing: 8) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
@@ -78,6 +89,14 @@ struct MapScreen: View {
         }
     }
 
+    private var placeCount: Int {
+        store.placesForSelectedCity().count
+    }
+
+    private var placesTitle: String {
+        store.currentCity.isEmpty ? "Places" : "\(displayCity(store.currentCity)) Places"
+    }
+
     private func displayCity(_ city: String) -> String {
         switch city {
         case "타카마쓰": return "Takamatsu"
@@ -93,15 +112,18 @@ struct PlaceRow: View {
     var place: PlaceCandidate
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(place.name)
                         .font(.footnote.weight(.black))
-                        .lineLimit(1)
-                    Text(place.category)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                    if !place.mapNote.isEmpty {
+                        Text(place.mapNote)
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
                 Spacer()
                 Button {
@@ -110,12 +132,15 @@ struct PlaceRow: View {
                     Image(systemName: place.isFavorite ? "star.fill" : "star")
                         .foregroundStyle(place.isFavorite ? .yellow : .secondary)
                 }
+                .buttonStyle(.plain)
             }
             if !place.appNote.isEmpty {
                 Text(place.appNote)
                     .font(.caption2)
+                    .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
+            Spacer(minLength: 0)
             HStack {
                 if let url = URL(string: place.mapURL) {
                     Link(destination: url) {
@@ -131,7 +156,7 @@ struct PlaceRow: View {
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
-        .frame(maxWidth: .infinity, minHeight: 76, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
         .padding(8)
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {

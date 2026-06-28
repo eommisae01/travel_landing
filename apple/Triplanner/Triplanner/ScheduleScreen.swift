@@ -20,15 +20,18 @@ struct ScheduleScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text(store.currentCity.isEmpty ? "일정" : "\(displayCity(store.currentCity)) 일정")
-                        .font(.title2.weight(.black))
-                    filterBar
+                    ScreenHeader(title: scheduleTitle, subtitle: scheduleSubtitle)
 
-                    Picker("보기", selection: $viewMode) {
-                        Text("Timeline").tag(ScheduleViewMode.timeline)
-                        Text("Calendar").tag(ScheduleViewMode.calendar)
+                    VStack(alignment: .leading, spacing: 12) {
+                        filterBar
+
+                        Picker("보기", selection: $viewMode) {
+                            Text("Timeline").tag(ScheduleViewMode.timeline)
+                            Text("Calendar").tag(ScheduleViewMode.calendar)
+                        }
+                        .pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
+                    .appPanel(cornerRadius: 18)
 
                     if viewMode == .calendar {
                         calendarGrid
@@ -54,6 +57,17 @@ struct ScheduleScreen: View {
             }
             .navigationTitle("일정")
         }
+    }
+
+    private var scheduleTitle: String {
+        store.currentCity.isEmpty ? "Schedule" : "\(displayCity(store.currentCity)) Schedule"
+    }
+
+    private var scheduleSubtitle: String {
+        if let selectedDate {
+            return "\(compactDayLabel(selectedDate)) · \(visibleItems.count)개 일정"
+        }
+        return "\(dates.count)일 · \(visibleItems.count)개 일정"
     }
 
     private var filterBar: some View {
