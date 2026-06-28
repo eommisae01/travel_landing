@@ -328,6 +328,9 @@ final class TripStore: ObservableObject {
             notes = snapshot.notes.map(enrichNoteImages)
             checklist = snapshot.checklist
             expenses = snapshot.expenses
+            if ensureDemoCoverage() {
+                save()
+            }
             return snapshot.trip != nil
         } catch {
             return false
@@ -366,6 +369,119 @@ final class TripStore: ObservableObject {
             break
         }
         return enriched
+    }
+
+    private func ensureDemoCoverage() -> Bool {
+        var didChange = false
+
+        if var currentTrip = trip {
+            if !currentTrip.cities.contains("도쿄") {
+                currentTrip.cities.append("도쿄")
+                didChange = true
+            }
+            if currentTrip.name.contains("가족여행") {
+                currentTrip.name = "Takamatsu"
+                didChange = true
+            }
+            if currentTrip.outbound.origin.isEmpty {
+                currentTrip.outbound.origin = "서울"
+                didChange = true
+            }
+            if currentTrip.outbound.destination.isEmpty {
+                currentTrip.outbound.destination = "타카마쓰"
+                didChange = true
+            }
+            if currentTrip.inbound.origin.isEmpty {
+                currentTrip.inbound.origin = "타카마쓰"
+                didChange = true
+            }
+            if currentTrip.inbound.destination.isEmpty {
+                currentTrip.inbound.destination = "서울"
+                didChange = true
+            }
+            trip = currentTrip
+        }
+
+        didChange = ensureSchedule(
+            date: Date.from("2026-06-25"),
+            startTime: "09:30",
+            endTime: "11:00",
+            title: "도쿄역 주변 산책",
+            note: "가상 도쿄 일정. 도시 드롭다운 전환 확인용.",
+            placeName: "도쿄역",
+            sourceMapNote: "테스트 데이터",
+            kind: .place
+        ) || didChange
+        didChange = ensureSchedule(
+            date: Date.from("2026-06-25"),
+            startTime: "12:00",
+            endTime: "13:00",
+            title: "긴자 점심 후보",
+            note: "식당 후보에서 확정 예정.",
+            placeName: "긴자",
+            sourceMapNote: "테스트 데이터",
+            kind: .food
+        ) || didChange
+        didChange = ensureSchedule(
+            date: Date.from("2026-06-25"),
+            startTime: "15:00",
+            endTime: "17:00",
+            title: "시부야 이동",
+            note: "패드 가로 화면 확인용 이동 일정.",
+            placeName: "시부야",
+            sourceMapNote: "테스트 데이터",
+            kind: .move
+        ) || didChange
+
+        didChange = ensurePlace(name: "우동 바카이치다이", category: "우동", mapURL: "https://www.google.com/maps/search/?api=1&query=Udon%20Bakaichidai%20Takamatsu", mapNote: "My Maps 식당", appNote: "오픈런 후보", isFavorite: true) || didChange
+        didChange = ensurePlace(name: "호네츠키도리 잇카쿠", category: "식당", mapURL: "https://www.google.com/maps/search/?api=1&query=Ikkaku%20Takamatsu", mapNote: "My Maps 식당", appNote: "저녁 후보", isFavorite: false) || didChange
+        didChange = ensurePlace(name: "As canele &. 瓦町店", category: "디저트", mapURL: "https://www.google.com/maps/search/?api=1&query=As%20canele%20Takamatsu", mapNote: "까눌레", appNote: "간식 후보", isFavorite: false) || didChange
+        didChange = ensurePlace(name: "도쿄역", category: "도쿄 · 장소", mapURL: "https://www.google.com/maps/search/?api=1&query=Tokyo%20Station", mapNote: "가상 도쿄 여행", appNote: "도시 전환 확인용 출발점", isFavorite: true) || didChange
+        didChange = ensurePlace(name: "긴자 식당 후보", category: "도쿄 · 식당", mapURL: "https://www.google.com/maps/search/?api=1&query=Ginza%20restaurant", mapNote: "가상 도쿄 여행", appNote: "점심 후보", isFavorite: false) || didChange
+        didChange = ensurePlace(name: "시부야 스카이", category: "도쿄 · 전망", mapURL: "https://www.google.com/maps/search/?api=1&query=Shibuya%20Sky", mapNote: "가상 도쿄 여행", appNote: "저녁 전후 후보", isFavorite: false) || didChange
+
+        didChange = ensureNote(title: "페리시간표", body: "다카마쓰 → 나오시마: 10:14 → 11:04 추천.\n나오시마 → 다카마쓰: 17:00 → 17:50 추천.\n페리 약 50분, 성인 편도 520엔. 고속선은 약 30분, 성인 1,220엔.", imageNames: ["다카마쓰→나오시마", "나오시마→다카마쓰", "전체 시간표"]) || didChange
+        didChange = ensureNote(title: "도쿄 테스트 Notes", body: "도쿄 도시 드롭다운을 눌렀을 때 홈의 TODAY NOTES가 바뀌는지 확인하기 위한 가상 자료입니다.", imageNames: []) || didChange
+
+        return didChange
+    }
+
+    private func ensureSchedule(date: Date, startTime: String, endTime: String, title: String, note: String, placeName: String, sourceMapNote: String, kind: ScheduleKind) -> Bool {
+        guard !scheduleItems.contains(where: { $0.title == title }) else { return false }
+        scheduleItems.append(
+            ScheduleItem(
+                date: date,
+                startTime: startTime,
+                endTime: endTime,
+                title: title,
+                note: note,
+                placeName: placeName,
+                sourceMapNote: sourceMapNote,
+                kind: kind
+            )
+        )
+        return true
+    }
+
+    private func ensurePlace(name: String, category: String, mapURL: String, mapNote: String, appNote: String, isFavorite: Bool) -> Bool {
+        guard !places.contains(where: { $0.name == name }) else { return false }
+        places.append(
+            PlaceCandidate(
+                name: name,
+                category: category,
+                mapURL: mapURL,
+                mapNote: mapNote,
+                appNote: appNote,
+                isFavorite: isFavorite
+            )
+        )
+        return true
+    }
+
+    private func ensureNote(title: String, body: String, imageNames: [String]) -> Bool {
+        guard !notes.contains(where: { $0.title == title }) else { return false }
+        notes.append(NoteGroup(title: title, body: body, imageNames: imageNames))
+        return true
     }
 
     private func seedStarterContent(destination: String) {

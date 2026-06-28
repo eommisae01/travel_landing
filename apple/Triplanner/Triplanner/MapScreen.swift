@@ -17,7 +17,7 @@ struct MapScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    ScreenHeader(title: placesTitle, subtitle: "\(placeCount)개 장소 · 지도, 식당, 카페, 환승")
+                    ScreenHeader(title: placesTitle, subtitle: "\(placeCount)개 장소 · 식당, 카페, 환승, 숙소")
 
                     if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
                         HStack(spacing: 12) {
@@ -62,13 +62,13 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 148), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 7)], spacing: 7) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
                             }
                         }
-                        .padding(12)
+                        .padding(10)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
                         .overlay {
                             RoundedRectangle(cornerRadius: 18)
@@ -128,7 +128,7 @@ struct PlaceRow: View {
     @State private var isScheduling = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: 5) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 5) {
@@ -143,7 +143,7 @@ struct PlaceRow: View {
                     }
                     Text(place.name)
                         .font(.footnote.weight(.black))
-                            .lineLimit(1)
+                        .lineLimit(1)
                 }
                 Spacer()
                 HStack(spacing: 5) {
@@ -152,7 +152,7 @@ struct PlaceRow: View {
                     } label: {
                         Image(systemName: "pencil")
                             .font(.caption.weight(.black))
-                            .frame(width: 26, height: 26)
+                            .frame(width: 24, height: 24)
                             .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
                             .foregroundStyle(.secondary)
                     }
@@ -163,7 +163,7 @@ struct PlaceRow: View {
                     } label: {
                         Image(systemName: place.isFavorite ? "star.fill" : "star")
                             .font(.caption.weight(.black))
-                            .frame(width: 26, height: 26)
+                            .frame(width: 24, height: 24)
                             .background((place.isFavorite ? Color.yellow : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
                             .foregroundStyle(place.isFavorite ? .yellow : .secondary)
                     }
@@ -189,7 +189,7 @@ struct PlaceRow: View {
                         Label("지도", systemImage: "map")
                             .frame(maxWidth: .infinity)
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 7)
                     .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
                 }
                 Button {
@@ -198,14 +198,14 @@ struct PlaceRow: View {
                     Label("일정", systemImage: "calendar.badge.plus")
                         .frame(maxWidth: .infinity)
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, 7)
                     .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
             }
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
-        .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
-        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
+        .padding(8)
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)

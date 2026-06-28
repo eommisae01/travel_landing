@@ -94,14 +94,10 @@ struct HomeScreen: View {
             }
 
             Spacer(minLength: 12)
-
-            HStack(spacing: 8) {
-                MiniHeroMetric(title: "일정", value: "\(cityScheduleItems.count)")
-                MiniHeroMetric(title: "Notes", value: "\(cityNotes.count)")
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 18)
         .background {
             RoundedRectangle(cornerRadius: 24)
                 .fill(.regularMaterial)
@@ -195,7 +191,10 @@ struct HomeScreen: View {
 
     private var notesPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("FIELD NOTES")
+            sectionTitle("TODAY NOTES")
+            Text("현재 선택한 도시에서 오늘 확인하기 좋은 자료만 먼저 보여줍니다.")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
             if cityNotes.isEmpty {
                 EmptyStateView(
                     title: "오늘 볼 자료가 없어요",
@@ -231,7 +230,9 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(cityDisplayName(store.currentCity))
-                    .font(.system(size: isWideLayout ? 46 : 34, weight: .black, design: .rounded))
+                    .font(.system(size: isWideLayout ? 58 : 42, weight: .black, design: .rounded))
+                    .minimumScaleFactor(0.78)
+                    .lineLimit(1)
                 Image(systemName: "chevron.down")
                     .font(.callout.weight(.bold))
                     .foregroundStyle(.secondary)
@@ -263,25 +264,6 @@ struct HomeScreen: View {
             .font(.caption.weight(.black))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-private struct MiniHeroMetric: View {
-    var title: String
-    var value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(value)
-                .font(.headline.weight(.black))
-            Text(title)
-                .font(.caption2.weight(.black))
-                .foregroundStyle(.secondary)
-        }
-        .frame(width: 58, alignment: .leading)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.background.opacity(0.56), in: RoundedRectangle(cornerRadius: 14))
     }
 }
 
@@ -317,12 +299,9 @@ private struct FlightSummaryTile: View {
                     Text(routeText)
                         .font(.subheadline.weight(.black))
                         .lineLimit(1)
-                    HStack(spacing: 8) {
-                        TimeBadge(title: "출발", value: flight.localDeparture)
-                        Image(systemName: "arrow.right")
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(.secondary)
-                        TimeBadge(title: "도착", value: flight.localArrival)
+                    VStack(alignment: .leading, spacing: 5) {
+                        RouteTimeLine(title: "출발", city: flight.origin, time: flight.localDeparture, tint: tint)
+                        RouteTimeLine(title: "도착", city: flight.destination, time: flight.localArrival, tint: tint)
                     }
                 }
                 Spacer(minLength: 6)
@@ -343,6 +322,32 @@ private struct FlightSummaryTile: View {
 
     private var routeText: String {
         "\(flight.origin.isEmpty ? "출발지" : flight.origin) → \(flight.destination.isEmpty ? "도착지" : flight.destination)"
+    }
+}
+
+private struct RouteTimeLine: View {
+    var title: String
+    var city: String
+    var time: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(title)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 28, alignment: .leading)
+            Text(city.isEmpty ? "미정" : city)
+                .font(.caption.weight(.bold))
+                .lineLimit(1)
+            Spacer(minLength: 6)
+            Text(time.isEmpty ? "--:--" : time)
+                .font(.caption.weight(.black))
+                .monospacedDigit()
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(tint.opacity(0.10), in: Capsule())
+        }
     }
 }
 
@@ -371,7 +376,7 @@ private struct AccommodationSummaryTile: View {
                         Text(address)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
+                            .lineLimit(2)
                     }
                 }
                 Spacer(minLength: 6)

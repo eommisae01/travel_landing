@@ -7,7 +7,8 @@ struct ScheduleScreen: View {
     @State private var isAddingSchedule = false
 
     private var dates: [Date] {
-        let unique = Set(store.scheduleItemsForSelectedCity().map { Calendar.current.startOfDay(for: $0.date) })
+        let scheduleDates = store.scheduleItemsForSelectedCity().map { Calendar.current.startOfDay(for: $0.date) }
+        let unique = Set(scheduleDates + tripDateRange)
         return unique.sorted()
     }
 
@@ -29,7 +30,7 @@ struct ScheduleScreen: View {
 
                         HStack(spacing: 8) {
                             modeButton(.timeline, title: "Timeline", iconName: "list.bullet.rectangle")
-                            modeButton(.calendar, title: "Calendar", iconName: "calendar")
+                            modeButton(.calendar, title: "Calendar View", iconName: "calendar")
                         }
                     }
                     .appPanel(cornerRadius: 18)
@@ -86,7 +87,7 @@ struct ScheduleScreen: View {
         if let selectedDate {
             return "\(compactDayLabel(selectedDate)) · \(visibleItems.count)개 일정"
         }
-        return "\(dates.count)일 · \(visibleItems.count)개 일정"
+        return "전체 \(dates.count)일 · \(visibleItems.count)개 일정"
     }
 
     private var filterBar: some View {
@@ -98,8 +99,8 @@ struct ScheduleScreen: View {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     let dayItems = items(on: date)
                     dayFilterButton(
-                        title: "Day \(index + 1)",
-                        subtitle: "\(compactDayLabel(date)) · \(dayItems.count)개",
+                        title: "Day \(index + 1) (\(compactDayLabel(date)))",
+                        subtitle: "\(dayItems.count)개 일정",
                         isSelected: selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
                     ) {
                         selectedDate = date
@@ -118,15 +119,16 @@ struct ScheduleScreen: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
             }
-            .frame(width: 104, alignment: .leading)
+            .frame(width: title == "전체" ? 96 : 142, alignment: .leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
             .background(isSelected ? Color.blue : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(isSelected ? Color.blue.opacity(0.25) : Color.secondary.opacity(0.14))
+                    .stroke(isSelected ? Color.blue.opacity(0.45) : Color.secondary.opacity(0.14), lineWidth: isSelected ? 1.5 : 1)
             }
+            .shadow(color: isSelected ? Color.blue.opacity(0.18) : .clear, radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -148,7 +150,13 @@ struct ScheduleScreen: View {
 
     private var calendarGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(title: "CALENDAR")
+            HStack {
+                SectionLabel(title: "CALENDAR")
+                Spacer()
+                Text("날짜를 누르면 해당 Day 타임라인으로 이동")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 154), spacing: 10)], spacing: 10) {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     let dayItems = items(on: date)
@@ -211,6 +219,15 @@ struct ScheduleScreen: View {
 
     private func items(on date: Date) -> [ScheduleItem] {
         store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+    }
+
+    private var tripDateRange: [Date] {
+        guard let trip = store.trip, let start = trip.startDate, let end = trip.endDate else { return [] }
+        let calendar = Calendar.current
+        let startDay = calendar.startOfDay(for: start)
+        let endDay = calendar.startOfDay(for: end)
+        let dayCount = calendar.dateComponents([.day], from: startDay, to: endDay).day ?? 0
+        return (0...max(dayCount, 0)).compactMap { calendar.date(byAdding: .day, value: $0, to: startDay) }
     }
 
     private func compactDayLabel(_ date: Date) -> String {
