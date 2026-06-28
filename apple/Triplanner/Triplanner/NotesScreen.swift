@@ -4,20 +4,29 @@ struct NotesScreen: View {
     @EnvironmentObject private var store: TripStore
     @State private var addSheetOpen = false
 
+    private var selectedCityNotes: [NoteGroup] {
+        store.notesForSelectedCity()
+    }
+
+    private var otherNotes: [NoteGroup] {
+        store.notes.filter { note in
+            !selectedCityNotes.contains(note)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             List {
-                ForEach(store.notes) { note in
-                    NavigationLink {
-                        NoteDetailView(note: note)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(note.title)
-                                .font(.headline.weight(.black))
-                            Text(note.body)
-                                .lineLimit(2)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                Section(store.currentCity.isEmpty ? "선택 도시 자료" : "\(displayCity(store.currentCity)) 자료") {
+                    ForEach(selectedCityNotes) { note in
+                        noteLink(note)
+                    }
+                }
+
+                if !otherNotes.isEmpty {
+                    Section("전체 자료") {
+                        ForEach(otherNotes) { note in
+                            noteLink(note)
                         }
                     }
                 }
@@ -36,6 +45,30 @@ struct NotesScreen: View {
                 AddNoteSheet()
                     .environmentObject(store)
             }
+        }
+    }
+
+    private func noteLink(_ note: NoteGroup) -> some View {
+        NavigationLink {
+            NoteDetailView(note: note)
+        } label: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(note.title)
+                    .font(.headline.weight(.black))
+                Text(note.body)
+                    .lineLimit(2)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func displayCity(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        default: return city
         }
     }
 }

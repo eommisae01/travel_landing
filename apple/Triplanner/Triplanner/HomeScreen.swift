@@ -7,7 +7,7 @@ import AppKit
 
 struct HomeScreen: View {
     @EnvironmentObject private var store: TripStore
-    @State private var selectedCity = ""
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showingAddCity = false
     @State private var newCity = ""
     @State private var showingChecklistSummary = false
@@ -16,61 +16,57 @@ struct HomeScreen: View {
         store.checklist.filter { !$0.isDone }.count
     }
 
-    private var selectedCityValue: String {
-        selectedCity.isEmpty ? (store.trip?.cities.first ?? "") : selectedCity
-    }
-
     private var cityScheduleItems: [ScheduleItem] {
-        store.scheduleItems
-            .filter { isRelevant($0.title + " " + $0.placeName + " " + $0.note + " " + $0.sourceMapNote, to: selectedCityValue) }
-            .sorted { lhs, rhs in
-                if lhs.date != rhs.date { return lhs.date < rhs.date }
-                return lhs.startTime < rhs.startTime
-            }
+        store.scheduleItemsForSelectedCity()
     }
 
     private var cityNotes: [NoteGroup] {
-        store.notes.filter { isRelevant($0.title + " " + $0.body, to: selectedCityValue) }
+        store.notesForSelectedCity()
+    }
+
+    private var isWideLayout: Bool {
+        horizontalSizeClass != .compact
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    if let trip = store.trip {
-                        hero(trip)
-                    }
+                if let trip = store.trip {
+                    if isWideLayout {
+                        HStack(alignment: .top, spacing: 18) {
+                            VStack(alignment: .leading, spacing: 14) {
+                                cityHero(trip)
+                                travelPanel(trip)
+                            }
+                            .frame(maxWidth: 430)
 
-                    statusStrip
-
-                    sectionTitle("TODAY")
-                    ForEach(cityScheduleItems.prefix(4)) { item in
-                        ScheduleRow(item: item)
-                    }
-
-                    sectionTitle("TODAY NOTES")
-                    ForEach(cityNotes.prefix(2)) { note in
-                        InfoCard(title: note.title, subtitle: note.body)
+                            VStack(alignment: .leading, spacing: 14) {
+                                statusStrip
+                                todayPanel
+                                notesPanel
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(22)
+                    } else {
+                        VStack(alignment: .leading, spacing: 16) {
+                            cityHero(trip)
+                            travelPanel(trip)
+                            statusStrip
+                            todayPanel
+                            notesPanel
+                        }
+                        .padding()
                     }
                 }
-                .padding()
             }
             .navigationTitle("")
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    cityMenu
-                }
-            }
-            .onAppear {
-                selectedCity = selectedCity.isEmpty ? (store.trip?.cities.first ?? "") : selectedCity
-            }
             .alert("지역 추가", isPresented: $showingAddCity) {
                 TextField("예: Osaka", text: $newCity)
                 Button("추가") {
                     let trimmedCity = newCity.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmedCity.isEmpty else { return }
                     store.addCity(trimmedCity)
-                    selectedCity = trimmedCity
                     newCity = ""
                 }
                 Button("취소", role: .cancel) {
@@ -84,13 +80,28 @@ struct HomeScreen: View {
         }
     }
 
-    private func hero(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+    private func cityHero(_ trip: Trip) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            cityMenu
             if let dateRange = dateRange(for: trip) {
                 Text(dateRange)
-                    .font(.subheadline.weight(.bold))
+                    .font(.callout.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
+            Text("선택한 도시 기준으로 오늘 일정과 자료를 좁혀 보여줍니다.")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+    }
+
+    private func travelPanel(_ trip: Trip) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("TRAVEL")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
             VStack(spacing: 10) {
                 CopySummaryTile(
                     title: "가는 편",
@@ -110,20 +121,45 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
+        .padding(14)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
     }
 
     private var statusStrip: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 180))], spacing: 12) {
-            Button {
+        HStack(spacing: 10) {
+            StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개") {
                 showingChecklistSummary = true
-            } label: {
-                InfoCard(title: "남은 준비", subtitle: "\(undoneChecklistCount)개")
             }
-            .buttonStyle(.plain)
-            InfoCard(title: "지출", subtitle: "\(Int(store.expenses.reduce(0) { $0 + $1.amount })) JPY")
+            StatChip(title: "지출", value: "\(Int(store.expenses.reduce(0) { $0 + $1.amount }))", unit: "JPY")
         }
+    }
+
+    private var todayPanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionTitle("TODAY")
+            if cityScheduleItems.isEmpty {
+                EmptyHint(text: "선택한 도시의 일정이 아직 없습니다.")
+            } else {
+                ForEach(cityScheduleItems.prefix(5)) { item in
+                    CompactScheduleRow(item: item)
+                }
+            }
+        }
+        .panelStyle()
+    }
+
+    private var notesPanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionTitle("TODAY NOTES")
+            if cityNotes.isEmpty {
+                EmptyHint(text: "오늘 바로 참고할 자료를 Notes에 추가해보세요.")
+            } else {
+                ForEach(cityNotes.prefix(3)) { note in
+                    CompactNoteCard(note: note)
+                }
+            }
+        }
+        .panelStyle()
     }
 
     private var cityMenu: some View {
@@ -131,9 +167,9 @@ struct HomeScreen: View {
             if let trip = store.trip {
                 ForEach(trip.cities, id: \.self) { city in
                     Button {
-                        selectedCity = city
+                        store.selectCity(city)
                     } label: {
-                        Label(cityDisplayName(city), systemImage: selectedCity == city ? "checkmark" : "mappin")
+                        Label(cityDisplayName(city), systemImage: store.currentCity == city ? "checkmark" : "mappin")
                     }
                 }
                 Divider()
@@ -144,11 +180,11 @@ struct HomeScreen: View {
                 Label("지역 추가", systemImage: "plus")
             }
         } label: {
-            HStack(spacing: 5) {
-                Text(cityDisplayName(selectedCity.isEmpty ? (store.trip?.cities.first ?? "Trip") : selectedCity))
-                    .font(.title2.weight(.black))
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(cityDisplayName(store.currentCity))
+                    .font(.system(size: isWideLayout ? 38 : 32, weight: .black, design: .rounded))
                 Image(systemName: "chevron.down")
-                    .font(.caption.weight(.bold))
+                    .font(.callout.weight(.bold))
                     .foregroundStyle(.secondary)
             }
         }
@@ -186,19 +222,10 @@ struct HomeScreen: View {
         }
     }
 
-    private func isRelevant(_ text: String, to city: String) -> Bool {
-        if city == "도쿄" {
-            return text.contains("도쿄") || text.contains("긴자") || text.contains("시부야")
-        }
-        if city == "나오시마" {
-            return text.contains("나오시마") || text.contains("지중") || text.contains("미야노우라") || text.contains("츠츠지소") || text.contains("베네세") || text.contains("이우환")
-        }
-        return !text.contains("도쿄") && !text.contains("긴자") && !text.contains("시부야")
-    }
-
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.title3.weight(.black))
+            .font(.caption.weight(.black))
+            .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -212,25 +239,169 @@ private struct CopySummaryTile: View {
         Button {
             copyToClipboard(copyValue.isEmpty ? value : copyValue)
         } label: {
-            HStack(alignment: .top, spacing: 12) {
-                Text(title)
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.teal)
-                    .frame(width: 56, alignment: .leading)
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(title)
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.teal)
+                    Spacer()
+                    Image(systemName: "doc.on.doc")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
                 Text(value)
-                    .font(.footnote.weight(.bold))
-                    .lineLimit(3)
+                    .font(.subheadline.weight(.semibold))
+                    .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
-                Spacer()
-                Image(systemName: "doc.on.doc")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(.background.opacity(0.78), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
+    }
+}
+
+private struct StatButton: View {
+    var title: String
+    var value: String
+    var unit: String
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            StatChipContent(title: title, value: value, unit: unit, iconName: "checklist")
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct StatChip: View {
+    var title: String
+    var value: String
+    var unit: String
+
+    var body: some View {
+        StatChipContent(title: title, value: value, unit: unit, iconName: "creditcard")
+    }
+}
+
+private struct StatChipContent: View {
+    var title: String
+    var value: String
+    var unit: String
+    var iconName: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconName)
+                .font(.headline.weight(.bold))
+                .frame(width: 34, height: 34)
+                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(.teal)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(value)
+                        .font(.title3.weight(.black))
+                    Text(unit)
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+private struct CompactScheduleRow: View {
+    var item: ScheduleItem
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(kindColor)
+                if !item.endTime.isEmpty {
+                    Text(item.endTime)
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 52)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.title)
+                    .font(.subheadline.weight(.black))
+                    .lineLimit(1)
+                if !item.note.isEmpty {
+                    Text(item.note)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            Spacer()
+        }
+        .padding(10)
+        .background(kindColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var kindColor: Color {
+        switch item.kind {
+        case .move: return .blue
+        case .food: return .orange
+        case .flight: return .purple
+        case .place: return .teal
+        }
+    }
+}
+
+private struct CompactNoteCard: View {
+    var note: NoteGroup
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(note.title)
+                .font(.subheadline.weight(.black))
+            Text(note.body)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+private struct EmptyHint: View {
+    var text: String
+
+    var body: some View {
+        Text(text)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, minHeight: 64, alignment: .center)
+            .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+private extension View {
+    func panelStyle() -> some View {
+        self
+            .padding(14)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
     }
 }
 
@@ -248,7 +419,7 @@ private struct ChecklistSummarySheet: View {
                 HStack {
                     Text(item.title)
                         .font(.headline.weight(.bold))
-                    Spacer()
+                Spacer()
                     Text(item.owner)
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)

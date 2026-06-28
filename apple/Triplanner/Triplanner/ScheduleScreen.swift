@@ -6,19 +6,22 @@ struct ScheduleScreen: View {
     @State private var viewMode: ScheduleViewMode = .timeline
 
     private var dates: [Date] {
-        let unique = Set(store.scheduleItems.map { Calendar.current.startOfDay(for: $0.date) })
+        let unique = Set(store.scheduleItemsForSelectedCity().map { Calendar.current.startOfDay(for: $0.date) })
         return unique.sorted()
     }
 
     private var visibleItems: [ScheduleItem] {
-        guard let selectedDate else { return store.scheduleItems.sorted { $0.date < $1.date } }
-        return store.scheduleItems.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        let items = store.scheduleItemsForSelectedCity()
+        guard let selectedDate else { return items }
+        return items.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    Text(store.currentCity.isEmpty ? "일정" : "\(displayCity(store.currentCity)) 일정")
+                        .font(.title2.weight(.black))
                     filterBar
 
                     Picker("보기", selection: $viewMode) {
@@ -30,8 +33,16 @@ struct ScheduleScreen: View {
                     if viewMode == .calendar {
                         calendarGrid
                     } else {
-                        ForEach(visibleItems) { item in
-                            ScheduleRow(item: item)
+                        if visibleItems.isEmpty {
+                            Text("선택한 도시의 일정이 아직 없습니다.")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 120)
+                                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                        } else {
+                            ForEach(visibleItems) { item in
+                                ScheduleRow(item: item)
+                            }
                         }
                     }
                 }
@@ -71,7 +82,7 @@ struct ScheduleScreen: View {
     private var calendarGrid: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 10) {
             ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
-                let count = store.scheduleItems.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.count
+                let count = store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.count
                 Button {
                     selectedDate = date
                     viewMode = .timeline
@@ -101,6 +112,15 @@ struct ScheduleScreen: View {
         formatter.dateFormat = "M.d E"
         return formatter.string(from: date)
     }
+
+    private func displayCity(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        default: return city
+        }
+    }
 }
 
 private enum ScheduleViewMode: Hashable {
@@ -112,11 +132,11 @@ struct ScheduleRow: View {
     var item: ScheduleItem
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            VStack(alignment: .trailing) {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .trailing, spacing: 2) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
                     .font(.caption.weight(.black))
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(kindColor)
                 if !item.endTime.isEmpty {
                     Text(item.endTime)
                         .font(.caption2.weight(.bold))
@@ -125,7 +145,12 @@ struct ScheduleRow: View {
             }
             .frame(width: 58)
 
-            VStack(alignment: .leading, spacing: 6) {
+            Circle()
+                .fill(kindColor)
+                .frame(width: 9, height: 9)
+                .padding(.top, 4)
+
+            VStack(alignment: .leading, spacing: 5) {
                 Text(item.title)
                     .font(.headline.weight(.black))
                 if !item.placeName.isEmpty {
@@ -140,12 +165,20 @@ struct ScheduleRow: View {
             }
             Spacer()
         }
-        .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(alignment: .leading) {
-            Rectangle()
-                .fill(item.kind == .move ? .blue : item.kind == .food ? .orange : .teal)
-                .frame(width: 4)
+        .padding(12)
+        .background(kindColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
+    }
+
+    private var kindColor: Color {
+        switch item.kind {
+        case .move: return .blue
+        case .food: return .orange
+        case .flight: return .purple
+        case .place: return .teal
         }
     }
 }

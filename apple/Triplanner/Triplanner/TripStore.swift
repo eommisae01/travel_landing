@@ -5,6 +5,7 @@ import Foundation
 final class TripStore: ObservableObject {
     struct Snapshot: Codable {
         var trip: Trip?
+        var selectedCity: String?
         var members: [TripMember]
         var scheduleItems: [ScheduleItem]
         var places: [PlaceCandidate]
@@ -16,6 +17,7 @@ final class TripStore: ObservableObject {
     private let storageKey = "travelplanner.snapshot.v2"
 
     @Published var trip: Trip?
+    @Published var selectedCity = ""
     @Published var members: [TripMember] = []
     @Published var scheduleItems: [ScheduleItem] = []
     @Published var places: [PlaceCandidate] = []
@@ -66,7 +68,36 @@ final class TripStore: ObservableObject {
             current.cities.append(city)
         }
         trip = current
+        selectedCity = city
         save()
+    }
+
+    func selectCity(_ city: String) {
+        guard !city.isEmpty else { return }
+        selectedCity = city
+        save()
+    }
+
+    func scheduleItemsForSelectedCity() -> [ScheduleItem] {
+        scheduleItems
+            .filter { isRelevant($0.title + " " + $0.placeName + " " + $0.note + " " + $0.sourceMapNote, to: currentCity) }
+            .sorted { lhs, rhs in
+                if lhs.date != rhs.date { return lhs.date < rhs.date }
+                return lhs.startTime < rhs.startTime
+            }
+    }
+
+    func placesForSelectedCity() -> [PlaceCandidate] {
+        places.filter { isRelevant($0.name + " " + $0.category + " " + $0.mapNote + " " + $0.appNote, to: currentCity) }
+    }
+
+    func notesForSelectedCity() -> [NoteGroup] {
+        notes.filter { isRelevant($0.title + " " + $0.body, to: currentCity) }
+    }
+
+    var currentCity: String {
+        if !selectedCity.isEmpty { return selectedCity }
+        return trip?.cities.first ?? ""
     }
 
     func toggleChecklist(_ item: ChecklistItem) {
@@ -151,6 +182,7 @@ final class TripStore: ObservableObject {
         do {
             let snapshot = try JSONDecoder().decode(Snapshot.self, from: data)
             trip = snapshot.trip
+            selectedCity = snapshot.selectedCity ?? snapshot.trip?.cities.first ?? ""
             members = snapshot.members
             scheduleItems = snapshot.scheduleItems
             places = snapshot.places
@@ -166,6 +198,7 @@ final class TripStore: ObservableObject {
     private func save() {
         let snapshot = Snapshot(
             trip: trip,
+            selectedCity: selectedCity.isEmpty ? trip?.cities.first : selectedCity,
             members: members,
             scheduleItems: scheduleItems,
             places: places,
@@ -215,6 +248,7 @@ final class TripStore: ObservableObject {
             budgetCurrency: "JPY"
         )
         trip = demoTrip
+        selectedCity = demoTrip.cities.first ?? ""
         members = [
             TripMember(name: "예지", tintName: "teal"),
             TripMember(name: "승환", tintName: "coral"),
@@ -265,5 +299,15 @@ final class TripStore: ObservableObject {
             ExpenseItem(category: "입장권", title: "지중미술관", amount: 7500, currency: "JPY", paidBy: "예지", intendedPayer: "예지", participants: ["예지", "승환", "민지"]),
             ExpenseItem(category: "교통", title: "나오시마 왕복 페리 예상", amount: 3120, currency: "JPY", paidBy: "예지", intendedPayer: "예지", participants: ["예지", "승환", "민지"])
         ]
+    }
+
+    private func isRelevant(_ text: String, to city: String) -> Bool {
+        if city == "도쿄" {
+            return text.contains("도쿄") || text.contains("긴자") || text.contains("시부야")
+        }
+        if city == "나오시마" {
+            return text.contains("나오시마") || text.contains("지중") || text.contains("미야노우라") || text.contains("츠츠지소") || text.contains("베네세") || text.contains("이우환")
+        }
+        return !text.contains("도쿄") && !text.contains("긴자") && !text.contains("시부야")
     }
 }

@@ -5,7 +5,7 @@ struct MapScreen: View {
     @State private var addSheetOpen = false
 
     private var groupedPlaces: [(String, [PlaceCandidate])] {
-        Dictionary(grouping: store.places, by: \.category)
+        Dictionary(grouping: store.placesForSelectedCity(), by: \.category)
             .map { ($0.key, $0.value.sorted { lhs, rhs in
                 if lhs.isFavorite != rhs.isFavorite { return lhs.isFavorite && !rhs.isFavorite }
                 return lhs.name < rhs.name
@@ -17,6 +17,9 @@ struct MapScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    Text(store.currentCity.isEmpty ? "지도 / 식당" : "\(displayCity(store.currentCity)) places")
+                        .font(.title2.weight(.black))
+
                     if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("공유 지도")
@@ -47,6 +50,13 @@ struct MapScreen: View {
                             }
                         }
                     }
+                    if groupedPlaces.isEmpty {
+                        Text("선택한 도시의 장소가 아직 없습니다.")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, minHeight: 120)
+                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    }
                 }
                 .padding()
             }
@@ -64,6 +74,15 @@ struct MapScreen: View {
                 AddPlaceSheet()
                     .environmentObject(store)
             }
+        }
+    }
+
+    private func displayCity(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        default: return city
         }
     }
 }
