@@ -62,7 +62,7 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 172), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 148), spacing: 8)], spacing: 8) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -121,7 +121,7 @@ struct PlaceRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 5) {
@@ -136,7 +136,7 @@ struct PlaceRow: View {
                     }
                     Text(place.name)
                         .font(.footnote.weight(.black))
-                        .lineLimit(2)
+                            .lineLimit(1)
                 }
                 Spacer()
                 HStack(spacing: 7) {
@@ -167,7 +167,7 @@ struct PlaceRow: View {
                 Text(place.appNote)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(1)
             }
             Spacer(minLength: 0)
             HStack(spacing: 6) {
@@ -177,7 +177,7 @@ struct PlaceRow: View {
                             .frame(maxWidth: .infinity)
                     }
                     .padding(.vertical, 7)
-                    .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
+                    .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
                 }
                 Button {
                     store.addSchedule(from: place, date: Date())
@@ -186,13 +186,13 @@ struct PlaceRow: View {
                         .frame(maxWidth: .infinity)
                 }
                 .padding(.vertical, 7)
-                .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                    .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
             }
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
-        .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
-        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+        .padding(9)
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)

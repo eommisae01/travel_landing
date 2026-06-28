@@ -4,6 +4,7 @@ struct ScheduleScreen: View {
     @EnvironmentObject private var store: TripStore
     @State private var selectedDate: Date?
     @State private var viewMode: ScheduleViewMode = .timeline
+    @State private var isAddingSchedule = false
 
     private var dates: [Date] {
         let unique = Set(store.scheduleItemsForSelectedCity().map { Calendar.current.startOfDay(for: $0.date) })
@@ -56,6 +57,19 @@ struct ScheduleScreen: View {
                 .padding()
             }
             .navigationTitle("일정")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        isAddingSchedule = true
+                    } label: {
+                        Label("일정 추가", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $isAddingSchedule) {
+                ScheduleEditorSheet(defaultDate: selectedDate ?? dates.first ?? Date())
+                    .environmentObject(store)
+            }
         }
     }
 
@@ -216,8 +230,10 @@ private enum ScheduleViewMode: Hashable {
 }
 
 struct ScheduleRow: View {
+    @EnvironmentObject private var store: TripStore
     var item: ScheduleItem
     var isLast = false
+    @State private var isEditing = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -264,6 +280,17 @@ struct ScheduleRow: View {
                         .padding(.vertical, 3)
                         .background(kindColor.opacity(0.14), in: Capsule())
                         .foregroundStyle(kindColor)
+                    Spacer(minLength: 4)
+                    Button {
+                        isEditing = true
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.caption.weight(.black))
+                            .frame(width: 28, height: 28)
+                            .background(Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("일정 수정")
                 }
                 if !item.sourceMapNote.isEmpty {
                     Label(item.sourceMapNote, systemImage: "mappin.and.ellipse")
@@ -296,6 +323,10 @@ struct ScheduleRow: View {
             Spacer()
         }
         .padding(.vertical, 10)
+        .sheet(isPresented: $isEditing) {
+            ScheduleEditorSheet(existingItem: item, defaultDate: item.date)
+                .environmentObject(store)
+        }
     }
 
     private var kindColor: Color {
@@ -304,6 +335,176 @@ struct ScheduleRow: View {
         case .food: return .orange
         case .flight: return .purple
         case .place: return .teal
+        }
+    }
+}
+
+struct ScheduleEditorSheet: View {
+    @EnvironmentObject private var store: TripStore
+    @Environment(\.dismiss) private var dismiss
+
+    var existingItem: ScheduleItem?
+    var defaultDate: Date
+
+    @State private var date = Date()
+    @State private var startTime = ""
+    @State private var endTime = ""
+    @State private var title = ""
+    @State private var placeName = ""
+    @State private var sourceMapNote = ""
+    @State private var note = ""
+    @State private var kind: ScheduleKind = .place
+    @State private var didLoad = false
+
+    private var canSave: Bool {
+        !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(
+                        title: existingItem == nil ? "일정 추가" : "일정 수정",
+                        subtitle: "시간, 장소, 메모를 한 번에 정리"
+                    )
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "WHEN")
+                        DatePicker("날짜", selection: $date, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+
+                        HStack(spacing: 10) {
+                            ScheduleEditorField(title: "시작", text: $startTime, placeholder: "10:30")
+                            ScheduleEditorField(title: "종료", text: $endTime, placeholder: "12:00")
+                        }
+                    }
+                    .appPanel(cornerRadius: 18)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "TYPE")
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 92), spacing: 8)], spacing: 8) {
+                            ForEach(ScheduleKind.allCases, id: \.self) { itemKind in
+                                Button {
+                                    kind = itemKind
+                                } label: {
+                                    Text(itemKind.rawValue)
+                                        .font(.caption.weight(.black))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 9)
+                                        .background(kind == itemKind ? kindColor(itemKind) : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+                                        .foregroundStyle(kind == itemKind ? .white : .primary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .appPanel(cornerRadius: 18)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "DETAIL")
+                        ScheduleEditorField(title: "일정명", text: $title, placeholder: "예: 리쓰린 공원")
+                        ScheduleEditorField(title: "장소명", text: $placeName, placeholder: "예: Ritsurin Garden")
+                        ScheduleEditorField(title: "지도 메모", text: $sourceMapNote, placeholder: "My Maps/지도에서 가져온 메모")
+                    }
+                    .appPanel(cornerRadius: 18)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "MEMO")
+                        TextField("앱에서 추가로 적어둘 메모", text: $note, axis: .vertical)
+                            .lineLimit(4...8)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    .appPanel(cornerRadius: 18)
+                }
+                .readableWidth(620)
+                .padding()
+            }
+            .navigationTitle(existingItem == nil ? "추가" : "수정")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("닫기") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("저장") {
+                        save()
+                    }
+                    .disabled(!canSave)
+                }
+            }
+            .onAppear(perform: loadItem)
+        }
+    }
+
+    private func loadItem() {
+        guard !didLoad else { return }
+        didLoad = true
+        guard let existingItem else {
+            date = defaultDate
+            return
+        }
+        date = existingItem.date
+        startTime = existingItem.startTime
+        endTime = existingItem.endTime
+        title = existingItem.title
+        placeName = existingItem.placeName
+        sourceMapNote = existingItem.sourceMapNote
+        note = existingItem.note
+        kind = existingItem.kind
+    }
+
+    private func save() {
+        if let existingItem {
+            store.updateScheduleItem(
+                existingItem,
+                date: date,
+                startTime: startTime,
+                endTime: endTime,
+                title: title,
+                note: note,
+                placeName: placeName,
+                sourceMapNote: sourceMapNote,
+                kind: kind
+            )
+        } else {
+            store.addScheduleItem(
+                date: date,
+                startTime: startTime,
+                endTime: endTime,
+                title: title,
+                note: note,
+                placeName: placeName,
+                sourceMapNote: sourceMapNote,
+                kind: kind
+            )
+        }
+        dismiss()
+    }
+
+    private func kindColor(_ itemKind: ScheduleKind) -> Color {
+        switch itemKind {
+        case .move: return .blue
+        case .food: return .orange
+        case .flight: return .purple
+        case .place: return .teal
+        }
+    }
+}
+
+private struct ScheduleEditorField: View {
+    var title: String
+    @Binding var text: String
+    var placeholder: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.roundedBorder)
         }
     }
 }

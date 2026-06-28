@@ -128,6 +128,57 @@ final class TripStore: ObservableObject {
         save()
     }
 
+    func addScheduleItem(
+        date: Date,
+        startTime: String,
+        endTime: String,
+        title: String,
+        note: String,
+        placeName: String,
+        sourceMapNote: String,
+        kind: ScheduleKind
+    ) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else { return }
+        scheduleItems.append(
+            ScheduleItem(
+                date: date,
+                startTime: startTime.trimmingCharacters(in: .whitespacesAndNewlines),
+                endTime: endTime.trimmingCharacters(in: .whitespacesAndNewlines),
+                title: trimmedTitle,
+                note: note,
+                placeName: placeName,
+                sourceMapNote: sourceMapNote,
+                kind: kind
+            )
+        )
+        save()
+    }
+
+    func updateScheduleItem(
+        _ item: ScheduleItem,
+        date: Date,
+        startTime: String,
+        endTime: String,
+        title: String,
+        note: String,
+        placeName: String,
+        sourceMapNote: String,
+        kind: ScheduleKind
+    ) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty, let index = scheduleItems.firstIndex(of: item) else { return }
+        scheduleItems[index].date = date
+        scheduleItems[index].startTime = startTime.trimmingCharacters(in: .whitespacesAndNewlines)
+        scheduleItems[index].endTime = endTime.trimmingCharacters(in: .whitespacesAndNewlines)
+        scheduleItems[index].title = trimmedTitle
+        scheduleItems[index].note = note
+        scheduleItems[index].placeName = placeName
+        scheduleItems[index].sourceMapNote = sourceMapNote
+        scheduleItems[index].kind = kind
+        save()
+    }
+
     func addPlace(name: String, category: String, mapURL: String, mapNote: String, appNote: String) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
