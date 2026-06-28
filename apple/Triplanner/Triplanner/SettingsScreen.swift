@@ -58,11 +58,7 @@ struct SettingsScreen: View {
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 10)], spacing: 10) {
                         Button {
-                            store.updateOutboundFlight(outboundFlight)
-                            store.updateInboundFlight(inboundFlight)
-                            store.updateAccommodation(accommodation)
-                            store.updateAccommodationAddress(accommodationAddress)
-                            store.updateMyMapsURL(myMapsURL)
+                            saveChanges()
                         } label: {
                             Label("저장", systemImage: "checkmark")
                                 .frame(maxWidth: .infinity)
@@ -86,6 +82,15 @@ struct SettingsScreen: View {
                 .padding()
             }
             .navigationTitle("설정")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        saveChanges()
+                    } label: {
+                        Label("저장", systemImage: "checkmark")
+                    }
+                }
+            }
             .onAppear {
                 syncFields()
             }
@@ -99,6 +104,14 @@ struct SettingsScreen: View {
         myMapsURL = store.trip?.myMapsURL ?? ""
         outboundFlight = store.trip?.outbound ?? FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
         inboundFlight = store.trip?.inbound ?? FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
+    }
+
+    private func saveChanges() {
+        store.updateOutboundFlight(outboundFlight)
+        store.updateInboundFlight(inboundFlight)
+        store.updateAccommodation(accommodation)
+        store.updateAccommodationAddress(accommodationAddress)
+        store.updateMyMapsURL(myMapsURL)
     }
 }
 

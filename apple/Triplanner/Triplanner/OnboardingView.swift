@@ -22,6 +22,19 @@ struct OnboardingView: View {
         !destination.isEmpty
     }
 
+    private var dateSummary: String {
+        guard useDates else { return "Skip" }
+        return "\(shortDate(startDate)) - \(shortDate(endDate))"
+    }
+
+    private var flightSummary: String {
+        flightNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Skip" : flightNumber
+    }
+
+    private var mapSummary: String {
+        myMapsURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Skip" : "Linked"
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -29,13 +42,14 @@ struct OnboardingView: View {
                     OnboardingHero()
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
-                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "미정" : destination, iconName: "mappin.and.ellipse")
-                        OnboardingSummaryChip(title: "Dates", value: useDates ? "선택됨" : "Skip", iconName: "calendar")
-                        OnboardingSummaryChip(title: "Map", value: myMapsURL.isEmpty ? "Skip" : "Linked", iconName: "map")
+                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "Required" : "\(country) · \(destination)", iconName: "mappin.and.ellipse")
+                        OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar")
+                        OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane")
+                        OnboardingSummaryChip(title: "Map", value: mapSummary, iconName: "map")
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "01 DESTINATION")
+                        OnboardingStepHeader(title: "01 DESTINATION", status: "필수", tint: .teal)
                         HStack(spacing: 10) {
                             Image(systemName: "globe.asia.australia")
                                 .font(.subheadline.weight(.bold))
@@ -73,14 +87,16 @@ struct OnboardingView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            SectionLabel(title: "02 DATES")
+                            OnboardingStepHeader(title: "02 DATES", status: "선택", tint: .blue)
                             Toggle("", isOn: $useDates)
                                 .labelsHidden()
                         }
 
                         if useDates {
-                            DatePicker("시작", selection: $startDate, displayedComponents: .date)
-                            DatePicker("종료", selection: $endDate, displayedComponents: .date)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 10)], spacing: 10) {
+                                DatePicker("시작", selection: $startDate, displayedComponents: .date)
+                                DatePicker("종료", selection: $endDate, displayedComponents: .date)
+                            }
                         } else {
                             Text("기간은 건너뛰고 나중에 설정할 수 있습니다.")
                                 .font(.subheadline.weight(.semibold))
@@ -90,7 +106,7 @@ struct OnboardingView: View {
                     .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "03 FLIGHT")
+                        OnboardingStepHeader(title: "03 FLIGHT", status: "선택", tint: .purple)
                         LabeledOnboardingField(title: "편명", iconName: "airplane", placeholder: "예: RS0741", text: $flightNumber)
                         Text("도착/출발 시간은 여행 생성 후 설정에서 정리합니다.")
                             .font(.caption.weight(.semibold))
@@ -99,7 +115,7 @@ struct OnboardingView: View {
                     .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "04 MAP")
+                        OnboardingStepHeader(title: "04 MAP", status: "선택", tint: .teal)
                         LabeledOnboardingField(title: "지도", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL)
                         Text("My Maps 링크를 넣어두면 나중에 지도 동기화 기능으로 연결할 수 있습니다.")
                             .font(.caption.weight(.semibold))
@@ -135,6 +151,13 @@ struct OnboardingView: View {
             flightNumber: flightNumber,
             myMapsURL: myMapsURL
         )
+    }
+
+    private func shortDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M.d"
+        return formatter.string(from: date)
     }
 }
 
@@ -197,6 +220,25 @@ private struct OnboardingSummaryChip: View {
         .overlay {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
+        }
+    }
+}
+
+private struct OnboardingStepHeader: View {
+    var title: String
+    var status: String
+    var tint: Color
+
+    var body: some View {
+        HStack {
+            SectionLabel(title: title)
+            Spacer()
+            Text(status)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(tint)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(tint.opacity(0.11), in: Capsule())
         }
     }
 }
