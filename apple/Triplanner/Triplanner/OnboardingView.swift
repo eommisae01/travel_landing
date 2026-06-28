@@ -28,8 +28,14 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     ScreenHeader(title: "새 여행", subtitle: "여행지는 먼저 정하고, 기간/항공/지도는 나중에 채워도 됩니다.")
 
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "미정" : destination, iconName: "mappin.and.ellipse")
+                        OnboardingSummaryChip(title: "Dates", value: useDates ? "선택됨" : "Skip", iconName: "calendar")
+                        OnboardingSummaryChip(title: "Map", value: myMapsURL.isEmpty ? "Skip" : "Linked", iconName: "map")
+                    }
+
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "DESTINATION")
+                        SectionLabel(title: "01 DESTINATION")
                         Picker("국가", selection: $country) {
                             ForEach(countries, id: \.self) { Text($0) }
                         }
@@ -60,7 +66,7 @@ struct OnboardingView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            SectionLabel(title: "DATES")
+                            SectionLabel(title: "02 DATES")
                             Toggle("", isOn: $useDates)
                                 .labelsHidden()
                         }
@@ -77,7 +83,7 @@ struct OnboardingView: View {
                     .appPanel()
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "FLIGHT")
+                        SectionLabel(title: "03 FLIGHT")
                         TextField("편명, 예: RS0741", text: $flightNumber)
                             .textFieldStyle(.roundedBorder)
                         Text("도착/출발 시간은 여행 생성 후 설정에서 정리합니다.")
@@ -87,7 +93,7 @@ struct OnboardingView: View {
                     .appPanel()
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "MAP")
+                        SectionLabel(title: "04 MAP")
                         TextField("Google My Maps 공유 링크", text: $myMapsURL)
                             .textFieldStyle(.roundedBorder)
                         Text("My Maps 링크를 넣어두면 나중에 지도 동기화 기능으로 연결할 수 있습니다.")
@@ -123,5 +129,31 @@ struct OnboardingView: View {
             flightNumber: flightNumber,
             myMapsURL: myMapsURL
         )
+    }
+}
+
+private struct OnboardingSummaryChip: View {
+    var title: String
+    var value: String
+    var iconName: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.teal)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.caption.weight(.black))
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
+        .padding(.horizontal, 10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }

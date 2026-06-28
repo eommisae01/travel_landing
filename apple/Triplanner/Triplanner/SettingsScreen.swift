@@ -2,15 +2,30 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var accommodation = ""
     @State private var accommodationAddress = ""
     @State private var myMapsURL = ""
+    @State private var outboundFlight = FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
+    @State private var inboundFlight = FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: "Settings", subtitle: "공유 전 꼭 확인할 여행 기본 정보")
+
+                    if horizontalSizeClass == .compact {
+                        VStack(spacing: 12) {
+                            FlightEditorCard(title: "가는 편", flight: $outboundFlight)
+                            FlightEditorCard(title: "오는 편", flight: $inboundFlight)
+                        }
+                    } else {
+                        HStack(alignment: .top, spacing: 12) {
+                            FlightEditorCard(title: "가는 편", flight: $outboundFlight)
+                            FlightEditorCard(title: "오는 편", flight: $inboundFlight)
+                        }
+                    }
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "STAY")
@@ -42,6 +57,8 @@ struct SettingsScreen: View {
 
                     HStack {
                         Button {
+                            store.updateOutboundFlight(outboundFlight)
+                            store.updateInboundFlight(inboundFlight)
                             store.updateAccommodation(accommodation)
                             store.updateAccommodationAddress(accommodationAddress)
                             store.updateMyMapsURL(myMapsURL)
@@ -74,5 +91,41 @@ struct SettingsScreen: View {
         accommodation = store.trip?.accommodation ?? ""
         accommodationAddress = store.trip?.accommodationAddress ?? ""
         myMapsURL = store.trip?.myMapsURL ?? ""
+        outboundFlight = store.trip?.outbound ?? FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
+        inboundFlight = store.trip?.inbound ?? FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
+    }
+}
+
+private struct FlightEditorCard: View {
+    var title: String
+    @Binding var flight: FlightInfo
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionLabel(title: title.uppercased())
+                Image(systemName: "airplane")
+                    .foregroundStyle(.teal)
+            }
+
+            TextField("편명", text: $flight.flightNumber)
+                .textFieldStyle(.roundedBorder)
+
+            HStack(spacing: 8) {
+                TextField("출발지", text: $flight.origin)
+                    .textFieldStyle(.roundedBorder)
+                TextField("도착지", text: $flight.destination)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            HStack(spacing: 8) {
+                TextField("출발 시간", text: $flight.localDeparture)
+                    .textFieldStyle(.roundedBorder)
+                TextField("도착 시간", text: $flight.localArrival)
+                    .textFieldStyle(.roundedBorder)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .appPanel()
     }
 }

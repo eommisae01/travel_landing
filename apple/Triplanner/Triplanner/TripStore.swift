@@ -179,6 +179,20 @@ final class TripStore: ObservableObject {
         save()
     }
 
+    func updateOutboundFlight(_ flight: FlightInfo) {
+        guard var current = trip else { return }
+        current.outbound = flight
+        trip = current
+        save()
+    }
+
+    func updateInboundFlight(_ flight: FlightInfo) {
+        guard var current = trip else { return }
+        current.inbound = flight
+        trip = current
+        save()
+    }
+
     func resetDemo() {
         loadDemo()
         save()
