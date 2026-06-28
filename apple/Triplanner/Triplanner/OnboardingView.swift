@@ -123,6 +123,7 @@ struct OnboardingView: View {
             }
             .navigationTitle("")
         }
+        .appScreenBackground()
     }
 
     private func startTrip() {
@@ -139,23 +140,26 @@ struct OnboardingView: View {
 
 private struct OnboardingHero: View {
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: "sparkles")
                 .font(.title2.weight(.black))
                 .foregroundStyle(.white)
-                .frame(width: 50, height: 50)
-                .background(.teal, in: RoundedRectangle(cornerRadius: 17))
+                .frame(width: 46, height: 46)
+                .background(.teal, in: RoundedRectangle(cornerRadius: 15))
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text("새 여행 만들기")
                     .font(.system(size: 30, weight: .black, design: .rounded))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
                 Text("여행지만 정하면 시작할 수 있고, 나머지는 나중에 채워도 됩니다.")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
         }
-        .padding(18)
+        .padding(16)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
         .overlay {
             RoundedRectangle(cornerRadius: 22)

@@ -56,7 +56,7 @@ struct SettingsScreen: View {
                     }
                     .appPanel(cornerRadius: 18)
 
-                    HStack(spacing: 10) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 10)], spacing: 10) {
                         Button {
                             store.updateOutboundFlight(outboundFlight)
                             store.updateInboundFlight(inboundFlight)
@@ -173,12 +173,12 @@ private struct FlightEditorCard: View {
 
             SettingsField(title: "편명", iconName: "number", placeholder: "편명", text: $flight.flightNumber)
 
-            HStack(spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 8)], spacing: 8) {
                 CompactFlightField(title: "출발지", text: $flight.origin)
                 CompactFlightField(title: "도착지", text: $flight.destination)
             }
 
-            HStack(spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 8)], spacing: 8) {
                 CompactFlightField(title: "출발 시간", text: $flight.localDeparture)
                 CompactFlightField(title: "도착 시간", text: $flight.localArrival)
             }
