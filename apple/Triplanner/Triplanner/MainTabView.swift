@@ -4,6 +4,8 @@ struct MainTabView: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedSection: AppSection = .home
+    @State private var showingAddCity = false
+    @State private var newCity = ""
 
     var body: some View {
         if horizontalSizeClass == .compact {
@@ -35,12 +37,16 @@ struct MainTabView: View {
     private var sidebarLayout: some View {
         NavigationSplitView {
             List(selection: $selectedSection) {
-                Section {
+                Section("TRIP") {
                     SidebarTripSummary(
                         city: displayCity(store.currentCity),
-                        subtitle: tripSubtitle
+                        subtitle: tripSubtitle,
+                        cityOptions: store.trip?.cities.map { SidebarCityOption(rawValue: $0, label: displayCity($0)) } ?? [],
+                        currentCity: store.currentCity,
+                        onSelectCity: { store.selectCity($0) },
+                        onAddCity: { showingAddCity = true }
                     )
-                    .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14))
+                    .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 8, trailing: 12))
                 }
 
                 Section("메뉴") {
@@ -53,6 +59,18 @@ struct MainTabView: View {
             }
             .navigationTitle("Triplanner")
             .listStyle(.sidebar)
+            .alert("지역 추가", isPresented: $showingAddCity) {
+                TextField("예: Osaka", text: $newCity)
+                Button("추가") {
+                    let trimmedCity = newCity.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmedCity.isEmpty else { return }
+                    store.addCity(trimmedCity)
+                    newCity = ""
+                }
+                Button("취소", role: .cancel) {
+                    newCity = ""
+                }
+            }
         } detail: {
             selectedSection.view
         }
@@ -76,25 +94,62 @@ struct MainTabView: View {
     }
 }
 
+private struct SidebarCityOption: Identifiable {
+    var rawValue: String
+    var label: String
+
+    var id: String { rawValue }
+}
+
 private struct SidebarTripSummary: View {
     var city: String
     var subtitle: String
+    var cityOptions: [SidebarCityOption]
+    var currentCity: String
+    var onSelectCity: (String) -> Void
+    var onAddCity: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(city)
-                .font(.title2.weight(.black))
-                .lineLimit(1)
-            if !subtitle.isEmpty {
-                Text(subtitle)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+        Menu {
+            ForEach(cityOptions) { option in
+                Button {
+                    onSelectCity(option.rawValue)
+                } label: {
+                    Label(option.label, systemImage: option.rawValue == currentCity ? "checkmark" : "mappin")
+                }
             }
+            Divider()
+            Button {
+                onAddCity()
+            } label: {
+                Label("지역 추가", systemImage: "plus")
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "mappin.and.ellipse")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.teal)
+                    .frame(width: 28, height: 28)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(city)
+                        .font(.headline.weight(.black))
+                        .lineLimit(1)
+                    if !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                Spacer()
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .buttonStyle(.plain)
     }
 }
 
@@ -113,7 +168,7 @@ private enum AppSection: String, CaseIterable, Identifiable {
         switch self {
         case .home: return "홈"
         case .schedule: return "일정"
-        case .map: return "지도 / 식당"
+        case .map: return "지도"
         case .notes: return "Notes"
         case .checklist: return "체크리스트"
         case .budget: return "예산"

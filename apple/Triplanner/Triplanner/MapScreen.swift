@@ -17,7 +17,7 @@ struct MapScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    Text(store.currentCity.isEmpty ? "지도 / 식당" : "\(displayCity(store.currentCity)) places")
+                    Text(store.currentCity.isEmpty ? "Places" : "\(displayCity(store.currentCity)) Places")
                         .font(.title2.weight(.black))
 
                     if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
@@ -61,7 +61,7 @@ struct MapScreen: View {
                 .readableWidth(1120)
                 .padding()
             }
-            .navigationTitle("지도 / 식당")
+            .navigationTitle("지도")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
