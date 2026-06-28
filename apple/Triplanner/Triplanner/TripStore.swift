@@ -158,6 +158,32 @@ final class TripStore: ObservableObject {
         save()
     }
 
+    func addExpense(
+        category: String,
+        title: String,
+        amount: Double,
+        currency: String,
+        paidBy: String,
+        intendedPayer: String,
+        participants: [String]
+    ) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty, amount > 0 else { return }
+        expenses.insert(
+            ExpenseItem(
+                category: category.isEmpty ? "기타" : category,
+                title: trimmedTitle,
+                amount: amount,
+                currency: currency.isEmpty ? trip?.budgetCurrency ?? "JPY" : currency,
+                paidBy: paidBy.isEmpty ? "미정" : paidBy,
+                intendedPayer: intendedPayer.isEmpty ? "미정" : intendedPayer,
+                participants: participants.isEmpty ? members.map(\.name) : participants
+            ),
+            at: 0
+        )
+        save()
+    }
+
     func updateAccommodation(_ value: String) {
         guard var current = trip else { return }
         current.accommodation = value

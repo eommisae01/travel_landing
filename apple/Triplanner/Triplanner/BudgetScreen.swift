@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BudgetScreen: View {
     @EnvironmentObject private var store: TripStore
+    @State private var isAddingExpense = false
 
     private var total: Double {
         store.expenses.reduce(0) { $0 + $1.amount }
@@ -99,6 +100,19 @@ struct BudgetScreen: View {
                 .padding()
             }
             .navigationTitle("예산")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        isAddingExpense = true
+                    } label: {
+                        Label("지출 추가", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $isAddingExpense) {
+                AddExpenseSheet()
+                    .environmentObject(store)
+            }
         }
     }
 }
@@ -168,6 +182,196 @@ private struct ExpenseRow: View {
         case "입장권": return "ticket.fill"
         case "식비": return "fork.knife"
         default: return "creditcard.fill"
+        }
+    }
+}
+
+private struct AddExpenseSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var store: TripStore
+
+    @State private var category = "교통"
+    @State private var title = ""
+    @State private var amount = ""
+    @State private var currency = "JPY"
+    @State private var paidBy = ""
+    @State private var intendedPayer = ""
+    @State private var selectedParticipants: Set<String> = []
+
+    private let categories = ["교통", "식비", "숙소", "입장권", "쇼핑", "기타"]
+
+    private var memberNames: [String] {
+        store.members.map(\.name)
+    }
+
+    private var parsedAmount: Double {
+        Double(amount.replacingOccurrences(of: ",", with: "")) ?? 0
+    }
+
+    private var canSave: Bool {
+        !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && parsedAmount > 0
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(title: "지출 추가", subtitle: "결제자와 사용자를 함께 기록")
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "CATEGORY")
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: 8)], spacing: 8) {
+                            ForEach(categories, id: \.self) { item in
+                                Button {
+                                    category = item
+                                } label: {
+                                    Text(item)
+                                        .font(.caption.weight(.black))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 9)
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(category == item ? .white : .primary)
+                                .background(category == item ? .teal : .secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                            }
+                        }
+                    }
+                    .appPanel()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionLabel(title: "DETAIL")
+                        TextField("항목명", text: $title)
+                            .textFieldStyle(.roundedBorder)
+                        HStack(spacing: 10) {
+                            TextField("금액", text: $amount)
+                                #if os(iOS)
+                                .keyboardType(.decimalPad)
+                                #endif
+                                .textFieldStyle(.roundedBorder)
+                            TextField("통화", text: $currency)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(maxWidth: 96)
+                        }
+                    }
+                    .appPanel()
+
+                    if !memberNames.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            PersonChipSection(title: "PAID BY", names: memberNames, selection: $paidBy)
+                            Divider()
+                            PersonChipSection(title: "WILL PAY", names: memberNames, selection: $intendedPayer)
+                            Divider()
+                            ParticipantChipSection(title: "USED BY", names: memberNames, selection: $selectedParticipants)
+                        }
+                        .appPanel()
+                    }
+                }
+                .readableWidth(620)
+                .padding()
+            }
+            .navigationTitle("")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("취소") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("저장") {
+                        save()
+                    }
+                    .disabled(!canSave)
+                }
+            }
+            .onAppear {
+                if currency.isEmpty {
+                    currency = store.trip?.budgetCurrency ?? "JPY"
+                }
+                if paidBy.isEmpty {
+                    paidBy = memberNames.first ?? ""
+                }
+                if intendedPayer.isEmpty {
+                    intendedPayer = memberNames.first ?? ""
+                }
+                if selectedParticipants.isEmpty {
+                    selectedParticipants = Set(memberNames)
+                }
+            }
+        }
+    }
+
+    private func save() {
+        store.addExpense(
+            category: category,
+            title: title,
+            amount: parsedAmount,
+            currency: currency,
+            paidBy: paidBy,
+            intendedPayer: intendedPayer,
+            participants: memberNames.filter { selectedParticipants.contains($0) }
+        )
+        dismiss()
+    }
+}
+
+private struct PersonChipSection: View {
+    var title: String
+    var names: [String]
+    @Binding var selection: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionLabel(title: title)
+            FlowChips(names: names, selected: { selection == $0 }) { name in
+                selection = name
+            }
+        }
+    }
+}
+
+private struct ParticipantChipSection: View {
+    var title: String
+    var names: [String]
+    @Binding var selection: Set<String>
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionLabel(title: title)
+            FlowChips(names: names, selected: { selection.contains($0) }) { name in
+                if selection.contains(name) {
+                    selection.remove(name)
+                } else {
+                    selection.insert(name)
+                }
+            }
+        }
+    }
+}
+
+private struct FlowChips: View {
+    var names: [String]
+    var selected: (String) -> Bool
+    var onTap: (String) -> Void
+
+    var body: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 88), spacing: 8)], spacing: 8) {
+            ForEach(names, id: \.self) { name in
+                Button {
+                    onTap(name)
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: selected(name) ? "checkmark.circle.fill" : "circle")
+                            .font(.caption.weight(.bold))
+                        Text(name)
+                            .font(.caption.weight(.black))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 9)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(selected(name) ? .white : .primary)
+                .background(selected(name) ? .teal : .secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+            }
         }
     }
 }
