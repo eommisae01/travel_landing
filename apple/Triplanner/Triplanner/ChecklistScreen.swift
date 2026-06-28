@@ -118,7 +118,7 @@ private struct ChecklistSection: View {
                     iconName: "checklist"
                 )
             } else {
-                VStack(spacing: 6) {
+                VStack(spacing: 4) {
                     ForEach(items) { item in
                         ChecklistItemRow(item: item, tint: tint) {
                             action(item)
@@ -139,53 +139,53 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 9) {
+        HStack(alignment: .center, spacing: 8) {
             Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.headline.weight(.bold))
+                    .font(.body.weight(.bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 30, height: 30)
+                    .frame(width: 28, height: 28)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             Button(action: action) {
-                HStack(alignment: .center, spacing: 8) {
-                    Text(item.title)
-                        .font(.subheadline.weight(.semibold))
-                        .strikethrough(item.isDone)
-                        .foregroundStyle(item.isDone ? .secondary : .primary)
-                        .lineLimit(2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(maxWidth: .infinity, minHeight: 30, alignment: .center)
+                Text(item.title)
+                    .font(.subheadline.weight(.semibold))
+                    .strikethrough(item.isDone)
+                    .foregroundStyle(item.isDone ? .secondary : .primary)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            Text(item.owner)
-                .font(.caption.weight(.black))
-                .lineLimit(1)
-                .frame(minWidth: 42)
-                .padding(.horizontal, 8)
-                .frame(height: 26)
-                .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-                .foregroundStyle(ownerTint)
+            HStack(spacing: 6) {
+                Text(item.owner)
+                    .font(.caption2.weight(.black))
+                    .lineLimit(1)
+                    .frame(minWidth: 38)
+                    .padding(.horizontal, 7)
+                    .frame(height: 24)
+                    .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                    .foregroundStyle(ownerTint)
 
-            Button {
-                isEditing = true
-            } label: {
-                Image(systemName: "pencil")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 30, height: 30)
-                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+                Button {
+                    isEditing = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+            .frame(height: 30)
         }
-        .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 3)
         .background(rowBackground, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)

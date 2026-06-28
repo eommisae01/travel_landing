@@ -277,31 +277,26 @@ struct ScheduleRow: View {
                 }
             }
             .frame(width: 54)
-            .padding(.vertical, 8)
-            .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 13))
-            .overlay {
-                RoundedRectangle(cornerRadius: 13)
-                    .stroke(kindColor.opacity(0.18))
-            }
+            .padding(.top, 5)
 
             ZStack(alignment: .top) {
                 if !isLast {
                     Rectangle()
-                        .fill(kindColor.opacity(0.22))
-                        .frame(width: 2, height: 118)
-                        .padding(.top, 25)
+                        .fill(kindColor.opacity(0.28))
+                        .frame(width: 2, height: 92)
+                        .padding(.top, 24)
                 }
                 Image(systemName: kindIcon)
                     .font(.caption.weight(.black))
                     .foregroundStyle(.white)
-                    .frame(width: 24, height: 24)
+                    .frame(width: 22, height: 22)
                     .background(kindColor, in: Circle())
                     .shadow(color: kindColor.opacity(0.22), radius: 6, x: 0, y: 3)
             }
-            .frame(minHeight: 96, alignment: .top)
-            .frame(width: 26)
+            .frame(width: 24)
+            .frame(minHeight: 88, alignment: .top)
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 7) {
                 HStack(alignment: .top, spacing: 8) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 6) {
@@ -329,8 +324,8 @@ struct ScheduleRow: View {
                     } label: {
                         Image(systemName: "pencil")
                             .font(.caption.weight(.black))
-                            .frame(width: 30, height: 30)
-                            .background(Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
+                            .frame(width: 28, height: 28)
+                            .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: 9))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("일정 수정")
@@ -349,14 +344,14 @@ struct ScheduleRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(12)
-            .background(kindColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
-            .overlay {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(kindColor.opacity(0.12))
+            .padding(.bottom, 12)
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(isLast ? Color.clear : Color.secondary.opacity(0.12))
+                    .frame(height: 1)
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .sheet(isPresented: $isEditing) {
             ScheduleEditorSheet(existingItem: item, defaultDate: item.date)
                 .environmentObject(store)
