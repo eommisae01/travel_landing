@@ -25,6 +25,14 @@ struct ChecklistScreen: View {
         }
     }
 
+    private var remainingItems: [ChecklistItem] {
+        sortedItems.filter { !$0.isDone }
+    }
+
+    private var completedItems: [ChecklistItem] {
+        sortedItems.filter(\.isDone)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -44,17 +52,17 @@ struct ChecklistScreen: View {
                     }
                     .appPanel()
 
-                    SectionLabel(title: "ITEMS")
-                    VStack(spacing: 6) {
-                        ForEach(sortedItems) { item in
-                            ChecklistItemRow(item: item) {
-                                store.toggleChecklist(item)
-                            }
+                    ChecklistSection(title: "남은 준비", subtitle: "\(remainingItems.count)개", items: remainingItems, tint: .teal) { item in
+                        store.toggleChecklist(item)
+                    }
+
+                    if !completedItems.isEmpty {
+                        ChecklistSection(title: "완료", subtitle: "\(completedItems.count)개", items: completedItems, tint: .secondary) { item in
+                            store.toggleChecklist(item)
                         }
                     }
-                    .appPanel()
                 }
-                .readableWidth(860)
+                .readableWidth(900)
                 .padding()
             }
             .navigationTitle("체크리스트")
@@ -75,8 +83,49 @@ struct ChecklistScreen: View {
     }
 }
 
+private struct ChecklistSection: View {
+    var title: String
+    var subtitle: String
+    var items: [ChecklistItem]
+    var tint: Color
+    var action: (ChecklistItem) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline.weight(.black))
+                    Text(subtitle)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+
+            if items.isEmpty {
+                Text("항목 없음")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
+                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+            } else {
+                VStack(spacing: 4) {
+                    ForEach(items) { item in
+                        ChecklistItemRow(item: item, tint: tint) {
+                            action(item)
+                        }
+                    }
+                }
+            }
+        }
+        .appPanel()
+    }
+}
+
 private struct ChecklistItemRow: View {
     var item: ChecklistItem
+    var tint: Color = .teal
     var action: () -> Void
 
     var body: some View {
@@ -84,7 +133,7 @@ private struct ChecklistItemRow: View {
             HStack(spacing: 10) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(item.isDone ? .teal : .secondary)
+                    .foregroundStyle(item.isDone ? tint : .secondary)
                 Text(item.title)
                     .font(.subheadline.weight(.semibold))
                     .strikethrough(item.isDone)
@@ -97,7 +146,9 @@ private struct ChecklistItemRow: View {
                     .background(.secondary.opacity(0.10), in: Capsule())
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 34)
+            .frame(maxWidth: .infinity, minHeight: 32, alignment: .center)
+            .padding(.horizontal, 8)
+            .background(.background.opacity(0.48), in: RoundedRectangle(cornerRadius: 10))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

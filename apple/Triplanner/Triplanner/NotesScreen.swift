@@ -20,25 +20,31 @@ struct NotesScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: "Notes", subtitle: "시간표, 예약, 현장 정보를 묶어두는 자료 보드")
 
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))")
                         if selectedCityNotes.isEmpty {
                             Text("선택한 도시와 연결된 자료가 아직 없습니다.")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, minHeight: 80)
-                        }
-                        ForEach(selectedCityNotes) { note in
-                            noteLink(note)
+                                .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 12))
+                        } else {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+                                ForEach(selectedCityNotes) { note in
+                                    noteCard(note)
+                                }
+                            }
                         }
                     }
                     .appPanel()
 
                     if !otherNotes.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 10) {
                             SectionLabel(title: "ALL NOTES")
-                            ForEach(otherNotes) { note in
-                                noteLink(note)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+                                ForEach(otherNotes) { note in
+                                    noteCard(note)
+                                }
                             }
                         }
                         .appPanel()
@@ -64,21 +70,44 @@ struct NotesScreen: View {
         }
     }
 
-    private func noteLink(_ note: NoteGroup) -> some View {
+    private func noteCard(_ note: NoteGroup) -> some View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Image(systemName: "doc.text.image")
+                        .font(.headline.weight(.bold))
+                        .frame(width: 34, height: 34)
+                        .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                        .foregroundStyle(.teal)
+                    Spacer()
+                    if !note.imageNames.isEmpty {
+                        Label("\(note.imageNames.count)", systemImage: "photo")
+                            .font(.caption2.weight(.black))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 4)
+                            .background(.secondary.opacity(0.10), in: Capsule())
+                    }
+                }
                 Text(note.title)
                     .font(.headline.weight(.black))
                 Text(note.body)
-                    .lineLimit(2)
-                    .font(.subheadline)
+                    .lineLimit(3)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                Text("열기")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.teal)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(10)
-            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 12))
+            .frame(maxWidth: .infinity, minHeight: 142, alignment: .topLeading)
+            .padding(12)
+            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(.quaternary)
+            }
         }
         .buttonStyle(.plain)
     }

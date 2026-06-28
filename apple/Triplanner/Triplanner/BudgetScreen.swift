@@ -16,6 +16,18 @@ struct BudgetScreen: View {
         return min(total / budget, 1)
     }
 
+    private var remainingBudget: Double {
+        max(budget - total, 0)
+    }
+
+    private var categoryTotals: [(String, Double)] {
+        Dictionary(grouping: store.expenses, by: \.category)
+            .map { category, items in
+                (category, items.reduce(0) { $0 + $1.amount })
+            }
+            .sorted { $0.1 > $1.1 }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -23,37 +35,65 @@ struct BudgetScreen: View {
                     ScreenHeader(title: "Budget", subtitle: "여행 지출과 예상 부담을 한눈에 확인")
 
                     VStack(alignment: .leading, spacing: 14) {
-                        Text("TOTAL")
-                            .font(.caption.weight(.black))
-                            .foregroundStyle(.secondary)
+                        SectionLabel(title: "SPENT")
                         HStack(alignment: .firstTextBaseline) {
                             Text("\(Int(total))")
-                                .font(.system(size: 38, weight: .black, design: .rounded))
+                                .font(.system(size: 44, weight: .black, design: .rounded))
                             Text(store.trip?.budgetCurrency ?? "JPY")
                                 .font(.headline.weight(.black))
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text(budget > 0 ? "\(Int(progress * 100))%" : "예산 미정")
-                                .font(.title3.weight(.black))
-                                .foregroundStyle(.teal)
                         }
                         ProgressView(value: progress)
                             .tint(.teal)
-                        if budget > 0 {
-                            Text("예산 \(Int(budget)) \(store.trip?.budgetCurrency ?? "JPY") 기준")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.secondary)
+
+                        HStack(spacing: 8) {
+                            BudgetStat(title: "예산", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
+                            BudgetStat(title: "남은 금액", value: budget > 0 ? "\(Int(remainingBudget))" : "-", unit: store.trip?.budgetCurrency ?? "JPY")
+                            BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
                     }
                     .appPanel()
 
-                    SectionLabel(title: "EXPENSES")
-                    VStack(spacing: 8) {
-                        ForEach(store.expenses) { expense in
-                            ExpenseRow(expense: expense)
+                    if !categoryTotals.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            SectionLabel(title: "CATEGORY")
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 136), spacing: 8)], spacing: 8) {
+                                ForEach(categoryTotals, id: \.0) { category, amount in
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(category)
+                                            .font(.caption.weight(.black))
+                                            .foregroundStyle(.secondary)
+                                        Text("\(Int(amount))")
+                                            .font(.headline.weight(.black))
+                                        Text(store.trip?.budgetCurrency ?? "JPY")
+                                            .font(.caption2.weight(.bold))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(10)
+                                    .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+                                }
+                            }
                         }
+                        .appPanel()
                     }
-                    .appPanel()
+
+                    SectionLabel(title: "EXPENSES")
+                    if store.expenses.isEmpty {
+                        Text("아직 입력된 지출이 없습니다.")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, minHeight: 88)
+                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    } else {
+                        VStack(spacing: 6) {
+                            ForEach(store.expenses) { expense in
+                                ExpenseRow(expense: expense)
+                            }
+                        }
+                        .appPanel()
+                    }
                 }
                 .readableWidth(900)
                 .padding()
@@ -63,11 +103,41 @@ struct BudgetScreen: View {
     }
 }
 
+private struct BudgetStat: View {
+    var title: String
+    var value: String
+    var unit: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(value)
+                    .font(.headline.weight(.black))
+                Text(unit)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
 private struct ExpenseRow: View {
     var expense: ExpenseItem
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: iconName)
+                .font(.headline.weight(.bold))
+                .frame(width: 34, height: 34)
+                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(.teal)
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(expense.title)
                     .font(.subheadline.weight(.black))
@@ -88,6 +158,16 @@ private struct ExpenseRow: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 6)
+        .padding(10)
+        .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var iconName: String {
+        switch expense.category {
+        case "교통": return "tram.fill"
+        case "입장권": return "ticket.fill"
+        case "식비": return "fork.knife"
+        default: return "creditcard.fill"
+        }
     }
 }
