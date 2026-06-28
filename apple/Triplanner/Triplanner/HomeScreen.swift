@@ -155,7 +155,7 @@ struct HomeScreen: View {
     }
 
     private var statusStrip: some View {
-        HStack(spacing: 10) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 154), spacing: 10)], spacing: 10) {
             StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개") {
                 showingChecklistSummary = true
             }

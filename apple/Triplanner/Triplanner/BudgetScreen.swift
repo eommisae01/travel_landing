@@ -76,7 +76,7 @@ struct BudgetScreen: View {
                             .foregroundStyle(.secondary)
                         }
 
-                        HStack(spacing: 8) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
                             BudgetStat(title: "예산", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: "남은 금액", value: budget > 0 ? "\(Int(remainingBudget))" : "-", unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
@@ -182,14 +182,14 @@ private struct ExpenseRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 10) {
             Image(systemName: iconName)
                 .font(.headline.weight(.bold))
-                .frame(width: 38, height: 38)
-                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                .frame(width: 34, height: 34)
+                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
                 .foregroundStyle(categoryColor)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 7) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(expense.title)
                         .font(.subheadline.weight(.black))
@@ -202,11 +202,12 @@ private struct ExpenseRow: View {
                         .foregroundStyle(categoryColor)
                 }
 
-                HStack(spacing: 6) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 6)], spacing: 6) {
                     PersonInfoChip(title: "결제", value: expense.paidBy, tint: .teal)
                     PersonInfoChip(title: "부담", value: expense.intendedPayer, tint: .blue)
                     ParticipantsInfoChip(names: expense.participants)
                 }
+                .frame(maxWidth: 260, alignment: .leading)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 5) {
@@ -216,19 +217,20 @@ private struct ExpenseRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
+            .frame(minWidth: 58, alignment: .trailing)
             Button {
                 isEditing = true
             } label: {
                 Image(systemName: "pencil")
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
-                    .frame(width: 30, height: 30)
+                    .frame(width: 28, height: 28)
                     .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
             }
             .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 64, alignment: .topLeading)
-        .padding(11)
+        .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
+        .padding(10)
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
         .overlay {
             RoundedRectangle(cornerRadius: 14)
