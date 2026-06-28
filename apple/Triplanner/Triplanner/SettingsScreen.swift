@@ -15,6 +15,27 @@ struct SettingsScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: "Settings", subtitle: "공유 전 꼭 확인할 여행 기본 정보")
 
+                    if let trip = store.trip {
+                        HStack(spacing: 12) {
+                            Image(systemName: "person.2.badge.gearshape")
+                                .font(.title3.weight(.black))
+                                .foregroundStyle(.teal)
+                                .frame(width: 46, height: 46)
+                                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 15))
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(trip.name)
+                                    .font(.headline.weight(.black))
+                                Text("\(trip.country) · \(trip.cities.joined(separator: " / "))")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+                            Spacer()
+                        }
+                        .appPanel(cornerRadius: 18)
+                    }
+
                     if horizontalSizeClass == .compact {
                         VStack(spacing: 12) {
                             FlightEditorCard(title: "가는 편", flight: $outboundFlight)
@@ -29,17 +50,14 @@ struct SettingsScreen: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "STAY")
-                        TextField("숙소 이름", text: $accommodation, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
-                        TextField("숙소 주소", text: $accommodationAddress, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
+                        SettingsField(title: "이름", iconName: "bed.double", placeholder: "숙소 이름", text: $accommodation)
+                        SettingsField(title: "주소", iconName: "mappin", placeholder: "숙소 주소", text: $accommodationAddress, axis: .vertical)
                     }
                     .appPanel()
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "MAP")
-                        TextField("Google My Maps 공유 링크", text: $myMapsURL, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
+                        SettingsField(title: "링크", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL, axis: .vertical)
                     }
                     .appPanel()
 
@@ -108,24 +126,55 @@ private struct FlightEditorCard: View {
                     .foregroundStyle(.teal)
             }
 
-            TextField("편명", text: $flight.flightNumber)
-                .textFieldStyle(.roundedBorder)
+            SettingsField(title: "편명", iconName: "number", placeholder: "편명", text: $flight.flightNumber)
 
             HStack(spacing: 8) {
-                TextField("출발지", text: $flight.origin)
-                    .textFieldStyle(.roundedBorder)
-                TextField("도착지", text: $flight.destination)
-                    .textFieldStyle(.roundedBorder)
+                CompactFlightField(title: "출발지", text: $flight.origin)
+                CompactFlightField(title: "도착지", text: $flight.destination)
             }
 
             HStack(spacing: 8) {
-                TextField("출발 시간", text: $flight.localDeparture)
-                    .textFieldStyle(.roundedBorder)
-                TextField("도착 시간", text: $flight.localArrival)
-                    .textFieldStyle(.roundedBorder)
+                CompactFlightField(title: "출발 시간", text: $flight.localDeparture)
+                CompactFlightField(title: "도착 시간", text: $flight.localArrival)
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .appPanel()
+    }
+}
+
+private struct SettingsField: View {
+    var title: String
+    var iconName: String
+    var placeholder: String
+    @Binding var text: String
+    var axis: Axis = .horizontal
+
+    var body: some View {
+        HStack(alignment: axis == .vertical ? .top : .center, spacing: 10) {
+            Label(title, systemImage: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+                .frame(width: 70, alignment: .leading)
+                .padding(.top, axis == .vertical ? 7 : 0)
+            TextField(placeholder, text: $text, axis: axis)
+                .textFieldStyle(.roundedBorder)
+                .lineLimit(axis == .vertical ? 2...5 : 1...1)
+        }
+    }
+}
+
+private struct CompactFlightField: View {
+    var title: String
+    @Binding var text: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+            TextField(title, text: $text)
+                .textFieldStyle(.roundedBorder)
+        }
     }
 }

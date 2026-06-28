@@ -26,7 +26,24 @@ struct OnboardingView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ScreenHeader(title: "새 여행", subtitle: "여행지는 먼저 정하고, 기간/항공/지도는 나중에 채워도 됩니다.")
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "sparkles")
+                                .font(.title2.weight(.black))
+                                .foregroundStyle(.teal)
+                                .frame(width: 46, height: 46)
+                                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 15))
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("새 여행 만들기")
+                                    .font(.system(size: 30, weight: .black, design: .rounded))
+                                Text("여행지만 정하면 시작할 수 있고, 나머지는 나중에 채워도 됩니다.")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .appPanel(cornerRadius: 20)
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
                         OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "미정" : destination, iconName: "mappin.and.ellipse")
@@ -36,10 +53,17 @@ struct OnboardingView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "01 DESTINATION")
-                        Picker("국가", selection: $country) {
-                            ForEach(countries, id: \.self) { Text($0) }
+                        HStack(spacing: 10) {
+                            Label("국가", systemImage: "globe.asia.australia")
+                                .font(.caption.weight(.black))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 70, alignment: .leading)
+                            Picker("국가", selection: $country) {
+                                ForEach(countries, id: \.self) { Text($0) }
+                            }
+                            .pickerStyle(.menu)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .pickerStyle(.menu)
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 8)], spacing: 8) {
                             ForEach(cities, id: \.self) { city in
@@ -47,10 +71,10 @@ struct OnboardingView: View {
                                     cityPreset = city
                                 } label: {
                                     Text(city)
-                                        .font(.subheadline.weight(.black))
+                                        .font(.caption.weight(.black))
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 9)
-                                        .background(cityPreset == city ? Color.teal : Color.secondary.opacity(0.12), in: Capsule())
+                                        .background(cityPreset == city ? Color.teal : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(cityPreset == city ? .white : .primary)
                                 }
                                 .buttonStyle(.plain)
@@ -58,8 +82,7 @@ struct OnboardingView: View {
                         }
 
                         if cityPreset == "기타" {
-                            TextField("도시 직접 입력", text: $customCity)
-                                .textFieldStyle(.roundedBorder)
+                            LabeledOnboardingField(title: "도시", iconName: "pencil", placeholder: "도시 직접 입력", text: $customCity)
                         }
                     }
                     .appPanel()
@@ -84,8 +107,7 @@ struct OnboardingView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "03 FLIGHT")
-                        TextField("편명, 예: RS0741", text: $flightNumber)
-                            .textFieldStyle(.roundedBorder)
+                        LabeledOnboardingField(title: "편명", iconName: "airplane", placeholder: "예: RS0741", text: $flightNumber)
                         Text("도착/출발 시간은 여행 생성 후 설정에서 정리합니다.")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
@@ -94,8 +116,7 @@ struct OnboardingView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "04 MAP")
-                        TextField("Google My Maps 공유 링크", text: $myMapsURL)
-                            .textFieldStyle(.roundedBorder)
+                        LabeledOnboardingField(title: "지도", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL)
                         Text("My Maps 링크를 넣어두면 나중에 지도 동기화 기능으로 연결할 수 있습니다.")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
@@ -155,5 +176,23 @@ private struct OnboardingSummaryChip: View {
         .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
         .padding(.horizontal, 10)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+private struct LabeledOnboardingField: View {
+    var title: String
+    var iconName: String
+    var placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Label(title, systemImage: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+                .frame(width: 70, alignment: .leading)
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.roundedBorder)
+        }
     }
 }
