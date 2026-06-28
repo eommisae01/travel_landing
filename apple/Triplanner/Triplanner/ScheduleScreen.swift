@@ -81,28 +81,59 @@ struct ScheduleScreen: View {
     }
 
     private var calendarGrid: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 10) {
-            ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
-                let count = store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.count
-                Button {
-                    selectedDate = date
-                    viewMode = .timeline
-                } label: {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Day \(index + 1)")
-                            .font(.caption.weight(.black))
-                            .foregroundStyle(.teal)
-                        Text(compactDayLabel(date))
-                            .font(.headline.weight(.black))
-                        Text("\(count)개 일정")
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(title: "CALENDAR")
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 10)], spacing: 10) {
+                ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
+                    let dayItems = store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+                    let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+                    Button {
+                        selectedDate = date
+                        viewMode = .timeline
+                    } label: {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack(alignment: .firstTextBaseline) {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Day \(index + 1)")
+                                        .font(.caption.weight(.black))
+                                        .foregroundStyle(isSelected ? .white.opacity(0.82) : .teal)
+                                    Text(compactDayLabel(date))
+                                        .font(.title3.weight(.black))
+                                }
+                                Spacer()
+                                Text("\(dayItems.count)")
+                                    .font(.caption.weight(.black))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(isSelected ? .white.opacity(0.20) : .secondary.opacity(0.12), in: Capsule())
+                            }
+
+                            VStack(alignment: .leading, spacing: 5) {
+                                ForEach(dayItems.prefix(3)) { item in
+                                    HStack(spacing: 6) {
+                                        Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
+                                            .font(.caption2.weight(.black))
+                                            .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
+                                            .frame(width: 36, alignment: .leading)
+                                        Text(item.title)
+                                            .font(.caption.weight(.bold))
+                                            .lineLimit(1)
+                                    }
+                                }
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
+
+                            Text("탭하면 타임라인으로 보기")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(isSelected ? .white.opacity(0.75) : .secondary)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 138, alignment: .topLeading)
+                        .padding(12)
+                        .background(isSelected ? Color.blue : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                        .foregroundStyle(isSelected ? .white : .primary)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
-                    .background(Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date.distantPast) ? Color.blue.opacity(0.16) : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
     }

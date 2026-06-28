@@ -101,12 +101,27 @@ struct AddNoteSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Notes") {
-                    TextField("제목", text: $title)
-                    TextField("메모", text: $bodyText, axis: .vertical)
-                        .lineLimit(5...12)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    ScreenHeader(title: "Note 추가", subtitle: "시간표, 예약, 현장 정보를 한 묶음으로 저장합니다.")
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "TITLE")
+                        TextField("예: 페리 시간표", text: $title)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    .appPanel()
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "BODY")
+                        TextField("메모", text: $bodyText, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                            .lineLimit(5...12)
+                    }
+                    .appPanel()
                 }
+                .readableWidth(680)
+                .padding()
             }
             .navigationTitle("Note 추가")
             .toolbar {
@@ -131,28 +146,30 @@ struct NoteDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                ScreenHeader(title: note.title, subtitle: "자료 상세")
+
                 Text(note.body)
                     .font(.body)
+                    .lineSpacing(3)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(.background, in: RoundedRectangle(cornerRadius: 18))
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
 
-                Text("사진 묶음")
-                    .font(.headline.weight(.black))
+                SectionLabel(title: "IMAGE BUNDLE")
 
                 if note.imageNames.isEmpty {
-                    VStack(spacing: 10) {
+                    VStack(spacing: 12) {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.largeTitle)
                             .foregroundStyle(.teal)
-                        Text("여기에 페리시간표처럼 여러 장을 한 묶음으로 넣을 예정")
-                            .font(.subheadline.weight(.bold))
+                        Text("페리 시간표, 예약 캡처, 현장 사진을 여러 장 묶어서 넘겨볼 수 있게 만들 예정입니다.")
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity, minHeight: 160)
                     .padding()
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
+                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
@@ -167,8 +184,9 @@ struct NoteDetailView: View {
                     }
                 }
             }
+            .readableWidth()
             .padding()
         }
-        .navigationTitle(note.title)
+        .navigationTitle("")
     }
 }

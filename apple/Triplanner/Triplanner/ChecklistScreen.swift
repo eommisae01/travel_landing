@@ -117,13 +117,39 @@ struct AddChecklistSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("항목") {
-                    TextField("예: 항공권 확인", text: $title)
-                    Picker("담당", selection: $owner) {
-                        ForEach(owners, id: \.self) { Text($0) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    ScreenHeader(title: "준비 추가", subtitle: "담당자를 정해두면 가족별로 챙기기 쉽습니다.")
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "ITEM")
+                        TextField("예: 항공권 확인", text: $title)
+                            .textFieldStyle(.roundedBorder)
                     }
+                    .appPanel()
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "OWNER")
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 88), spacing: 8)], spacing: 8) {
+                            ForEach(owners, id: \.self) { name in
+                                Button {
+                                    owner = name
+                                } label: {
+                                    Text(name)
+                                        .font(.subheadline.weight(.black))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 8)
+                                        .background(owner == name ? Color.teal : Color.secondary.opacity(0.12), in: Capsule())
+                                        .foregroundStyle(owner == name ? .white : .primary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .appPanel()
                 }
+                .readableWidth(620)
+                .padding()
             }
             .navigationTitle("체크리스트 추가")
             .toolbar {

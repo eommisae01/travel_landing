@@ -14,7 +14,7 @@ final class TripStore: ObservableObject {
         var expenses: [ExpenseItem]
     }
 
-    private let storageKey = "travelplanner.snapshot.v2"
+    private let storageKey = "travelplanner.snapshot.v3"
 
     @Published var trip: Trip?
     @Published var selectedCity = ""
@@ -241,7 +241,7 @@ final class TripStore: ObservableObject {
 
     private func loadDemo() {
         let demoTrip = Trip(
-            name: "타카마쓰 가족여행",
+            name: "Takamatsu",
             country: "일본",
             cities: ["타카마쓰", "나오시마", "도쿄"],
             startDate: Date.from("2026-06-22"),
@@ -249,8 +249,8 @@ final class TripStore: ObservableObject {
             accommodation: "리쓰린코엔 기타구치역 근처 숙소",
             accommodationAddress: "Kagawa, Takamatsu, Ritsurincho area",
             myMapsURL: "https://www.google.com/maps/d/u/0/viewer?mid=1njIQAzxY74XFmaChyqYaY-q7t1KsC-M",
-            outbound: FlightInfo(flightNumber: "RS0741", origin: "서울", destination: "타카마쓰", localDeparture: "", localArrival: "10:30"),
-            inbound: FlightInfo(flightNumber: "RS0742", origin: "타카마쓰", destination: "서울", localDeparture: "11:40", localArrival: ""),
+            outbound: FlightInfo(flightNumber: "RS0741", origin: "서울", destination: "타카마쓰", localDeparture: "08:20", localArrival: "10:30"),
+            inbound: FlightInfo(flightNumber: "RS0742", origin: "타카마쓰", destination: "서울", localDeparture: "11:40", localArrival: "13:30"),
             budgetAmount: 150000,
             budgetCurrency: "JPY"
         )

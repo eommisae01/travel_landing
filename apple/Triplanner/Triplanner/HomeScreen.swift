@@ -88,9 +88,6 @@ struct HomeScreen: View {
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
-            Text("선택한 도시 기준으로 오늘 일정과 자료를 좁혀 보여줍니다.")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
@@ -182,7 +179,7 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(cityDisplayName(store.currentCity))
-                    .font(.system(size: isWideLayout ? 38 : 32, weight: .black, design: .rounded))
+                    .font(.system(size: isWideLayout ? 46 : 34, weight: .black, design: .rounded))
                 Image(systemName: "chevron.down")
                     .font(.callout.weight(.bold))
                     .foregroundStyle(.secondary)
@@ -415,15 +412,39 @@ private struct ChecklistSummarySheet: View {
 
     var body: some View {
         NavigationStack {
-            List(remaining) { item in
-                HStack {
-                    Text(item.title)
-                        .font(.headline.weight(.bold))
-                Spacer()
-                    Text(item.owner)
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(title: "남은 준비", subtitle: "\(remaining.count)개 항목")
+
+                    if remaining.isEmpty {
+                        EmptyHint(text: "남은 준비가 없습니다.")
+                    } else {
+                        VStack(spacing: 6) {
+                            ForEach(remaining) { item in
+                                HStack(spacing: 10) {
+                                    Image(systemName: "circle")
+                                        .font(.headline.weight(.bold))
+                                        .foregroundStyle(.secondary)
+                                    Text(item.title)
+                                        .font(.subheadline.weight(.semibold))
+                                    Spacer()
+                                    Text(item.owner)
+                                        .font(.caption.weight(.black))
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(.secondary.opacity(0.10), in: Capsule())
+                                        .foregroundStyle(.secondary)
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
+                                .padding(.horizontal, 10)
+                                .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 10))
+                            }
+                        }
+                        .appPanel()
+                    }
                 }
+                .readableWidth(640)
+                .padding()
             }
             .navigationTitle("남은 준비")
             .toolbar {

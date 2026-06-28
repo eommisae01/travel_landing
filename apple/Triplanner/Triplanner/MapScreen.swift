@@ -43,7 +43,7 @@ struct MapScreen: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Text(category)
                                 .font(.headline.weight(.black))
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 10)], spacing: 10) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 172), spacing: 8)], spacing: 8) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -93,14 +93,14 @@ struct PlaceRow: View {
     var place: PlaceCandidate
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(place.name)
-                        .font(.subheadline.weight(.black))
+                        .font(.footnote.weight(.black))
                         .lineLimit(1)
                     Text(place.category)
-                        .font(.caption.weight(.bold))
+                        .font(.caption2.weight(.bold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -113,7 +113,7 @@ struct PlaceRow: View {
             }
             if !place.appNote.isEmpty {
                 Text(place.appNote)
-                    .font(.caption)
+                    .font(.caption2)
                     .lineLimit(2)
             }
             HStack {
@@ -124,10 +124,10 @@ struct PlaceRow: View {
                     store.addSchedule(from: place, date: Date())
                 }
             }
-            .font(.caption.weight(.bold))
+            .font(.caption2.weight(.bold))
         }
-        .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
-        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 76, alignment: .topLeading)
+        .padding(8)
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
@@ -149,18 +149,50 @@ struct AddPlaceSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("기본 정보") {
-                    TextField("장소명", text: $name)
-                    Picker("분류", selection: $category) {
-                        ForEach(categories, id: \.self) { Text($0) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    ScreenHeader(title: "장소 추가", subtitle: "지도 링크와 앱 메모를 분리해서 저장합니다.")
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "PLACE")
+                        TextField("장소명", text: $name)
+                            .textFieldStyle(.roundedBorder)
+                        TextField("Google Maps 링크", text: $mapURL)
+                            .textFieldStyle(.roundedBorder)
                     }
-                    TextField("Google Maps 링크", text: $mapURL)
+                    .appPanel()
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "CATEGORY")
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 88), spacing: 8)], spacing: 8) {
+                            ForEach(categories, id: \.self) { item in
+                                Button {
+                                    category = item
+                                } label: {
+                                    Text(item)
+                                        .font(.subheadline.weight(.black))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 8)
+                                        .background(category == item ? Color.teal : Color.secondary.opacity(0.12), in: Capsule())
+                                        .foregroundStyle(category == item ? .white : .primary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .appPanel()
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "MEMO")
+                        TextField("지도에서 가져온 메모", text: $mapNote, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                        TextField("앱에서 추가할 메모", text: $appNote, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    .appPanel()
                 }
-                Section("메모") {
-                    TextField("지도에서 가져온 메모", text: $mapNote, axis: .vertical)
-                    TextField("앱에서 추가할 메모", text: $appNote, axis: .vertical)
-                }
+                .readableWidth(680)
+                .padding()
             }
             .navigationTitle("장소 추가")
             .toolbar {
