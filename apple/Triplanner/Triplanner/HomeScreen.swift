@@ -411,8 +411,16 @@ private struct CompactNoteCard: View {
                 .foregroundStyle(.teal)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(note.title)
-                    .font(.subheadline.weight(.black))
+                HStack(spacing: 6) {
+                    Text(note.title)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                    if !note.imageNames.isEmpty {
+                        Label("\(note.imageNames.count)", systemImage: "photo")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.teal)
+                    }
+                }
                 Text(note.body)
                     .font(.caption)
                     .foregroundStyle(.secondary)

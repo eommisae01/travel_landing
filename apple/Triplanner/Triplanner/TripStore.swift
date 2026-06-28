@@ -144,10 +144,10 @@ final class TripStore: ObservableObject {
         save()
     }
 
-    func addNote(title: String, body: String) {
+    func addNote(title: String, body: String, imageNames: [String] = []) {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTitle.isEmpty else { return }
-        notes.insert(NoteGroup(title: trimmedTitle, body: body, imageNames: []), at: 0)
+        notes.insert(NoteGroup(title: trimmedTitle, body: body, imageNames: imageNames), at: 0)
         save()
     }
 
@@ -233,7 +233,7 @@ final class TripStore: ObservableObject {
             members = snapshot.members
             scheduleItems = snapshot.scheduleItems
             places = snapshot.places
-            notes = snapshot.notes
+            notes = snapshot.notes.map(enrichNoteImages)
             checklist = snapshot.checklist
             expenses = snapshot.expenses
             return snapshot.trip != nil
@@ -256,6 +256,24 @@ final class TripStore: ObservableObject {
         if let data = try? JSONEncoder().encode(snapshot) {
             UserDefaults.standard.set(data, forKey: storageKey)
         }
+    }
+
+    private func enrichNoteImages(_ note: NoteGroup) -> NoteGroup {
+        guard note.imageNames.isEmpty else { return note }
+        var enriched = note
+        switch note.title {
+        case "페리시간표":
+            enriched.imageNames = ["다카마쓰→나오시마", "나오시마→다카마쓰", "전체 시간표"]
+        case "나오시마 버스":
+            enriched.imageNames = ["츠츠지소행 버스", "베네세 셔틀", "환승 안내"]
+        case "미술관 운영시간":
+            enriched.imageNames = ["관람 순서", "이동 소요시간"]
+        case "공항 환전/ATM":
+            enriched.imageNames = ["공항 ATM 위치"]
+        default:
+            break
+        }
+        return enriched
     }
 
     private func seedStarterContent(destination: String) {
@@ -326,10 +344,10 @@ final class TripStore: ObservableObject {
             PlaceCandidate(name: "시부야 스카이", category: "도쿄 · 전망", mapURL: "https://www.google.com/maps/search/?api=1&query=Shibuya%20Sky", mapNote: "가상 도쿄 여행", appNote: "저녁 전후 후보", isFavorite: false)
         ]
         notes = [
-            NoteGroup(title: "페리시간표", body: "다카마쓰 → 나오시마: 10:14 → 11:04 추천.\n나오시마 → 다카마쓰: 17:00 → 17:50 추천.\n페리 약 50분, 성인 편도 520엔. 고속선은 약 30분, 성인 1,220엔.", imageNames: []),
-            NoteGroup(title: "나오시마 버스", body: "미야노우라항 2번 정류장 → 츠츠지소. 시내버스 100엔, 하차할 때 지불.\n츠츠지소에서 베네세 구역 무료 셔틀버스 탑승.\n버스 기다리는 시간과의 싸움이라 페리 도착 후 바로 정류장으로 이동.", imageNames: []),
-            NoteGroup(title: "미술관 운영시간", body: "지중미술관: 10:00-17:00, 예약 필요.\n이우환 미술관: 10:00-17:00.\n베네세 하우스 뮤지엄: 08:00-21:00.\nValley Gallery: 09:30-16:00.", imageNames: []),
-            NoteGroup(title: "공항 환전/ATM", body: "타카마쓰 공항 국제선 쪽 114Bank Money Exchange와 은행 ATM 위치 확인. 사진 기준 9:00-21:00. 트래블카드 출금/환전 확인.", imageNames: []),
+            NoteGroup(title: "페리시간표", body: "다카마쓰 → 나오시마: 10:14 → 11:04 추천.\n나오시마 → 다카마쓰: 17:00 → 17:50 추천.\n페리 약 50분, 성인 편도 520엔. 고속선은 약 30분, 성인 1,220엔.", imageNames: ["다카마쓰→나오시마", "나오시마→다카마쓰", "전체 시간표"]),
+            NoteGroup(title: "나오시마 버스", body: "미야노우라항 2번 정류장 → 츠츠지소. 시내버스 100엔, 하차할 때 지불.\n츠츠지소에서 베네세 구역 무료 셔틀버스 탑승.\n버스 기다리는 시간과의 싸움이라 페리 도착 후 바로 정류장으로 이동.", imageNames: ["츠츠지소행 버스", "베네세 셔틀", "환승 안내"]),
+            NoteGroup(title: "미술관 운영시간", body: "지중미술관: 10:00-17:00, 예약 필요.\n이우환 미술관: 10:00-17:00.\n베네세 하우스 뮤지엄: 08:00-21:00.\nValley Gallery: 09:30-16:00.", imageNames: ["관람 순서", "이동 소요시간"]),
+            NoteGroup(title: "공항 환전/ATM", body: "타카마쓰 공항 국제선 쪽 114Bank Money Exchange와 은행 ATM 위치 확인. 사진 기준 9:00-21:00. 트래블카드 출금/환전 확인.", imageNames: ["공항 ATM 위치"]),
             NoteGroup(title: "도쿄 테스트 Notes", body: "도쿄 도시 드롭다운을 눌렀을 때 홈의 TODAY NOTES가 바뀌는지 확인하기 위한 가상 자료입니다.", imageNames: [])
         ]
         checklist = [

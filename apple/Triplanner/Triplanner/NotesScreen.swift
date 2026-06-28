@@ -96,6 +96,20 @@ struct NotesScreen: View {
                     .lineLimit(3)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                if !note.imageNames.isEmpty {
+                    HStack(spacing: -6) {
+                        ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
+                            MiniImageBadge(title: imageName, index: index)
+                        }
+                        if note.imageNames.count > 3 {
+                            Text("+\(note.imageNames.count - 3)")
+                                .font(.caption2.weight(.black))
+                                .frame(width: 30, height: 30)
+                                .background(.secondary.opacity(0.14), in: Circle())
+                        }
+                    }
+                    .padding(.top, 2)
+                }
                 Spacer(minLength: 0)
                 Text("열기")
                     .font(.caption.weight(.black))
@@ -127,6 +141,7 @@ struct AddNoteSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
     @State private var bodyText = ""
+    @State private var imageText = ""
 
     var body: some View {
         NavigationStack {
@@ -148,18 +163,28 @@ struct AddNoteSheet: View {
                             .lineLimit(5...12)
                     }
                     .appPanel()
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "IMAGE BUNDLE")
+                        TextField("예: 페리 전체, 왕복 시간표, 버스 환승", text: $imageText)
+                            .textFieldStyle(.roundedBorder)
+                        Text("여러 장은 쉼표로 구분해두면 자료 상세에서 묶음으로 보입니다.")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .appPanel()
                 }
                 .readableWidth(680)
                 .padding()
             }
-            .navigationTitle("Note 추가")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("추가") {
-                        store.addNote(title: title, body: bodyText)
+                        store.addNote(title: title, body: bodyText, imageNames: parsedImages)
                         dismiss()
                     }
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -167,15 +192,42 @@ struct AddNoteSheet: View {
             }
         }
     }
+
+    private var parsedImages: [String] {
+        imageText
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
 }
 
 struct NoteDetailView: View {
     var note: NoteGroup
+    @State private var selectedImageName: String?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                ScreenHeader(title: note.title, subtitle: "자료 상세")
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "doc.text.image")
+                            .font(.title3.weight(.black))
+                            .frame(width: 44, height: 44)
+                            .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 14))
+                            .foregroundStyle(.teal)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(note.title)
+                                .font(.system(size: 28, weight: .black, design: .rounded))
+                            Text(note.imageNames.isEmpty ? "텍스트 자료" : "\(note.imageNames.count)장의 자료 묶음")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+                    }
+                }
+                .appPanel()
 
                 Text(note.body)
                     .font(.body)
@@ -201,15 +253,17 @@ struct NoteDetailView: View {
                     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
+                        HStack(spacing: 12) {
                             ForEach(note.imageNames, id: \.self) { imageName in
-                                Image(imageName)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 260, height: 220)
-                                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
+                                Button {
+                                    selectedImageName = imageName
+                                } label: {
+                                    NoteImageTile(imageName: imageName, index: note.imageNames.firstIndex(of: imageName) ?? 0)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
+                        .padding(.vertical, 2)
                     }
                 }
             }
@@ -217,5 +271,117 @@ struct NoteDetailView: View {
             .padding()
         }
         .navigationTitle("")
+        .sheet(isPresented: Binding(
+            get: { selectedImageName != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedImageName = nil
+                }
+            }
+        )) {
+            if let selectedImageName {
+                NoteImagePreview(imageName: selectedImageName)
+            }
+        }
+    }
+}
+
+private struct MiniImageBadge: View {
+    var title: String
+    var index: Int
+
+    var body: some View {
+        Text(String(title.prefix(1)))
+            .font(.caption2.weight(.black))
+            .foregroundStyle(.teal)
+            .frame(width: 30, height: 30)
+            .background(.teal.opacity(index == 0 ? 0.18 : 0.12), in: Circle())
+            .overlay {
+                Circle().stroke(.background, lineWidth: 2)
+            }
+    }
+}
+
+private struct NoteImageTile: View {
+    var imageName: String
+    var index: Int
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.teal.opacity(0.22),
+                            Color.blue.opacity(0.14),
+                            Color.secondary.opacity(0.10)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(alignment: .topTrailing) {
+                    Text(String(format: "%02d", index + 1))
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                        .padding(10)
+                }
+
+            VStack(alignment: .leading, spacing: 9) {
+                Image(systemName: "photo")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.teal)
+                Text(imageName)
+                    .font(.headline.weight(.black))
+                    .lineLimit(2)
+                Text("탭해서 크게 보기")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(16)
+        }
+        .frame(width: 250, height: 210)
+        .overlay {
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(.quaternary)
+        }
+    }
+}
+
+private struct NoteImagePreview: View {
+    @Environment(\.dismiss) private var dismiss
+    var imageName: String
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                LinearGradient(
+                    colors: [Color.teal.opacity(0.20), Color.blue.opacity(0.10), Color.secondary.opacity(0.08)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                VStack(spacing: 16) {
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 58, weight: .bold))
+                        .foregroundStyle(.teal)
+                    Text(imageName)
+                        .font(.title.weight(.black))
+                        .multilineTextAlignment(.center)
+                    Text("나중에 실제 사진 파일을 연결하면 이 자리에서 크게 확인합니다.")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+            }
+            .navigationTitle("자료 보기")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("닫기") { dismiss() }
+                }
+            }
+        }
     }
 }
