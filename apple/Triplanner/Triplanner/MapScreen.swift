@@ -17,45 +17,18 @@ struct MapScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    ScreenHeader(title: placesTitle, subtitle: "\(placeCount)개 장소 · 식당, 카페, 환승, 숙소")
+                    ScreenHeader(title: placesTitle, subtitle: "\(placeCount)개 장소 · 별표 \(favoriteCount)개")
 
                     if let trip = store.trip, !trip.myMapsURL.isEmpty, let url = URL(string: trip.myMapsURL) {
-                        HStack(spacing: 10) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.teal.opacity(0.14))
-                                Image(systemName: "map.fill")
-                                    .font(.headline.weight(.black))
-                                    .foregroundStyle(.teal)
-                            }
-                            .frame(width: 40, height: 40)
-
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("공유 지도")
-                                    .font(.subheadline.weight(.black))
-                                Text("My Maps에서 고른 장소와 앱 메모를 함께 관리")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                            Spacer()
-                            Link(destination: url) {
-                                Image(systemName: "arrow.up.right")
-                                    .font(.caption.weight(.black))
-                                    .frame(width: 30, height: 30)
-                            }
-                            .background(.teal, in: RoundedRectangle(cornerRadius: 10))
-                            .foregroundStyle(.white)
-                        }
-                        .padding(10)
-                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+                        sharedMapCard(url)
                     }
 
                     ForEach(groupedPlaces, id: \.0) { category, places in
                         VStack(alignment: .leading, spacing: 9) {
                             HStack {
-                                Text(category)
+                                Label(category, systemImage: sectionIcon(for: category))
                                     .font(.headline.weight(.black))
+                                    .foregroundStyle(sectionColor(for: category))
                                 Spacer()
                                 Text("\(places.count)")
                                     .font(.caption.weight(.black))
@@ -64,7 +37,7 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 126), spacing: 7)], spacing: 7) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 148), spacing: 8)], spacing: 8) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -110,6 +83,10 @@ struct MapScreen: View {
         store.placesForSelectedCity().count
     }
 
+    private var favoriteCount: Int {
+        store.placesForSelectedCity().filter(\.isFavorite).count
+    }
+
     private var placesTitle: String {
         store.currentCity.isEmpty ? "Places" : "\(displayCity(store.currentCity)) Places"
     }
@@ -122,6 +99,67 @@ struct MapScreen: View {
         default: return city
         }
     }
+
+    private func sharedMapCard(_ url: URL) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 13)
+                    .fill(.teal.opacity(0.14))
+                Image(systemName: "map.fill")
+                    .font(.headline.weight(.black))
+                    .foregroundStyle(.teal)
+            }
+            .frame(width: 42, height: 42)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("My Maps")
+                    .font(.subheadline.weight(.black))
+                Text("공유 지도에서 고른 장소와 앱 메모를 같이 확인")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: 8)
+
+            Link(destination: url) {
+                Label("열기", systemImage: "arrow.up.right")
+                    .font(.caption.weight(.black))
+                    .labelStyle(.iconOnly)
+                    .frame(width: 32, height: 32)
+            }
+            .background(.teal, in: RoundedRectangle(cornerRadius: 10))
+            .foregroundStyle(.white)
+        }
+        .padding(11)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.quaternary)
+        }
+    }
+
+    private func sectionColor(for category: String) -> Color {
+        switch category {
+        case let value where value.contains("식") || value.contains("우동"): return .orange
+        case let value where value.contains("카페") || value.contains("디저트"): return .pink
+        case let value where value.contains("환승"): return .blue
+        case let value where value.contains("숙소"): return .purple
+        case let value where value.contains("미술관") || value.contains("전망"): return .teal
+        default: return .teal
+        }
+    }
+
+    private func sectionIcon(for category: String) -> String {
+        switch category {
+        case let value where value.contains("식") || value.contains("우동"): return "fork.knife"
+        case let value where value.contains("카페") || value.contains("디저트"): return "cup.and.saucer"
+        case let value where value.contains("환승"): return "bus"
+        case let value where value.contains("숙소"): return "bed.double"
+        case let value where value.contains("미술관") || value.contains("전망"): return "building.columns"
+        default: return "mappin"
+        }
+    }
 }
 
 struct PlaceRow: View {
@@ -131,34 +169,32 @@ struct PlaceRow: View {
     @State private var isScheduling = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .top) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: categoryIcon)
+                    .font(.caption.weight(.black))
+                    .frame(width: 28, height: 28)
+                    .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
+                    .foregroundStyle(categoryColor)
+
                 VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 5) {
-                        Text(place.category)
-                            .font(.caption2.weight(.black))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(categoryColor.opacity(0.12), in: Capsule())
-                            .foregroundStyle(categoryColor)
-                        if place.isFavorite {
-                            Image(systemName: "star.fill")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(.yellow)
-                        }
-                    }
+                    Text(place.category)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(categoryColor)
+                        .lineLimit(1)
                     Text(place.name)
                         .font(.footnote.weight(.black))
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer()
+                Spacer(minLength: 4)
                 HStack(spacing: 4) {
                     Button {
                         isEditing = true
                     } label: {
                         Image(systemName: "pencil")
                             .font(.caption.weight(.black))
-                            .frame(width: 24, height: 24)
+                            .frame(width: 25, height: 25)
                             .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
                             .foregroundStyle(.secondary)
                     }
@@ -169,27 +205,37 @@ struct PlaceRow: View {
                     } label: {
                         Image(systemName: place.isFavorite ? "star.fill" : "star")
                             .font(.caption.weight(.black))
-                            .frame(width: 24, height: 24)
+                            .frame(width: 25, height: 25)
                             .background((place.isFavorite ? Color.yellow : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
                             .foregroundStyle(place.isFavorite ? .yellow : .secondary)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            VStack(alignment: .leading, spacing: 2) {
-                if !place.mapNote.isEmpty {
-                    Label(place.mapNote, systemImage: "map")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+
+            if hasNotes {
+                VStack(alignment: .leading, spacing: 3) {
+                    if !place.mapNote.isEmpty {
+                        Label(place.mapNote, systemImage: "map")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(categoryColor)
+                            .lineLimit(1)
+                    }
+                    if !place.appNote.isEmpty {
+                        Text(place.appNote)
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
                 }
-                if !place.appNote.isEmpty {
-                    Text(place.appNote)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
+            } else {
+                Text("메모 없음")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
             }
+
             Spacer(minLength: 0)
             HStack(spacing: 6) {
                 if let url = URL(string: place.mapURL) {
@@ -199,6 +245,7 @@ struct PlaceRow: View {
                     }
                     .padding(.vertical, 6)
                     .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
+                    .foregroundStyle(.primary)
                 }
                 Button {
                     isScheduling = true
@@ -207,16 +254,17 @@ struct PlaceRow: View {
                         .frame(maxWidth: .infinity)
                 }
                 .padding(.vertical, 6)
-                    .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+                .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+                .foregroundStyle(categoryColor)
             }
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
-        .frame(maxWidth: .infinity, minHeight: 78, alignment: .topLeading)
-        .padding(8)
-        .background(.background, in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
+        .padding(9)
+        .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
         }
         .sheet(isPresented: $isEditing) {
@@ -238,6 +286,21 @@ struct PlaceRow: View {
         case let value where value.contains("미술관") || value.contains("전망"): return .teal
         default: return .teal
         }
+    }
+
+    private var categoryIcon: String {
+        switch place.category {
+        case let value where value.contains("식") || value.contains("우동"): return "fork.knife"
+        case let value where value.contains("카페") || value.contains("디저트"): return "cup.and.saucer"
+        case let value where value.contains("환승"): return "bus"
+        case let value where value.contains("숙소"): return "bed.double"
+        case let value where value.contains("미술관") || value.contains("전망"): return "building.columns"
+        default: return "mappin"
+        }
+    }
+
+    private var hasNotes: Bool {
+        !place.mapNote.isEmpty || !place.appNote.isEmpty
     }
 }
 
