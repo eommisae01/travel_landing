@@ -23,13 +23,13 @@ struct ScheduleScreen: View {
                     ScreenHeader(title: scheduleTitle, subtitle: scheduleSubtitle)
 
                     VStack(alignment: .leading, spacing: 12) {
+                        SectionLabel(title: "DAYS")
                         filterBar
 
-                        Picker("보기", selection: $viewMode) {
-                            Text("Timeline").tag(ScheduleViewMode.timeline)
-                            Text("Calendar").tag(ScheduleViewMode.calendar)
+                        HStack(spacing: 8) {
+                            modeButton(.timeline, title: "Timeline", iconName: "list.bullet.rectangle")
+                            modeButton(.calendar, title: "Calendar", iconName: "calendar")
                         }
-                        .pickerStyle(.segmented)
                     }
                     .appPanel(cornerRadius: 18)
 
@@ -73,11 +73,16 @@ struct ScheduleScreen: View {
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                dayFilterButton(title: "전체", isSelected: selectedDate == nil) {
+                dayFilterButton(title: "전체", subtitle: "\(store.scheduleItemsForSelectedCity().count)개", isSelected: selectedDate == nil) {
                     selectedDate = nil
                 }
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
-                    dayFilterButton(title: "Day \(index + 1) (\(compactDayLabel(date)))", isSelected: selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false) {
+                    let dayItems = items(on: date)
+                    dayFilterButton(
+                        title: "Day \(index + 1)",
+                        subtitle: "\(compactDayLabel(date)) · \(dayItems.count)개",
+                        isSelected: selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+                    ) {
                         selectedDate = date
                     }
                 }
@@ -85,13 +90,38 @@ struct ScheduleScreen: View {
         }
     }
 
-    private func dayFilterButton(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    private func dayFilterButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.caption.weight(.black))
+                Text(subtitle)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
+            }
+            .frame(width: 104, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(isSelected ? Color.blue : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+            .foregroundStyle(isSelected ? .white : .primary)
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(isSelected ? Color.blue.opacity(0.25) : Color.secondary.opacity(0.14))
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func modeButton(_ mode: ScheduleViewMode, title: String, iconName: String) -> some View {
+        let isSelected = viewMode == mode
+        return Button {
+            viewMode = mode
+        } label: {
+            Label(title, systemImage: iconName)
                 .font(.caption.weight(.black))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(isSelected ? Color.blue : Color.secondary.opacity(0.12), in: Capsule())
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(isSelected ? Color.teal : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
                 .foregroundStyle(isSelected ? .white : .primary)
         }
         .buttonStyle(.plain)
@@ -100,15 +130,14 @@ struct ScheduleScreen: View {
     private var calendarGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(title: "CALENDAR")
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 10)], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 10)], spacing: 10) {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
-                    let dayItems = store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+                    let dayItems = items(on: date)
                     let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
                     Button {
                         selectedDate = date
-                        viewMode = .timeline
                     } label: {
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 9) {
                             HStack(alignment: .firstTextBaseline) {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("Day \(index + 1)")
@@ -140,19 +169,28 @@ struct ScheduleScreen: View {
                             }
                             .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
 
-                            Text("탭하면 타임라인으로 보기")
+                            Text(isSelected ? "선택됨" : "탭해서 이 날만 보기")
                                 .font(.caption2.weight(.bold))
                                 .foregroundStyle(isSelected ? .white.opacity(0.75) : .secondary)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 138, alignment: .topLeading)
+                        .frame(maxWidth: .infinity, minHeight: 126, alignment: .topLeading)
                         .padding(12)
                         .background(isSelected ? Color.blue : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
                         .foregroundStyle(isSelected ? .white : .primary)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(isSelected ? Color.blue.opacity(0.3) : Color.secondary.opacity(0.12))
+                        }
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
+        .appPanel(cornerRadius: 18)
+    }
+
+    private func items(on date: Date) -> [ScheduleItem] {
+        store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
     }
 
     private func compactDayLabel(_ date: Date) -> String {
@@ -215,9 +253,11 @@ struct ScheduleRow: View {
             .frame(width: 18)
 
             VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) {
+                HStack(alignment: .top, spacing: 8) {
                     Text(item.title)
                         .font(.headline.weight(.black))
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(item.kind.rawValue)
                         .font(.caption2.weight(.black))
                         .padding(.horizontal, 7)
@@ -225,15 +265,23 @@ struct ScheduleRow: View {
                         .background(kindColor.opacity(0.14), in: Capsule())
                         .foregroundStyle(kindColor)
                 }
+                if !item.sourceMapNote.isEmpty {
+                    Label(item.sourceMapNote, systemImage: "mappin.and.ellipse")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(kindColor)
+                        .lineLimit(1)
+                }
                 if !item.placeName.isEmpty {
                     Text(item.placeName)
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
                 if !item.note.isEmpty {
                     Text(item.note)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .lineLimit(3)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
