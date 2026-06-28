@@ -44,12 +44,17 @@ struct ScheduleScreen: View {
                                 iconName: "calendar.badge.plus"
                             )
                         } else {
-                            VStack(spacing: 0) {
-                                ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
-                                    ScheduleRow(item: item, isLast: index == visibleItems.count - 1)
-                                }
-                            }
-                            .appPanel()
+            VStack(spacing: 0) {
+                ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
+                    ScheduleRow(item: item, isLast: index == visibleItems.count - 1)
+                }
+            }
+            .padding(10)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+            .overlay {
+                RoundedRectangle(cornerRadius: 22)
+                    .stroke(.quaternary)
+            }
                         }
                     }
                 }
@@ -144,12 +149,13 @@ struct ScheduleScreen: View {
     private var calendarGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(title: "CALENDAR")
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 10)], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 154), spacing: 10)], spacing: 10) {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     let dayItems = items(on: date)
                     let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
                     Button {
                         selectedDate = date
+                        viewMode = .timeline
                     } label: {
                         VStack(alignment: .leading, spacing: 9) {
                             HStack(alignment: .firstTextBaseline) {
@@ -183,13 +189,13 @@ struct ScheduleScreen: View {
                             }
                             .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
 
-                            Text(isSelected ? "선택됨" : "탭해서 이 날만 보기")
+                            Text(isSelected ? "선택됨" : "탭해서 타임라인 보기")
                                 .font(.caption2.weight(.bold))
                                 .foregroundStyle(isSelected ? .white.opacity(0.75) : .secondary)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 126, alignment: .topLeading)
-                        .padding(12)
-                        .background(isSelected ? Color.blue : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                        .frame(maxWidth: .infinity, minHeight: 118, alignment: .topLeading)
+                        .padding(11)
+                        .background(isSelected ? Color.blue : Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 14))
                         .foregroundStyle(isSelected ? .white : .primary)
                         .overlay {
                             RoundedRectangle(cornerRadius: 14)
@@ -236,58 +242,73 @@ struct ScheduleRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            VStack(alignment: .trailing, spacing: 2) {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .center, spacing: 5) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
                     .font(.caption.weight(.black))
-                    .foregroundStyle(kindColor)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
                 if !item.endTime.isEmpty {
                     Text(item.endTime)
-                        .font(.caption2.weight(.bold))
+                        .font(.caption2.weight(.black))
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 58)
+            .frame(width: 54)
+            .padding(.vertical, 8)
+            .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 13))
+            .overlay {
+                RoundedRectangle(cornerRadius: 13)
+                    .stroke(kindColor.opacity(0.18))
+            }
 
             ZStack(alignment: .top) {
                 if !isLast {
                     Rectangle()
-                        .fill(kindColor.opacity(0.28))
-                        .frame(width: 2, height: 78)
-                        .padding(.top, 16)
+                        .fill(kindColor.opacity(0.22))
+                        .frame(width: 2, height: 118)
+                        .padding(.top, 25)
                 }
-                Circle()
-                    .fill(.background)
-                    .frame(width: 14, height: 14)
-                    .overlay {
-                        Circle()
-                            .stroke(kindColor, lineWidth: 3)
-                    }
-                    .padding(.top, 1)
+                Image(systemName: kindIcon)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.white)
+                    .frame(width: 24, height: 24)
+                    .background(kindColor, in: Circle())
+                    .shadow(color: kindColor.opacity(0.22), radius: 6, x: 0, y: 3)
             }
-            .frame(minHeight: 74, alignment: .top)
-            .frame(width: 18)
+            .frame(minHeight: 96, alignment: .top)
+            .frame(width: 26)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(alignment: .top, spacing: 8) {
-                    Text(item.title)
-                        .font(.headline.weight(.black))
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(item.kind.rawValue)
-                        .font(.caption2.weight(.black))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(kindColor.opacity(0.14), in: Capsule())
-                        .foregroundStyle(kindColor)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Text(item.kind.rawValue)
+                                .font(.caption2.weight(.black))
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(kindColor.opacity(0.13), in: Capsule())
+                                .foregroundStyle(kindColor)
+                            if !item.placeName.isEmpty {
+                                Text(item.placeName)
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                        Text(item.title)
+                            .font(.headline.weight(.black))
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     Spacer(minLength: 4)
                     Button {
                         isEditing = true
                     } label: {
                         Image(systemName: "pencil")
                             .font(.caption.weight(.black))
-                            .frame(width: 28, height: 28)
-                            .background(Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
+                            .frame(width: 30, height: 30)
+                            .background(Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("일정 수정")
@@ -298,31 +319,22 @@ struct ScheduleRow: View {
                         .foregroundStyle(kindColor)
                         .lineLimit(1)
                 }
-                if !item.placeName.isEmpty {
-                    Text(item.placeName)
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
                 if !item.note.isEmpty {
                     Text(item.note)
-                        .font(.subheadline)
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.bottom, 14)
-            .overlay(alignment: .bottom) {
-                if !isLast {
-                    Rectangle()
-                        .fill(.quaternary)
-                        .frame(height: 1)
-                }
+            .padding(12)
+            .background(kindColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(kindColor.opacity(0.12))
             }
-            Spacer()
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 6)
         .sheet(isPresented: $isEditing) {
             ScheduleEditorSheet(existingItem: item, defaultDate: item.date)
                 .environmentObject(store)
@@ -335,6 +347,15 @@ struct ScheduleRow: View {
         case .food: return .orange
         case .flight: return .purple
         case .place: return .teal
+        }
+    }
+
+    private var kindIcon: String {
+        switch item.kind {
+        case .move: return "arrow.triangle.swap"
+        case .food: return "fork.knife"
+        case .flight: return "airplane"
+        case .place: return "mappin"
         }
     }
 }
