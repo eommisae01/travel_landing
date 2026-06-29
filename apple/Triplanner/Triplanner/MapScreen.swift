@@ -230,15 +230,15 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            HStack(alignment: .top, spacing: 11) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
                 Image(systemName: categoryIcon)
                     .font(.headline.weight(.black))
                     .foregroundStyle(categoryColor)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 38, height: 38)
                     .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 5) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(place.name)
                             .font(.headline.weight(.black))
@@ -251,34 +251,32 @@ struct PlaceRow: View {
                         }
                     }
 
-                    HStack(spacing: 6) {
-                        PlaceMiniPill(title: place.category, iconName: categoryIcon, tint: categoryColor)
-                        if hasMapLink {
-                            PlaceMiniPill(title: "지도", iconName: "map", tint: .blue)
-                        }
-                        if !place.appNote.isEmpty {
-                            PlaceMiniPill(title: "앱 메모", iconName: "note.text", tint: .secondary)
-                        }
-                    }
-                    .lineLimit(1)
+                    Text(summaryText)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-
-                actionCluster
             }
 
-            Text(summaryText)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.leading, 51)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 7) {
+                    placePills
+                    Spacer(minLength: 8)
+                    actionCluster
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    placePills
+                    actionCluster
+                }
+            }
         }
         .contentShape(Rectangle())
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 96, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 108, alignment: .center)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
@@ -362,6 +360,18 @@ struct PlaceRow: View {
         .fixedSize()
     }
 
+    private var placePills: some View {
+        HStack(spacing: 6) {
+            PlaceMiniPill(title: place.category, iconName: categoryIcon, tint: categoryColor)
+            if hasMapLink {
+                PlaceMiniPill(title: "지도", iconName: "map", tint: theme.secondaryAccent)
+            }
+            if !place.appNote.isEmpty {
+                PlaceMiniPill(title: "앱 메모", iconName: "note.text", tint: .secondary)
+            }
+        }
+    }
+
     private var categoryColor: Color {
         switch place.category {
         case let value where value.contains("식") || value.contains("우동"): return .orange
@@ -398,7 +408,7 @@ struct PlaceRow: View {
     private func actionIcon(_ iconName: String, tint: Color) -> some View {
         Image(systemName: iconName)
             .font(.caption.weight(.black))
-            .frame(width: 30, height: 30)
+            .frame(width: 31, height: 31)
             .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
             .foregroundStyle(tint)
     }
