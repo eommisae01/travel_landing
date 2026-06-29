@@ -118,12 +118,12 @@ struct ScreenHeader: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 35, weight: .black, design: .rounded))
+                    .font(.system(size: 39, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -186,7 +186,7 @@ struct EmptyStateView: View {
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
-            .padding(17)
+            .padding(20)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)

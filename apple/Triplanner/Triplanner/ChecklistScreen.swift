@@ -60,14 +60,14 @@ struct ChecklistScreen: View {
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(selectedOwner == "전체" ? "전체 준비" : selectedOwner)
-                                    .font(.title2.weight(.black).width(.expanded))
+                                    .font(.system(size: 27, weight: .black, design: .rounded))
                                     .foregroundStyle(.secondary)
                                 Text("\(remainingCount)개 남음")
-                                    .font(.system(size: 40, weight: .black, design: .rounded))
+                                    .font(.system(size: 46, weight: .black, design: .rounded))
                             }
                             Spacer()
                             Text("\(Int(progress * 100))%")
-                                .font(.system(size: 40, weight: .black, design: .rounded))
+                                .font(.system(size: 46, weight: .black, design: .rounded))
                                 .foregroundStyle(progress >= 1 ? theme.accent : .primary)
                         }
                         ProgressView(value: progress)
@@ -122,19 +122,19 @@ struct ChecklistScreen: View {
                             if isSelected {
                                 Circle()
                                     .fill(.white)
-                                    .frame(width: 8, height: 8)
+                                    .frame(width: 9, height: 9)
                             }
                             Image(systemName: "person.crop.circle")
-                                .font(.title3.weight(.black))
+                                .font(.system(size: 21, weight: .black))
                             Text(owner)
-                                .font(.title3.weight(.black))
+                                .font(.system(size: 21, weight: .black, design: .rounded))
                                 .lineLimit(1)
                             Text("\(summary.remaining)/\(summary.total)")
-                                .font(.title3.weight(.black).monospacedDigit())
+                                .font(.system(size: 21, weight: .black, design: .rounded).monospacedDigit())
                                 .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
                         }
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 13)
                         .background(isSelected ? theme.accent : Color.clear, in: Capsule())
                         .foregroundStyle(isSelected ? .white : .primary)
                         .overlay {
@@ -166,11 +166,11 @@ private struct ChecklistSection: View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
                 Text(title)
-                    .font(.title2.weight(.black))
+                    .font(.system(size: 28, weight: .black, design: .rounded))
                     .foregroundStyle(.primary)
                 Spacer()
                 Text(subtitle)
-                    .font(.system(size: 17, weight: .black, design: .rounded).monospacedDigit())
+                    .font(.system(size: 19, weight: .black, design: .rounded).monospacedDigit())
                     .padding(.horizontal, 13)
                     .padding(.vertical, 8)
                     .background(tint.opacity(0.12), in: Capsule())
@@ -247,7 +247,7 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { 88 }
+    private var rowHeight: CGFloat { 94 }
 
     private var checkmarkIcon: some View {
         ZStack {
@@ -267,7 +267,7 @@ private struct ChecklistItemRow: View {
 
     private var titleLabel: some View {
         Text(item.title)
-            .font(.system(size: 26, weight: .semibold, design: .rounded))
+            .font(.system(size: 30, weight: .semibold, design: .rounded))
             .strikethrough(item.isDone)
             .foregroundStyle(item.isDone ? .secondary : .primary)
             .lineLimit(1)
@@ -278,10 +278,10 @@ private struct ChecklistItemRow: View {
 
     private var ownerPill: some View {
         Text(item.owner)
-            .font(.system(size: 18, weight: .black, design: .rounded))
+            .font(.system(size: 20, weight: .black, design: .rounded))
             .lineLimit(1)
             .minimumScaleFactor(0.78)
-            .frame(width: 112, height: 46)
+            .frame(width: 120, height: 50)
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
     }
@@ -298,14 +298,14 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(width: 174, height: rowHeight, alignment: .center)
+        .frame(width: 186, height: rowHeight, alignment: .center)
     }
 
     private var editIcon: some View {
         Image(systemName: "pencil")
             .font(.title3.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 46, height: 46)
+            .frame(width: 50, height: 50)
             .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 13))
     }
 
