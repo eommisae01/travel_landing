@@ -188,15 +188,15 @@ private struct ChecklistSection: View {
                         }
                     }
                 }
-                .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
                 .clipShape(RoundedRectangle(cornerRadius: 13))
                 .overlay {
                     RoundedRectangle(cornerRadius: 13)
-                        .stroke(Color.primary.opacity(0.05))
+                        .stroke(Color.primary.opacity(0.055))
                 }
             }
         }
-        .appPanel(cornerRadius: 18)
+        .padding(.top, 2)
     }
 }
 
