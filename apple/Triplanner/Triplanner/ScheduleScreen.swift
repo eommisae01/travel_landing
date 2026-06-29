@@ -23,18 +23,19 @@ struct ScheduleScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     ScreenHeader(title: scheduleTitle, subtitle: scheduleSubtitle)
 
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 16) {
                         HStack {
-                            SectionLabel(title: "VIEW")
+                            Text("날짜")
+                                .font(.title3.weight(.black))
                             Spacer()
                             Text(selectedDate.map(compactDayLabel) ?? "전체")
-                                .font(.subheadline.weight(.black))
+                                .font(.headline.weight(.black))
                                 .foregroundStyle(theme.accent)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 7)
                                 .background(theme.accent.opacity(0.10), in: Capsule())
                         }
                         filterBar
@@ -61,8 +62,8 @@ struct ScheduleScreen: View {
                         }
                     }
                 }
-                .readableWidth(1220)
-                .padding(22)
+                .readableWidth(1280)
+                .padding(28)
             }
             .navigationTitle("")
             .toolbar {
@@ -95,24 +96,24 @@ struct ScheduleScreen: View {
 
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
                 dayFilterButton(title: "전체", subtitle: "\(store.scheduleItemsForSelectedCity().count)개", isSelected: selectedDate == nil) {
                     selectedDate = nil
                 }
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     dayFilterButton(
                         title: "Day \(index + 1)",
-                        subtitle: compactDayLabel(date),
+                        subtitle: "\(compactDayLabel(date)) · \(items(on: date).count)개",
                         isSelected: selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
                     ) {
                         selectedDate = date
                     }
                 }
             }
-            .padding(6)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+            .padding(7)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
             .overlay {
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: 22)
                     .stroke(Color.primary.opacity(0.055))
             }
         }
@@ -123,9 +124,9 @@ struct ScheduleScreen: View {
             VStack(alignment: .leading, spacing: 5) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.headline.weight(.black))
+                        .font(.title3.weight(.black))
                     Text(subtitle)
-                        .font(.subheadline.weight(.bold))
+                        .font(.callout.weight(.bold))
                         .foregroundStyle(isSelected ? .white.opacity(0.86) : .secondary)
                         .lineLimit(1)
                 }
@@ -134,14 +135,14 @@ struct ScheduleScreen: View {
                     .fill(isSelected ? .white.opacity(0.92) : Color.clear)
                     .frame(height: 4)
             }
-            .frame(width: title == "전체" ? 108 : 132, alignment: .leading)
-            .frame(minHeight: 62, alignment: .leading)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 16))
+            .frame(width: title == "전체" ? 124 : 168, alignment: .leading)
+            .frame(minHeight: 72, alignment: .leading)
+            .padding(.horizontal, 15)
+            .padding(.vertical, 11)
+            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 18))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 18)
                     .stroke(isSelected ? theme.accent.opacity(0.56) : Color.secondary.opacity(0.13), lineWidth: 1)
             }
         }
@@ -151,15 +152,14 @@ struct ScheduleScreen: View {
     private var calendarPreview: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("CALENDAR")
-                    .font(.subheadline.weight(.black))
-                    .foregroundStyle(.secondary)
+                Text("캘린더 미리보기")
+                    .font(.title3.weight(.black))
                 Spacer()
                 Button {
                     viewMode = .calendar
                 } label: {
-                    Label("전체 보기", systemImage: "calendar")
-                        .font(.subheadline.weight(.black))
+                    Label("캘린더 보기", systemImage: "calendar")
+                        .font(.headline.weight(.black))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.accent)
@@ -173,24 +173,24 @@ struct ScheduleScreen: View {
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Day \(index + 1)")
-                                .font(.subheadline.weight(.black))
-                            Text(compactDayLabel(date))
                                 .font(.headline.weight(.black))
+                            Text(compactDayLabel(date))
+                                .font(.title3.weight(.black))
                         }
-                        .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                        .frame(maxWidth: .infinity, minHeight: 68, alignment: .leading)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 16))
                         .foregroundStyle(isSelected ? .white : .primary)
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
-        .padding(14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
@@ -213,7 +213,7 @@ struct ScheduleScreen: View {
             calendarDetailPanels
 
             VStack(alignment: .leading, spacing: 10) {
-                SectionLabel(title: "MONTH")
+                SectionLabel(title: "월간")
 
                 HStack(spacing: 0) {
                     ForEach(weekdayLabels, id: \.self) { label in
@@ -268,11 +268,11 @@ struct ScheduleScreen: View {
 
     private var calendarHeaderCopy: some View {
         VStack(alignment: .leading, spacing: 3) {
-            SectionLabel(title: "CALENDAR")
+            SectionLabel(title: "캘린더")
             Text(calendarTitle)
-                .font(.headline.weight(.black))
+                .font(.title3.weight(.black))
             Text(selectedDate.map { "\(compactDayLabel($0)) 선택됨" } ?? "전체 날짜를 한 번에 보는 중")
-                .font(.caption.weight(.semibold))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
         }
@@ -299,7 +299,7 @@ struct ScheduleScreen: View {
                 selectedDate = nil
                 viewMode = .timeline
             } label: {
-                CalendarHeaderButtonLabel(title: "Timeline", iconName: "list.bullet", tint: theme.accent)
+                CalendarHeaderButtonLabel(title: "타임라인", iconName: "list.bullet", tint: theme.accent)
             }
             .buttonStyle(.plain)
         }
@@ -342,7 +342,7 @@ struct ScheduleScreen: View {
     private var calendarTimeGridPanel: some View {
         VStack(alignment: .leading, spacing: 11) {
             HStack {
-                SectionLabel(title: selectedDate == nil && dates.count > 1 ? "TIME GRID" : "DAY GRID")
+                SectionLabel(title: selectedDate == nil && dates.count > 1 ? "시간표" : "하루 시간표")
                 Spacer()
                 Text(selectedDate.map(compactDayLabel) ?? "전체 날짜")
                     .font(.caption.weight(.black))
@@ -369,7 +369,7 @@ struct ScheduleScreen: View {
     private var calendarAgendaPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                SectionLabel(title: selectedDate.map { compactDayLabel($0) } ?? "ALL SCHEDULE")
+                SectionLabel(title: selectedDate.map { compactDayLabel($0) } ?? "전체 일정")
                 Spacer()
                 if selectedDate != nil {
                     Button {
@@ -502,7 +502,7 @@ struct ScheduleScreen: View {
                 Button {
                     openScheduleEditor(for: date)
                 } label: {
-                        Image(systemName: "plus")
+                    Image(systemName: "plus")
                         .font(.headline.weight(.black))
                         .frame(width: 36, height: 36)
                         .background(theme.accent.opacity(0.13), in: RoundedRectangle(cornerRadius: 11))
@@ -599,8 +599,8 @@ private enum ScheduleViewMode: Hashable {
 
     var title: String {
         switch self {
-        case .timeline: return "Timeline"
-        case .calendar: return "Calendar"
+        case .timeline: return "타임라인"
+        case .calendar: return "캘린더"
         }
     }
 
@@ -635,12 +635,12 @@ private struct ScheduleModeSwitch: View {
             viewMode = mode
         } label: {
             Label(mode.title, systemImage: mode.iconName)
-                .font(.subheadline.weight(.black))
-                .frame(maxWidth: .infinity, minHeight: 42)
+                .font(.headline.weight(.black))
+                .frame(maxWidth: .infinity, minHeight: 48)
                 .foregroundStyle(isSelected ? .white : .primary)
-                .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 14))
+                .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 15))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 15)
                         .stroke(isSelected ? theme.accent.opacity(0.38) : Color.secondary.opacity(0.10))
                 }
         }
@@ -655,11 +655,11 @@ private struct CalendarHeaderButtonLabel: View {
 
     var body: some View {
         Label(title, systemImage: iconName)
-            .font(.subheadline.weight(.black))
+            .font(.headline.weight(.black))
             .lineLimit(1)
             .minimumScaleFactor(0.82)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
             .background(tint.opacity(0.11), in: Capsule())
             .foregroundStyle(tint)
     }
@@ -684,7 +684,7 @@ private struct MultiDayCalendarGrid: View {
         ScrollView(.horizontal, showsIndicators: true) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 0) {
-                    Text("GMT+9")
+                    Text("현지")
                         .font(.subheadline.weight(.black))
                         .foregroundStyle(.secondary)
                         .frame(width: 72, alignment: .trailing)
