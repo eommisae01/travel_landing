@@ -43,13 +43,13 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: 10)], spacing: 10) {
+                            VStack(spacing: 8) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
                             }
                         }
-                        .padding(9)
+                        .padding(10)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                         .overlay {
                             RoundedRectangle(cornerRadius: 16)
@@ -224,82 +224,59 @@ struct PlaceRow: View {
     var place: PlaceCandidate
     @State private var isEditing = false
     @State private var isScheduling = false
+    @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 9) {
-                Image(systemName: categoryIcon)
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(categoryColor)
-                    .frame(width: 30, height: 30)
-                    .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: categoryIcon)
+                .font(.headline.weight(.black))
+                .foregroundStyle(categoryColor)
+                .frame(width: 42, height: 42)
+                .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 13))
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(alignment: .firstTextBaseline, spacing: 5) {
-                        Text(place.name)
-                            .font(.subheadline.weight(.black))
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if place.isFavorite {
-                            Image(systemName: "star.fill")
-                                .font(.caption2.weight(.black))
-                                .foregroundStyle(.yellow)
-                        }
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(place.name)
+                        .font(.headline.weight(.black))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                    if place.isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(.yellow)
                     }
-                    HStack(spacing: 5) {
-                        Image(systemName: categoryIcon)
-                            .font(.caption2.weight(.black))
-                        Text(place.category)
-                            .font(.caption2.weight(.black))
-                            .lineLimit(1)
-                    }
-                    .foregroundStyle(categoryColor)
-
-                    Text(summaryText)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
 
-                HStack(spacing: 4) {
-                    Button {
-                        store.toggleFavorite(place)
-                    } label: {
-                        actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
+                HStack(spacing: 6) {
+                    PlaceMiniPill(title: place.category, iconName: categoryIcon, tint: categoryColor)
+                    if hasMapLink {
+                        PlaceMiniPill(title: "지도", iconName: "map", tint: .blue)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
-
-                    Menu {
-                        Button {
-                            isEditing = true
-                        } label: {
-                            Label("수정", systemImage: "pencil")
-                        }
-                        Button {
-                            store.toggleFavorite(place)
-                        } label: {
-                            Label(place.isFavorite ? "별표 해제" : "별표", systemImage: place.isFavorite ? "star.slash" : "star")
-                        }
-                        if let url = URL(string: place.mapURL) {
-                            Link(destination: url) {
-                                Label("지도 열기", systemImage: "map")
-                            }
-                        }
-                    } label: {
-                        actionIcon("ellipsis", tint: .secondary)
+                    if !place.appNote.isEmpty {
+                        PlaceMiniPill(title: "앱 메모", iconName: "note.text", tint: .secondary)
                     }
-                    .menuStyle(.button)
-                    .buttonStyle(.plain)
                 }
+
+                Text(summaryText)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            HStack(spacing: 7) {
+            HStack(spacing: 6) {
+                Button {
+                    store.toggleFavorite(place)
+                } label: {
+                    actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
+
                 if let url = URL(string: place.mapURL) {
                     Link(destination: url) {
-                        PlaceActionChip(title: "지도", iconName: "map", tint: .blue)
+                        actionIcon("map", tint: .blue)
                     }
                     .accessibilityLabel("지도 열기")
                 }
@@ -307,32 +284,55 @@ struct PlaceRow: View {
                 Button {
                     isScheduling = true
                 } label: {
-                    PlaceActionChip(title: "일정", iconName: "calendar.badge.plus", tint: categoryColor)
+                    actionIcon("calendar.badge.plus", tint: categoryColor)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("일정에 추가")
 
-                Button {
-                    isEditing = true
+                Menu {
+                    Button {
+                        isShowingDetail = true
+                    } label: {
+                        Label("전체 정보", systemImage: "info.circle")
+                    }
+                    Button {
+                        isEditing = true
+                    } label: {
+                        Label("수정", systemImage: "pencil")
+                    }
+                    Button {
+                        store.toggleFavorite(place)
+                    } label: {
+                        Label(place.isFavorite ? "별표 해제" : "별표", systemImage: place.isFavorite ? "star.slash" : "star")
+                    }
+                    if let url = URL(string: place.mapURL) {
+                        Link(destination: url) {
+                            Label("지도 열기", systemImage: "map")
+                        }
+                    }
                 } label: {
-                    PlaceActionChip(title: "수정", iconName: "pencil", tint: .secondary)
+                    actionIcon("ellipsis", tint: .secondary)
                 }
+                .menuStyle(.button)
                 .buttonStyle(.plain)
-
-                Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 126, maxHeight: 126, alignment: .topLeading)
-        .padding(10)
-        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isShowingDetail = true
+        }
+        .frame(maxWidth: .infinity, minHeight: 106, alignment: .center)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(categoryColor)
                 .frame(width: 3)
-                .padding(.vertical, 10)
+                .padding(.vertical, 12)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(categoryColor.opacity(place.isFavorite ? 0.22 : 0.07))
         }
         .shadow(color: categoryColor.opacity(0.035), radius: 5, x: 0, y: 3)
@@ -342,6 +342,10 @@ struct PlaceRow: View {
         }
         .sheet(isPresented: $isScheduling) {
             PlaceScheduleSheet(place: place)
+                .environmentObject(store)
+        }
+        .sheet(isPresented: $isShowingDetail) {
+            PlaceDetailSheet(place: place, isEditing: $isEditing, isScheduling: $isScheduling)
                 .environmentObject(store)
         }
     }
@@ -369,17 +373,134 @@ struct PlaceRow: View {
     }
 
     private var summaryText: String {
+        if !place.appNote.isEmpty, !place.mapNote.isEmpty { return "\(place.appNote) · \(place.mapNote)" }
         if !place.appNote.isEmpty { return place.appNote }
         if !place.mapNote.isEmpty { return place.mapNote }
         return "메모 없음"
     }
 
+    private var hasMapLink: Bool {
+        URL(string: place.mapURL) != nil
+    }
+
     private func actionIcon(_ iconName: String, tint: Color) -> some View {
         Image(systemName: iconName)
             .font(.caption.weight(.black))
-            .frame(width: 26, height: 26)
+            .frame(width: 30, height: 30)
             .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
             .foregroundStyle(tint)
+    }
+}
+
+private struct PlaceMiniPill: View {
+    var title: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        Label(title, systemImage: iconName)
+            .font(.caption2.weight(.black))
+            .lineLimit(1)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 4)
+            .background(tint.opacity(0.09), in: Capsule())
+            .foregroundStyle(tint)
+    }
+}
+
+private struct PlaceDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var store: TripStore
+    var place: PlaceCandidate
+    @Binding var isEditing: Bool
+    @Binding var isScheduling: Bool
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(title: place.name, subtitle: place.category)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionLabel(title: "MEMO")
+                        DetailMemoRow(title: "앱 메모", value: place.appNote, iconName: "note.text")
+                        DetailMemoRow(title: "지도 메모", value: place.mapNote, iconName: "map")
+                    }
+                    .appPanel(cornerRadius: 18)
+
+                    HStack(spacing: 8) {
+                        Button {
+                            dismiss()
+                            isScheduling = true
+                        } label: {
+                            Label("일정에 넣기", systemImage: "calendar.badge.plus")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Button {
+                            dismiss()
+                            isEditing = true
+                        } label: {
+                            Label("수정", systemImage: "pencil")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
+                    if let url = URL(string: place.mapURL) {
+                        Link(destination: url) {
+                            Label("Google Maps 열기", systemImage: "arrow.up.right.square")
+                                .font(.headline.weight(.bold))
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+                .readableWidth(560)
+                .padding()
+            }
+            .navigationTitle("")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("닫기") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        store.toggleFavorite(place)
+                    } label: {
+                        Label(place.isFavorite ? "별표 해제" : "별표", systemImage: place.isFavorite ? "star.fill" : "star")
+                    }
+                }
+            }
+        }
+        .appScreenBackground()
+    }
+}
+
+private struct DetailMemoRow: View {
+    var title: String
+    var value: String
+    var iconName: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+                .frame(width: 30, height: 30)
+                .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+                Text(value.isEmpty ? "입력 전" : value)
+                    .font(.subheadline.weight(.semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 }
 
