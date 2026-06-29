@@ -68,7 +68,7 @@ struct BudgetScreen: View {
                                         .padding(.vertical, 4)
                                         .background(spendingTint.opacity(0.11), in: Capsule())
                                 }
-                                Text("지출, 한도, 부담 대상을 한 화면에서 확인")
+                                Text("지출, Limit, 부담 대상을 한 화면에서 확인")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
@@ -98,7 +98,7 @@ struct BudgetScreen: View {
                             HStack {
                                 Text("0")
                                 Spacer()
-                                Text(budget > 0 ? "\(Int(budget)) \(store.trip?.budgetCurrency ?? "JPY")" : "예산 미정")
+                                Text(budget > 0 ? "\(Int(budget)) \(store.trip?.budgetCurrency ?? "JPY")" : "Limit 미정")
                             }
                             .font(.caption2.weight(.black))
                             .foregroundStyle(.secondary)
@@ -113,7 +113,7 @@ struct BudgetScreen: View {
                         Button {
                             isEditingBudget = true
                         } label: {
-                            Label(budget > 0 ? "예산 한도 수정" : "예산 한도 설정", systemImage: "slider.horizontal.3")
+                            Label(budget > 0 ? "Budget 수정" : "Budget 설정", systemImage: "slider.horizontal.3")
                                 .font(.caption.weight(.black))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 9)
@@ -145,7 +145,7 @@ struct BudgetScreen: View {
                     if store.expenses.isEmpty {
                         EmptyStateView(
                             title: "지출이 비어있어요",
-                            message: "항공권, 숙소, 식비처럼 함께 볼 비용을 추가하면 예산 진행률이 계산됩니다.",
+                            message: "항공권, 숙소, 식비처럼 함께 볼 비용을 추가하면 Budget 진행률이 계산됩니다.",
                             iconName: "creditcard"
                         )
                     } else {
@@ -166,7 +166,7 @@ struct BudgetScreen: View {
                     Button {
                         isEditingBudget = true
                     } label: {
-                        Label("예산 설정", systemImage: "slider.horizontal.3")
+                        Label("Budget 설정", systemImage: "slider.horizontal.3")
                     }
                     Button {
                         isAddingExpense = true
@@ -208,7 +208,7 @@ private struct BudgetLimitSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Budget Limit", subtitle: "이번 여행에서 함께 확인할 총 예산")
+                    ScreenHeader(title: "Budget Limit", subtitle: "이번 여행에서 함께 확인할 총 한도")
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "LIMIT")
@@ -219,7 +219,7 @@ private struct BudgetLimitSheet: View {
                                 .textFieldStyle(.roundedBorder)
                                 .frame(maxWidth: 92)
                         }
-                        Text("0으로 저장하면 Budget 화면에는 예산 미정으로 표시됩니다.")
+                        Text("0으로 저장하면 Budget 화면에는 Limit 미정으로 표시됩니다.")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
