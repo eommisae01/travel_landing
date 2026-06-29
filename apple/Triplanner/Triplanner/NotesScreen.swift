@@ -45,7 +45,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: noteGridColumns, spacing: 14) {
+        LazyVGrid(columns: noteGridColumns, spacing: 10) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -54,9 +54,9 @@ struct NotesScreen: View {
 
     private var noteGridColumns: [GridItem] {
         if horizontalSizeClass == .compact {
-            return [GridItem(.flexible(), spacing: 14)]
+            return [GridItem(.flexible(), spacing: 10)]
         }
-        return [GridItem(.adaptive(minimum: 320, maximum: 440), spacing: 14)]
+        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 10)]
     }
 
     private var featuredNotes: [NoteGroup] {
@@ -283,15 +283,9 @@ struct NotesScreen: View {
                     tint: .secondary
                 )
             } else {
-                HStack(spacing: -7) {
-                    ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
-                        MiniImageBadge(title: imageName, index: index, tint: noteAccent(note), compact: true)
-                            .zIndex(Double(3 - index))
-                    }
-                }
-
+                NoteStackPreview(imageNames: note.imageNames, tint: noteAccent(note))
                 NoteAttachmentSummary(
-                    title: "\(note.imageNames.count)장 묶음",
+                    title: "\(note.imageNames.count)장 자료",
                     detail: note.imageNames.prefix(2).joined(separator: ", "),
                     iconName: "photo.stack",
                     tint: noteAccent(note)
@@ -418,6 +412,33 @@ private struct NoteAttachmentSummary: View {
             }
         }
         .frame(maxWidth: 210, alignment: .leading)
+    }
+}
+
+private struct NoteStackPreview: View {
+    var imageNames: [String]
+    var tint: Color
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            HStack(spacing: -12) {
+                ForEach(Array(imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
+                    MiniImageBadge(title: imageName, index: index, tint: tint, compact: true)
+                        .rotationEffect(.degrees(Double(index - 1) * 2.5))
+                        .offset(y: CGFloat(index) * 2)
+                        .zIndex(Double(3 - index))
+                }
+            }
+
+            Text("\(imageNames.count)")
+                .font(.system(size: 9, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(width: 18, height: 18)
+                .background(tint, in: Circle())
+                .offset(x: 7, y: -7)
+        }
+        .frame(width: 72, height: 38, alignment: .leading)
+        .accessibilityLabel("\(imageNames.count)장 자료")
     }
 }
 
