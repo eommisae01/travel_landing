@@ -95,12 +95,12 @@ struct InfoCard: View {
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(3)
         }
-        .frame(maxWidth: .infinity, minHeight: 66, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 62, alignment: .topLeading)
         .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(.quaternary)
+            RoundedRectangle(cornerRadius: 13)
+                .stroke(Color.primary.opacity(0.055))
         }
     }
 }
@@ -111,32 +111,32 @@ struct ScreenHeader: View {
     var subtitle: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 11) {
+        HStack(alignment: .center, spacing: 10) {
             ZStack {
-                RoundedRectangle(cornerRadius: 13)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(
                         LinearGradient(
                             colors: [
-                                theme.accent.opacity(0.90),
-                                theme.secondaryAccent.opacity(0.62)
+                                theme.accent.opacity(0.82),
+                                theme.secondaryAccent.opacity(0.54)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                Circle()
-                    .fill(.white.opacity(0.28))
-                    .frame(width: 14, height: 14)
-                    .offset(x: 8, y: -8)
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(.white.opacity(0.16))
+                    .frame(width: 18, height: 18)
+                    .offset(x: 7, y: -7)
                 Image(systemName: "square.grid.2x2.fill")
-                    .font(.caption.weight(.black))
+                    .font(.caption2.weight(.black))
                     .foregroundStyle(.white)
             }
-            .frame(width: 42, height: 42)
+            .frame(width: 38, height: 38)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 26, weight: .black, design: .rounded))
+                    .font(.system(size: 24, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
@@ -150,7 +150,7 @@ struct ScreenHeader: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 1)
+        .padding(.bottom, 2)
     }
 }
 
@@ -159,7 +159,8 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.caption.weight(.black))
+            .font(.caption2.weight(.black))
+            .tracking(0.7)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -195,7 +196,7 @@ struct EmptyStateView: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay {
             RoundedRectangle(cornerRadius: 14)
-                .stroke(.quaternary)
+                .stroke(Color.primary.opacity(0.055))
         }
     }
 }
@@ -207,16 +208,16 @@ extension View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(.quaternary)
+                    .stroke(Color.primary.opacity(0.055))
             }
-            .shadow(color: Color.primary.opacity(0.035), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.022), radius: 7, x: 0, y: 3)
     }
 
     func appScreenBackground() -> some View {
         modifier(AppScreenBackgroundModifier())
     }
 
-    func readableWidth(_ width: CGFloat = 980) -> some View {
+    func readableWidth(_ width: CGFloat = 1080) -> some View {
         self
             .frame(maxWidth: width, alignment: .topLeading)
             .frame(maxWidth: .infinity, alignment: .top)
