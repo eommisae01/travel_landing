@@ -189,66 +189,55 @@ struct ScheduleScreen: View {
     private var calendarGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                SectionLabel(title: "CALENDAR")
+                VStack(alignment: .leading, spacing: 2) {
+                    SectionLabel(title: "CALENDAR")
+                    Text(calendarTitle)
+                        .font(.headline.weight(.black))
+                }
                 Spacer()
-                Text("탭하면 해당 Day 일정으로 이동합니다")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.secondary)
+                Button {
+                    selectedDate = nil
+                    viewMode = .timeline
+                } label: {
+                    Label("전체", systemImage: "list.bullet")
+                        .font(.caption.weight(.black))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.teal)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 8)], spacing: 8) {
-                ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
+
+            HStack(spacing: 0) {
+                ForEach(weekdayLabels, id: \.self) { label in
+                    Text(label)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.horizontal, 6)
+
+            LazyVGrid(columns: calendarColumns, spacing: 7) {
+                ForEach(calendarDisplayDates, id: \.self) { date in
                     let dayItems = items(on: date)
+                    let index = dayIndex(for: date)
                     let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+                    let isTripDay = index != nil
                     Button {
+                        guard isTripDay else { return }
                         selectedDate = date
                         viewMode = .timeline
                     } label: {
-                        VStack(alignment: .leading, spacing: 7) {
-                            HStack(alignment: .firstTextBaseline) {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text("Day \(index + 1)")
-                                        .font(.caption.weight(.black))
-                                        .foregroundStyle(isSelected ? .white.opacity(0.82) : .teal)
-                                    Text(compactDayLabel(date))
-                                        .font(.title3.weight(.black))
-                                }
-                                Spacer()
-                                Text("\(dayItems.count)")
-                                    .font(.caption.weight(.black))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(isSelected ? .white.opacity(0.20) : .secondary.opacity(0.12), in: Capsule())
-                            }
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                ForEach(dayItems.prefix(3)) { item in
-                                    HStack(spacing: 6) {
-                                        Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
-                                            .font(.caption2.weight(.black))
-                                            .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
-                                            .frame(width: 36, alignment: .leading)
-                                        Text(item.title)
-                                            .font(.caption.weight(.bold))
-                                            .lineLimit(1)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
-
-                            Text(isSelected ? "선택됨" : "탭해서 타임라인 보기")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(isSelected ? .white.opacity(0.75) : .secondary)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
-                        .padding(10)
-                        .background(isSelected ? Color.teal : Color.secondary.opacity(0.065), in: RoundedRectangle(cornerRadius: 13))
-                        .foregroundStyle(isSelected ? .white : .primary)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 13)
-                                .stroke(isSelected ? Color.teal.opacity(0.3) : Color.secondary.opacity(0.12))
-                        }
+                        CalendarDayCell(
+                            dayNumber: dayNumber(date),
+                            dayLabel: index.map { "Day \($0 + 1)" },
+                            firstItemTitle: dayItems.first?.title,
+                            itemCount: dayItems.count,
+                            isTripDay: isTripDay,
+                            isSelected: isSelected
+                        )
                     }
                     .buttonStyle(.plain)
+                    .disabled(!isTripDay)
                 }
             }
         }
@@ -275,6 +264,44 @@ struct ScheduleScreen: View {
 
     private var timelineDates: [Date] {
         dates.filter { !items(on: $0).isEmpty }
+    }
+
+    private var calendarColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(minimum: 38), spacing: 7), count: 7)
+    }
+
+    private var calendarDisplayDates: [Date] {
+        guard let first = dates.first, let last = dates.last else { return [] }
+        let calendar = Calendar.current
+        let firstWeekday = calendar.component(.weekday, from: first)
+        let leadingDays = firstWeekday - calendar.firstWeekday
+        let normalizedLeadingDays = leadingDays >= 0 ? leadingDays : leadingDays + 7
+        let start = calendar.date(byAdding: .day, value: -normalizedLeadingDays, to: first) ?? first
+
+        let lastWeekday = calendar.component(.weekday, from: last)
+        let trailingDays = 6 - ((lastWeekday - calendar.firstWeekday + 7) % 7)
+        let end = calendar.date(byAdding: .day, value: trailingDays, to: last) ?? last
+        let dayCount = calendar.dateComponents([.day], from: start, to: end).day ?? 0
+        return (0...max(dayCount, 0)).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
+    }
+
+    private var calendarTitle: String {
+        guard let first = dates.first else { return "여행 날짜" }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy년 M월"
+        return formatter.string(from: first)
+    }
+
+    private var weekdayLabels: [String] {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        var labels = formatter.shortWeekdaySymbols ?? ["일", "월", "화", "수", "목", "금", "토"]
+        let firstIndex = max(Calendar.current.firstWeekday - 1, 0)
+        if firstIndex > 0 {
+            labels = Array(labels[firstIndex...]) + Array(labels[..<firstIndex])
+        }
+        return labels
     }
 
     private func timelineSection(date: Date, items: [ScheduleItem]) -> some View {
@@ -329,6 +356,15 @@ struct ScheduleScreen: View {
         store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
     }
 
+    private func dayIndex(for date: Date) -> Int? {
+        dates.firstIndex { Calendar.current.isDate($0, inSameDayAs: date) }
+    }
+
+    private func dayNumber(_ date: Date) -> String {
+        let day = Calendar.current.component(.day, from: date)
+        return "\(day)"
+    }
+
     private func openScheduleEditor(for date: Date) {
         scheduleDraftDate = date
         isAddingSchedule = true
@@ -370,6 +406,97 @@ struct ScheduleScreen: View {
 private enum ScheduleViewMode: Hashable {
     case timeline
     case calendar
+}
+
+private struct CalendarDayCell: View {
+    var dayNumber: String
+    var dayLabel: String?
+    var firstItemTitle: String?
+    var itemCount: Int
+    var isTripDay: Bool
+    var isSelected: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(dayNumber)
+                    .font(.title3.weight(.black).monospacedDigit())
+                    .foregroundStyle(primaryForeground)
+                Spacer(minLength: 4)
+                if itemCount > 0 {
+                    Text("\(itemCount)")
+                        .font(.caption2.weight(.black))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(counterBackground, in: Capsule())
+                        .foregroundStyle(counterForeground)
+                }
+            }
+
+            if let dayLabel {
+                Text(dayLabel)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(dayLabelForeground)
+                    .lineLimit(1)
+            } else {
+                Text(" ")
+                    .font(.caption2.weight(.black))
+            }
+
+            if let firstItemTitle, isTripDay {
+                Text(firstItemTitle)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(secondaryForeground)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if isTripDay {
+                Text("일정 없음")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(secondaryForeground)
+                    .lineLimit(1)
+            } else {
+                Spacer(minLength: 0)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 88, alignment: .topLeading)
+        .padding(9)
+        .background(cellBackground, in: RoundedRectangle(cornerRadius: 13))
+        .overlay {
+            RoundedRectangle(cornerRadius: 13)
+                .stroke(borderColor, lineWidth: isSelected ? 1.5 : 1)
+        }
+        .opacity(isTripDay ? 1 : 0.36)
+    }
+
+    private var cellBackground: Color {
+        if isSelected { return .teal }
+        return isTripDay ? Color.secondary.opacity(0.065) : Color.secondary.opacity(0.035)
+    }
+
+    private var borderColor: Color {
+        if isSelected { return Color.teal.opacity(0.36) }
+        return isTripDay ? Color.secondary.opacity(0.12) : Color.clear
+    }
+
+    private var primaryForeground: Color {
+        isSelected ? .white : (isTripDay ? .primary : .secondary)
+    }
+
+    private var secondaryForeground: Color {
+        isSelected ? .white.opacity(0.78) : .secondary
+    }
+
+    private var dayLabelForeground: Color {
+        isSelected ? .white.opacity(0.82) : .teal
+    }
+
+    private var counterBackground: Color {
+        isSelected ? .white.opacity(0.20) : .secondary.opacity(0.12)
+    }
+
+    private var counterForeground: Color {
+        isSelected ? .white : .secondary
+    }
 }
 
 struct ScheduleRow: View {
