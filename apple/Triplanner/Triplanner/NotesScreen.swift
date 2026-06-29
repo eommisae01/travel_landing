@@ -57,7 +57,7 @@ struct NotesScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 14)]
         }
-        return [GridItem(.adaptive(minimum: 500, maximum: 640), spacing: 18)]
+        return [GridItem(.adaptive(minimum: 520, maximum: 680), spacing: 20)]
     }
 
     private var featuredNotes: [NoteGroup] {
@@ -278,7 +278,7 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: 18) {
                 RepresentativeNoteThumbnail(
                     imageName: note.imageNames.first,
                     iconName: note.imageNames.isEmpty ? noteKindIcon(note) : "photo",
@@ -286,11 +286,13 @@ struct NotesScreen: View {
                     compact: false
                 )
                 .overlay(alignment: .topTrailing) {
-                    NoteCountBadge(count: note.imageNames.count, tint: noteAccent(note))
-                        .padding(8)
+                    if note.imageNames.count > 1 {
+                        NoteCountBadge(count: note.imageNames.count, tint: noteAccent(note))
+                            .padding(10)
+                    }
                 }
 
-                VStack(alignment: .leading, spacing: 11) {
+                VStack(alignment: .leading, spacing: 13) {
                     HStack(alignment: .top, spacing: 10) {
                         VStack(alignment: .leading, spacing: 7) {
                             Text(note.title)
@@ -311,7 +313,7 @@ struct NotesScreen: View {
                         .font(.headline.weight(.semibold))
                         .lineSpacing(4)
                         .foregroundStyle(note.body.isEmpty ? .tertiary : .secondary)
-                        .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
+                        .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
 
                     Spacer(minLength: 0)
 
@@ -330,8 +332,8 @@ struct NotesScreen: View {
                 }
                 .frame(maxWidth: .infinity, minHeight: 164, alignment: .topLeading)
             }
-            .frame(maxWidth: .infinity, minHeight: 208, maxHeight: 208, alignment: .topLeading)
-            .padding(18)
+            .frame(maxWidth: .infinity, minHeight: 236, maxHeight: 236, alignment: .topLeading)
+            .padding(20)
             .background(.background.opacity(0.88), in: RoundedRectangle(cornerRadius: 20))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
@@ -484,10 +486,10 @@ private struct NoteKindPill: View {
 
     var body: some View {
         Label(title, systemImage: iconName)
-            .font(.caption.weight(.black))
+            .font(.subheadline.weight(.black))
             .lineLimit(1)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
             .background(tint.opacity(0.11), in: Capsule())
             .foregroundStyle(tint)
     }
@@ -511,13 +513,13 @@ private struct NoteCountBadge: View {
     var tint: Color
 
     var body: some View {
-        Label(count == 0 ? "메모" : "\(count)", systemImage: count == 0 ? "doc.text" : "photo.stack")
-            .font(.subheadline.weight(.black))
+        Label("\(count)", systemImage: "photo.stack")
+            .font(.caption.weight(.black))
             .labelStyle(.titleAndIcon)
-            .foregroundStyle(count == 0 ? .secondary : tint)
-            .padding(.horizontal, 10)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 9)
             .padding(.vertical, 6)
-            .background((count == 0 ? Color.secondary : tint).opacity(0.10), in: Capsule())
+            .background(tint, in: Capsule())
     }
 }
 
@@ -559,31 +561,55 @@ private struct RepresentativeNoteThumbnail: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             RoundedRectangle(cornerRadius: compact ? 13 : 18)
-                .fill(tint.opacity(compact ? 0.12 : 0.15))
+                .fill(tint.opacity(compact ? 0.12 : 0.11))
+
+            thumbnailArtwork
 
             Image(systemName: iconName)
-                .font(.system(size: compact ? 17 : 34, weight: .black))
+                .font(.system(size: compact ? 18 : 30, weight: .black))
                 .foregroundStyle(tint)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .frame(width: compact ? 30 : 44, height: compact ? 30 : 44)
+                .background(.background.opacity(0.72), in: RoundedRectangle(cornerRadius: compact ? 10 : 14))
+                .padding(compact ? 7 : 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
             if let imageName {
                 Text(imageName)
-                    .font(.system(size: compact ? 8 : 12, weight: .black, design: .rounded))
-                    .foregroundStyle(tint)
-                    .lineLimit(1)
+                    .font(.system(size: compact ? 10 : 15, weight: .black, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .lineLimit(compact ? 1 : 2)
                     .minimumScaleFactor(0.72)
-                    .padding(.horizontal, compact ? 6 : 10)
-                    .padding(.vertical, compact ? 4 : 6)
-                    .background(.background.opacity(0.74), in: Capsule())
-                    .padding(compact ? 5 : 9)
+                    .padding(.horizontal, compact ? 7 : 12)
+                    .padding(.vertical, compact ? 5 : 8)
+                    .background(.background.opacity(0.78), in: RoundedRectangle(cornerRadius: compact ? 9 : 13))
+                    .padding(compact ? 6 : 12)
             }
         }
-        .frame(width: compact ? 58 : 164, height: compact ? 46 : 128)
+        .frame(width: compact ? 64 : 188, height: compact ? 50 : 150)
         .overlay {
             RoundedRectangle(cornerRadius: compact ? 13 : 18)
                 .stroke(tint.opacity(0.14))
         }
         .accessibilityLabel(imageName ?? "텍스트 메모")
+    }
+
+    private var thumbnailArtwork: some View {
+        ZStack {
+            Circle()
+                .fill(tint.opacity(0.14))
+                .frame(width: compact ? 42 : 92, height: compact ? 42 : 92)
+                .offset(x: compact ? 20 : 56, y: compact ? -10 : -26)
+            RoundedRectangle(cornerRadius: compact ? 8 : 14)
+                .fill(tint.opacity(0.18))
+                .frame(width: compact ? 42 : 96, height: compact ? 18 : 40)
+                .rotationEffect(.degrees(-6))
+                .offset(x: compact ? -14 : -42, y: compact ? 10 : 34)
+            RoundedRectangle(cornerRadius: compact ? 7 : 13)
+                .fill(.background.opacity(0.50))
+                .frame(width: compact ? 28 : 70, height: compact ? 16 : 34)
+                .rotationEffect(.degrees(7))
+                .offset(x: compact ? 14 : 42, y: compact ? 12 : 36)
+        }
     }
 }
 
@@ -672,14 +698,10 @@ private struct FeaturedNoteTile: View {
             )
             .frame(maxWidth: .infinity, alignment: .leading)
             .overlay(alignment: .topTrailing) {
-                Label(note.imageNames.isEmpty ? "Text" : "\(note.imageNames.count)", systemImage: note.imageNames.isEmpty ? "text.alignleft" : "photo.stack")
-                    .font(.caption.weight(.black))
-                    .labelStyle(.titleAndIcon)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(accent, in: Capsule())
-                    .padding(8)
+                if note.imageNames.count > 1 {
+                    NoteCountBadge(count: note.imageNames.count, tint: accent)
+                        .padding(10)
+                }
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -701,8 +723,8 @@ private struct FeaturedNoteTile: View {
                     .lineLimit(2)
             }
         }
-        .frame(width: 248, height: 246, alignment: .topLeading)
-        .padding(13)
+        .frame(width: 286, height: 292, alignment: .topLeading)
+        .padding(15)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
