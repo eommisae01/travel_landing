@@ -186,13 +186,13 @@ struct EmptyStateView: View {
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
-            .padding(20)
+            .padding(22)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.primary.opacity(0.055))
+                    .stroke(Color.primary.opacity(0.065))
             }
-            .shadow(color: Color.primary.opacity(0.022), radius: 7, x: 0, y: 3)
+            .shadow(color: Color.primary.opacity(0.026), radius: 9, x: 0, y: 4)
     }
 
     func appScreenBackground() -> some View {
@@ -212,7 +212,7 @@ private struct AppScreenBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background {
-                Color.secondary.opacity(0.032)
+                Color.secondary.opacity(0.026)
                     .ignoresSafeArea()
             }
             .tint(theme.accent)
