@@ -69,7 +69,7 @@ struct BudgetScreen: View {
                                         .frame(width: 34, height: 34)
                                         .background(spendingTint, in: RoundedRectangle(cornerRadius: 11))
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("Limit")
+                                        Text("Trip limit")
                                             .font(.caption.weight(.black))
                                             .foregroundStyle(.secondary)
                                         Text(budget > 0 ? "\(Int(budget)) \(currency)" : "미설정")
@@ -79,7 +79,7 @@ struct BudgetScreen: View {
                                             .minimumScaleFactor(0.82)
                                     }
                                 }
-                                Text(budget > 0 ? "설정한 한도 기준으로 사용률과 남은 금액을 계산해요" : "오른쪽 위 Set limit에서 이번 여행 기준 금액을 정할 수 있어요")
+                                Text(budget > 0 ? "설정한 한도 기준으로 사용률과 남은 금액을 계산해요" : "맨 위 Set limit에서 이번 여행 기준 금액을 정할 수 있어요")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
@@ -110,7 +110,7 @@ struct BudgetScreen: View {
                         }
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
-                            BudgetStat(title: "Limit", value: budget > 0 ? "\(Int(budget))" : "미정", unit: currency)
+                            BudgetStat(title: "Trip limit", value: budget > 0 ? "\(Int(budget))" : "미정", unit: currency)
                             BudgetStat(title: balanceTitle, value: balanceValue, unit: currency)
                             BudgetStat(title: "Used", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
@@ -223,7 +223,7 @@ private struct BudgetLimitBanner: View {
 
     private var limitCopy: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("Limit")
+            Text("Trip limit")
                 .font(.caption.weight(.black))
                 .foregroundStyle(.secondary)
             Text(budgetIsSet ? "\(Int(budget)) \(currency)" : "Set a trip budget")
@@ -242,7 +242,7 @@ private struct BudgetLimitBanner: View {
         Button {
             onEditLimit()
         } label: {
-            Label(budgetIsSet ? "Edit Budget" : "Set Budget", systemImage: "pencil")
+            Label(budgetIsSet ? "Edit limit" : "Set limit", systemImage: "pencil")
                 .font(.caption.weight(.black))
                 .padding(.horizontal, 11)
                 .padding(.vertical, 8)
@@ -267,7 +267,7 @@ private struct BudgetLimitSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Budget limit", subtitle: "이번 여행에서 함께 확인할 총 금액")
+                    ScreenHeader(title: "Set limit", subtitle: "이번 여행에서 함께 확인할 총 금액")
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "LIMIT")
