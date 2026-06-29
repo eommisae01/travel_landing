@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MapScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @State private var addSheetOpen = false
 
     private var groupedPlaces: [(String, [PlaceCandidate])] {
@@ -67,7 +68,7 @@ struct MapScreen: View {
                 .readableWidth(1120)
                 .padding()
             }
-            .navigationTitle("지도")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -114,10 +115,10 @@ struct MapScreen: View {
         HStack(spacing: 10) {
             ZStack {
                 RoundedRectangle(cornerRadius: 13)
-                    .fill(.teal.opacity(0.14))
+                    .fill(theme.accent.opacity(0.14))
                 Image(systemName: "map.fill")
                     .font(.headline.weight(.black))
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(theme.accent)
             }
             .frame(width: 38, height: 38)
 
@@ -138,7 +139,7 @@ struct MapScreen: View {
                     .labelStyle(.iconOnly)
                     .frame(width: 32, height: 32)
             }
-            .background(.teal, in: RoundedRectangle(cornerRadius: 10))
+            .background(theme.accent, in: RoundedRectangle(cornerRadius: 10))
             .foregroundStyle(.white)
         }
         .padding(10)
@@ -155,8 +156,8 @@ struct MapScreen: View {
         case let value where value.contains("카페") || value.contains("디저트"): return .pink
         case let value where value.contains("환승"): return .blue
         case let value where value.contains("숙소"): return .purple
-        case let value where value.contains("미술관") || value.contains("전망"): return .teal
-        default: return .teal
+        case let value where value.contains("미술관") || value.contains("전망"): return theme.accent
+        default: return theme.accent
         }
     }
 
@@ -173,6 +174,7 @@ struct MapScreen: View {
 }
 
 private struct PlaceOverviewStrip: View {
+    @Environment(\.appTheme) private var theme
     var totalCount: Int
     var favoriteCount: Int
     var linkedCount: Int
@@ -180,10 +182,10 @@ private struct PlaceOverviewStrip: View {
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 8)], spacing: 8) {
-            PlaceMetricPill(title: "전체", value: "\(totalCount)", iconName: "mappin.and.ellipse", tint: .teal)
-            PlaceMetricPill(title: "별표", value: "\(favoriteCount)", iconName: "star.fill", tint: .yellow)
-            PlaceMetricPill(title: "지도", value: "\(linkedCount)", iconName: "map", tint: .blue)
-            PlaceMetricPill(title: "분류", value: "\(categoryCount)", iconName: "square.grid.2x2", tint: .purple)
+            PlaceMetricPill(title: "전체", value: "\(totalCount)", iconName: "mappin.and.ellipse", tint: theme.accent)
+            PlaceMetricPill(title: "별표", value: "\(favoriteCount)", iconName: "star.fill", tint: theme.warmAccent)
+            PlaceMetricPill(title: "지도", value: "\(linkedCount)", iconName: "map", tint: theme.secondaryAccent)
+            PlaceMetricPill(title: "분류", value: "\(categoryCount)", iconName: "square.grid.2x2", tint: theme.accent)
         }
     }
 }
@@ -221,107 +223,62 @@ private struct PlaceMetricPill: View {
 
 struct PlaceRow: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     var place: PlaceCandidate
     @State private var isEditing = false
     @State private var isScheduling = false
     @State private var isShowingDetail = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: categoryIcon)
-                .font(.headline.weight(.black))
-                .foregroundStyle(categoryColor)
-                .frame(width: 42, height: 42)
-                .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 13))
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .top, spacing: 11) {
+                Image(systemName: categoryIcon)
+                    .font(.headline.weight(.black))
+                    .foregroundStyle(categoryColor)
+                    .frame(width: 40, height: 40)
+                    .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(place.name)
-                        .font(.headline.weight(.black))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.78)
-                    if place.isFavorite {
-                        Image(systemName: "star.fill")
-                            .font(.caption.weight(.black))
-                            .foregroundStyle(.yellow)
-                    }
-                }
-
-                HStack(spacing: 6) {
-                    PlaceMiniPill(title: place.category, iconName: categoryIcon, tint: categoryColor)
-                    if hasMapLink {
-                        PlaceMiniPill(title: "지도", iconName: "map", tint: .blue)
-                    }
-                    if !place.appNote.isEmpty {
-                        PlaceMiniPill(title: "앱 메모", iconName: "note.text", tint: .secondary)
-                    }
-                }
-
-                Text(summaryText)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 6) {
-                Button {
-                    store.toggleFavorite(place)
-                } label: {
-                    actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
-
-                if let url = URL(string: place.mapURL) {
-                    Link(destination: url) {
-                        actionIcon("map", tint: .blue)
-                    }
-                    .accessibilityLabel("지도 열기")
-                }
-
-                Button {
-                    isScheduling = true
-                } label: {
-                    actionIcon("calendar.badge.plus", tint: categoryColor)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("일정에 추가")
-
-                Menu {
-                    Button {
-                        isShowingDetail = true
-                    } label: {
-                        Label("전체 정보", systemImage: "info.circle")
-                    }
-                    Button {
-                        isEditing = true
-                    } label: {
-                        Label("수정", systemImage: "pencil")
-                    }
-                    Button {
-                        store.toggleFavorite(place)
-                    } label: {
-                        Label(place.isFavorite ? "별표 해제" : "별표", systemImage: place.isFavorite ? "star.slash" : "star")
-                    }
-                    if let url = URL(string: place.mapURL) {
-                        Link(destination: url) {
-                            Label("지도 열기", systemImage: "map")
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(place.name)
+                            .font(.headline.weight(.black))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.82)
+                        if place.isFavorite {
+                            Image(systemName: "star.fill")
+                                .font(.caption.weight(.black))
+                                .foregroundStyle(.yellow)
                         }
                     }
-                } label: {
-                    actionIcon("ellipsis", tint: .secondary)
+
+                    HStack(spacing: 6) {
+                        PlaceMiniPill(title: place.category, iconName: categoryIcon, tint: categoryColor)
+                        if hasMapLink {
+                            PlaceMiniPill(title: "지도", iconName: "map", tint: .blue)
+                        }
+                        if !place.appNote.isEmpty {
+                            PlaceMiniPill(title: "앱 메모", iconName: "note.text", tint: .secondary)
+                        }
+                    }
+                    .lineLimit(1)
                 }
-                .menuStyle(.button)
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                actionCluster
             }
+
+            Text(summaryText)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, 51)
         }
         .contentShape(Rectangle())
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 106, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 96, alignment: .center)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
@@ -350,14 +307,69 @@ struct PlaceRow: View {
         }
     }
 
+    private var actionCluster: some View {
+        HStack(spacing: 5) {
+            Button {
+                store.toggleFavorite(place)
+            } label: {
+                actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
+
+            if let url = URL(string: place.mapURL) {
+                Link(destination: url) {
+                    actionIcon("map", tint: .blue)
+                }
+                .accessibilityLabel("지도 열기")
+            }
+
+            Button {
+                isScheduling = true
+            } label: {
+                actionIcon("calendar.badge.plus", tint: categoryColor)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("일정에 추가")
+
+            Menu {
+                Button {
+                    isShowingDetail = true
+                } label: {
+                    Label("전체 정보", systemImage: "info.circle")
+                }
+                Button {
+                    isEditing = true
+                } label: {
+                    Label("수정", systemImage: "pencil")
+                }
+                Button {
+                    store.toggleFavorite(place)
+                } label: {
+                    Label(place.isFavorite ? "별표 해제" : "별표", systemImage: place.isFavorite ? "star.slash" : "star")
+                }
+                if let url = URL(string: place.mapURL) {
+                    Link(destination: url) {
+                        Label("지도 열기", systemImage: "map")
+                    }
+                }
+            } label: {
+                actionIcon("ellipsis", tint: .secondary)
+            }
+            .menuStyle(.button)
+            .buttonStyle(.plain)
+        }
+        .fixedSize()
+    }
+
     private var categoryColor: Color {
         switch place.category {
         case let value where value.contains("식") || value.contains("우동"): return .orange
         case let value where value.contains("카페") || value.contains("디저트"): return .pink
         case let value where value.contains("환승"): return .blue
         case let value where value.contains("숙소"): return .purple
-        case let value where value.contains("미술관") || value.contains("전망"): return .teal
-        default: return .teal
+        case let value where value.contains("미술관") || value.contains("전망"): return theme.accent
+        default: return theme.accent
         }
     }
 
@@ -523,6 +535,7 @@ private struct PlaceActionChip: View {
 struct PlaceScheduleSheet: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
 
     var place: PlaceCandidate
 
@@ -569,7 +582,7 @@ struct PlaceScheduleSheet: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 8)
-                                        .background(isSameDay(option, date) ? Color.teal : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+                                        .background(isSameDay(option, date) ? theme.accent : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(isSameDay(option, date) ? .white : .primary)
                                     }
                                     .buttonStyle(.plain)
@@ -672,7 +685,7 @@ struct PlaceScheduleSheet: View {
         case let value where value.contains("카페") || value.contains("디저트"): return .pink
         case let value where value.contains("환승"): return .blue
         case let value where value.contains("숙소"): return .purple
-        default: return .teal
+        default: return theme.accent
         }
     }
 
@@ -690,6 +703,7 @@ struct PlaceScheduleSheet: View {
 struct PlaceEditorSheet: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
     var existingPlace: PlaceCandidate?
 
     @State private var name = ""
@@ -724,7 +738,7 @@ struct PlaceEditorSheet: View {
                                         .font(.caption.weight(.black))
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 9)
-                                        .background(category == item ? Color.teal : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                                        .background(category == item ? theme.accent : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(category == item ? .white : .primary)
                                 }
                                 .buttonStyle(.plain)
@@ -777,6 +791,7 @@ struct PlaceEditorSheet: View {
 }
 
 private struct LabeledPlaceField: View {
+    @Environment(\.appTheme) private var theme
     var title: String
     var iconName: String
     var placeholder: String
@@ -786,7 +801,7 @@ private struct LabeledPlaceField: View {
         HStack(spacing: 10) {
             Label(title, systemImage: iconName)
                 .font(.caption.weight(.black))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.accent)
                 .frame(width: 70, alignment: .leading)
             TextField(placeholder, text: $text)
                 .textFieldStyle(.roundedBorder)
