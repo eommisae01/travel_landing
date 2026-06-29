@@ -189,11 +189,11 @@ private struct ThemeActivePreview: View {
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             themePreviewCard
-                .frame(width: 118, height: 72)
+                .frame(width: 132, height: 86)
             themeDescription
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 84, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 98, alignment: .center)
         .padding(10)
         .background(theme.accent.opacity(0.065), in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
@@ -228,11 +228,27 @@ private struct ThemeActivePreview: View {
                     paletteDot(theme.accent)
                     paletteDot(theme.secondaryAccent)
                     paletteDot(theme.warmAccent)
+                    Spacer()
+                    Image(systemName: "sparkles")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.white.opacity(0.86))
                 }
                 Text(theme.title)
-                    .font(.subheadline.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.white)
                     .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(.white.opacity(0.84))
+                        .frame(width: 50, height: 18)
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(.white.opacity(0.45))
+                        .frame(width: 34, height: 18)
+                }
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(.white.opacity(0.62))
+                    .frame(width: 76, height: 5)
             }
             .padding(10)
         }
@@ -281,6 +297,11 @@ private struct ThemeOptionTile: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
+                HStack(spacing: 4) {
+                    paletteDot(theme.accent)
+                    paletteDot(theme.secondaryAccent)
+                    paletteDot(theme.warmAccent)
+                }
             }
 
             Spacer(minLength: 0)
@@ -296,6 +317,16 @@ private struct ThemeOptionTile: View {
             RoundedRectangle(cornerRadius: 15)
                 .stroke(isSelected ? theme.accent.opacity(0.52) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
         }
+    }
+
+    private func paletteDot(_ color: Color) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: 8, height: 8)
+            .overlay {
+                Circle()
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.8)
+            }
     }
 }
 
