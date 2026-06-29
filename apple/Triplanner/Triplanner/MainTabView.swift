@@ -479,7 +479,7 @@ private enum AppSection: String, CaseIterable, Identifiable {
         case .map: return "지도"
         case .notes: return "Notes"
         case .checklist: return "체크리스트"
-        case .budget: return "예산"
+        case .budget: return "Budget"
         case .settings: return "설정"
         }
     }

@@ -43,13 +43,13 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: 10)], spacing: 10) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
                             }
                         }
-                        .padding(7)
+                        .padding(9)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                         .overlay {
                             RoundedRectangle(cornerRadius: 16)
@@ -226,7 +226,7 @@ struct PlaceRow: View {
     @State private var isScheduling = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 9) {
                 Image(systemName: categoryIcon)
                     .font(.caption.weight(.black))
@@ -322,8 +322,8 @@ struct PlaceRow: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
-        .padding(9)
+        .frame(maxWidth: .infinity, minHeight: 126, maxHeight: 126, alignment: .topLeading)
+        .padding(10)
         .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)

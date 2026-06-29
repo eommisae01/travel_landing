@@ -46,7 +46,7 @@ struct BudgetScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Budget", subtitle: "여행 지출과 예상 부담을 한눈에 확인")
+                    ScreenHeader(title: "Budget", subtitle: "지출, 한도, 부담 대상을 한 화면에서 확인")
 
                     VStack(alignment: .leading, spacing: 14) {
                         HStack(alignment: .center, spacing: 12) {
@@ -90,7 +90,7 @@ struct BudgetScreen: View {
                         }
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
-                            BudgetStat(title: "예산", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
+                            BudgetStat(title: "Limit", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: balanceTitle, value: balanceValue, unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
@@ -133,7 +133,7 @@ struct BudgetScreen: View {
                 .readableWidth(900)
                 .padding()
             }
-            .navigationTitle("예산")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

@@ -3,22 +3,38 @@ import SwiftUI
 struct ChecklistScreen: View {
     @EnvironmentObject private var store: TripStore
     @State private var addSheetOpen = false
+    @State private var selectedOwner = "전체"
 
     private var remainingCount: Int {
-        store.checklist.filter { !$0.isDone }.count
+        filteredItems.filter { !$0.isDone }.count
     }
 
     private var doneCount: Int {
-        store.checklist.filter(\.isDone).count
+        filteredItems.filter(\.isDone).count
     }
 
     private var progress: Double {
-        guard !store.checklist.isEmpty else { return 0 }
-        return Double(doneCount) / Double(store.checklist.count)
+        guard !filteredItems.isEmpty else { return 0 }
+        return Double(doneCount) / Double(filteredItems.count)
+    }
+
+    private var filterOwners: [String] {
+        let knownOwners = ["공통"] + store.members.map(\.name)
+        let extraOwners = Set(store.checklist.map(\.owner))
+            .subtracting(knownOwners)
+            .sorted()
+        return ["전체"] + (knownOwners + extraOwners).filter { owner in
+            store.checklist.contains { $0.owner == owner }
+        }
+    }
+
+    private var filteredItems: [ChecklistItem] {
+        guard selectedOwner != "전체" else { return store.checklist }
+        return store.checklist.filter { $0.owner == selectedOwner }
     }
 
     private var sortedItems: [ChecklistItem] {
-        store.checklist.sorted { lhs, rhs in
+        filteredItems.sorted { lhs, rhs in
             if lhs.isDone != rhs.isDone { return !lhs.isDone && rhs.isDone }
             if lhs.owner != rhs.owner { return lhs.owner < rhs.owner }
             return lhs.title < rhs.title
@@ -57,7 +73,7 @@ struct ChecklistScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: "체크리스트", subtitle: "남은 준비 \(remainingCount)개 · 완료 \(doneCount)개")
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("READY")
@@ -74,8 +90,10 @@ struct ChecklistScreen: View {
                         ProgressView(value: progress)
                             .tint(.teal)
 
+                        ownerFilterBar
+
                         if !ownerSummaries.isEmpty {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 7)], spacing: 7) {
                                 ForEach(ownerSummaries, id: \.name) { summary in
                                     OwnerProgressChip(
                                         name: summary.name,
@@ -119,6 +137,27 @@ struct ChecklistScreen: View {
         }
         .appScreenBackground()
     }
+
+    private var ownerFilterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 7) {
+                ForEach(filterOwners, id: \.self) { owner in
+                    Button {
+                        selectedOwner = owner
+                    } label: {
+                        Text(owner)
+                            .font(.caption.weight(.black))
+                            .lineLimit(1)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(selectedOwner == owner ? Color.teal : Color.secondary.opacity(0.10), in: Capsule())
+                            .foregroundStyle(selectedOwner == owner ? .white : .primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
 }
 
 private struct ChecklistSection: View {
@@ -129,7 +168,7 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack {
                 Text(title)
                     .font(.subheadline.weight(.black))
@@ -156,7 +195,7 @@ private struct ChecklistSection: View {
                         }
                     }
                 }
-                .background(.background.opacity(0.50), in: RoundedRectangle(cornerRadius: 14))
+                .background(.background.opacity(0.46), in: RoundedRectangle(cornerRadius: 14))
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay {
                     RoundedRectangle(cornerRadius: 14)
@@ -177,7 +216,7 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: 9) {
             Button(action: action) {
                 checkmarkIcon
             }
@@ -193,9 +232,7 @@ private struct ChecklistItemRow: View {
                 .font(.caption2.weight(.black))
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
-                .frame(minWidth: 38, maxWidth: 52)
-                .padding(.horizontal, 7)
-                .frame(height: 26)
+                .frame(width: 52, height: 24)
                 .background(ownerTint.opacity(0.11), in: RoundedRectangle(cornerRadius: 7))
                 .foregroundStyle(ownerTint)
 
@@ -207,9 +244,9 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, minHeight: 40, alignment: .center)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 1)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
@@ -230,7 +267,7 @@ private struct ChecklistItemRow: View {
         Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
             .font(.system(size: 18, weight: .bold))
             .foregroundStyle(item.isDone ? tint : .secondary)
-            .frame(width: 28, height: 28)
+            .frame(width: 30, height: 30)
             .contentShape(Circle())
     }
 
@@ -239,8 +276,9 @@ private struct ChecklistItemRow: View {
             .font(.subheadline.weight(.semibold))
             .strikethrough(item.isDone)
             .foregroundStyle(item.isDone ? .secondary : .primary)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
             .contentShape(Rectangle())
     }
 
@@ -248,7 +286,7 @@ private struct ChecklistItemRow: View {
         Image(systemName: "pencil")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 28, height: 28)
+            .frame(width: 30, height: 30)
             .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 
@@ -276,7 +314,7 @@ private struct OwnerProgressChip: View {
         HStack(spacing: 8) {
             Circle()
                 .fill(tint.opacity(0.22))
-                .frame(width: 9, height: 9)
+                .frame(width: 8, height: 8)
             VStack(alignment: .leading, spacing: 1) {
                 Text(name)
                     .font(.caption2.weight(.black))
@@ -288,9 +326,10 @@ private struct OwnerProgressChip: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 9)
-        .padding(.vertical, 7)
-        .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 11))
     }
 
     private var tint: Color {

@@ -3,20 +3,56 @@ import SwiftUI
 struct NotesScreen: View {
     @EnvironmentObject private var store: TripStore
     @State private var addSheetOpen = false
+    @State private var showAllNotes = false
 
     private var selectedCityNotes: [NoteGroup] {
         store.notesForSelectedCity()
     }
 
-    private var otherNotes: [NoteGroup] {
+    private var cityOnlyNotes: [NoteGroup] {
+        let commonIDs = Set(commonNotes.map(\.id))
+        return selectedCityNotes.filter { !commonIDs.contains($0.id) }
+    }
+
+    private var commonNotes: [NoteGroup] {
         store.notes.filter { note in
-            !selectedCityNotes.contains(note)
+            let text = noteSearchText(note)
+            guard let cities = store.trip?.cities, !cities.isEmpty else { return true }
+            return !cities.contains { city in
+                text.localizedCaseInsensitiveContains(city) ||
+                text.localizedCaseInsensitiveContains(displayCity(city))
+            }
+        }
+    }
+
+    private var hiddenAllNotes: [NoteGroup] {
+        let visibleIDs = Set((commonNotes + cityOnlyNotes).map(\.id))
+        return store.notes.filter { !visibleIDs.contains($0.id) }
+    }
+
+    private var visibleDefaultNotes: [NoteGroup] {
+        commonNotes + cityOnlyNotes
+    }
+
+    private var currentNoteCount: Int {
+        commonNotes.count + cityOnlyNotes.count
+    }
+
+    private func noteSearchText(_ note: NoteGroup) -> String {
+        "\(note.title) \(note.body)"
+    }
+
+    private func noteGrid(_ notes: [NoteGroup]) -> some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 238), spacing: 8)], spacing: 8) {
+            ForEach(notes) { note in
+                noteCard(note)
+            }
         }
     }
 
     private var featuredNotes: [NoteGroup] {
-        let imageNotes = selectedCityNotes.filter { !$0.imageNames.isEmpty }
-        return Array((imageNotes.isEmpty ? selectedCityNotes : imageNotes).prefix(5))
+        let imageNotes = visibleDefaultNotes.filter { !$0.imageNames.isEmpty }
+        return Array((imageNotes.isEmpty ? visibleDefaultNotes : imageNotes).prefix(5))
     }
 
     var body: some View {
@@ -30,32 +66,42 @@ struct NotesScreen: View {
                         featuredNotesRail
                     }
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        sectionHeader(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))", count: selectedCityNotes.count)
-                        if selectedCityNotes.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        sectionHeader(title: "COMMON", count: commonNotes.count)
+                        if commonNotes.isEmpty {
+                            EmptyStateView(
+                                title: "공통 자료가 비어있어요",
+                                message: "여러 도시에서 같이 필요한 예약, 준비, 이동 자료를 여기에 모아둘 수 있습니다.",
+                                iconName: "tray.full"
+                            )
+                        } else {
+                            noteGrid(commonNotes)
+                        }
+                    }
+                    .appPanel(cornerRadius: 18)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        sectionHeader(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))", count: cityOnlyNotes.count)
+                        if cityOnlyNotes.isEmpty {
                             EmptyStateView(
                                 title: "자료가 비어있어요",
                                 message: "시간표, 예약 캡처, 현장 메모를 도시별 보드로 모아둘 수 있습니다.",
                                 iconName: "doc.text.image"
                             )
                         } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 238), spacing: 8)], spacing: 8) {
-                                ForEach(selectedCityNotes) { note in
-                                    noteCard(note)
-                                }
-                            }
+                            noteGrid(cityOnlyNotes)
                         }
                     }
                     .appPanel(cornerRadius: 18)
 
-                    if !otherNotes.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            sectionHeader(title: "ALL NOTES", count: otherNotes.count)
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 238), spacing: 8)], spacing: 8) {
-                                ForEach(otherNotes) { note in
-                                    noteCard(note)
-                                }
+                    if !hiddenAllNotes.isEmpty {
+                        DisclosureGroup(isExpanded: $showAllNotes) {
+                            VStack(alignment: .leading, spacing: 10) {
+                                noteGrid(hiddenAllNotes)
                             }
+                            .padding(.top, 10)
+                        } label: {
+                            sectionHeader(title: "ALL NOTES", count: hiddenAllNotes.count)
                         }
                         .appPanel(cornerRadius: 18)
                     }
@@ -83,7 +129,7 @@ struct NotesScreen: View {
 
     private var notesOverview: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 136), spacing: 8)], spacing: 8) {
-            NotesMetricCard(title: "현재 도시", value: "\(selectedCityNotes.count)", unit: "개", iconName: "mappin.and.ellipse", tint: .teal)
+            NotesMetricCard(title: "현재 보기", value: "\(currentNoteCount)", unit: "개", iconName: "mappin.and.ellipse", tint: .teal)
             NotesMetricCard(title: "전체 자료", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: .blue)
             NotesMetricCard(title: "이미지 묶음", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: .purple)
         }
