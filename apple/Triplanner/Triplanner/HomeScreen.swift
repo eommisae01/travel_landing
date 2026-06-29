@@ -344,7 +344,7 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .center, spacing: 8) {
                 Text(currentScopeTitle)
-                    .font(.system(size: isWideLayout ? 58 : 40, weight: .black, design: .rounded))
+                    .font(.system(size: isWideLayout ? 50 : 36, weight: .black, design: .rounded))
                     .minimumScaleFactor(0.70)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
@@ -653,15 +653,20 @@ private struct CityCountBadge: View {
     var tint: Color
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 5) {
-            Image(systemName: "map.fill")
-                .font(.headline.weight(.black))
-                .foregroundStyle(.white)
-                .frame(width: 38, height: 38)
-                .background(tint, in: RoundedRectangle(cornerRadius: 13))
-            Text("\(count) cities")
+        HStack(spacing: 6) {
+            Image(systemName: "map")
                 .font(.caption2.weight(.black))
-                .foregroundStyle(.secondary)
+            Text("\(count) cities")
+                .font(.caption.weight(.black))
+                .monospacedDigit()
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(tint.opacity(0.11), in: Capsule())
+        .overlay {
+            Capsule()
+                .stroke(tint.opacity(0.16))
         }
     }
 }
