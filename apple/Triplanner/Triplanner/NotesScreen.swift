@@ -44,7 +44,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 320, maximum: 420), spacing: 12)], spacing: 12) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -79,7 +79,7 @@ struct NotesScreen: View {
                             noteGrid(commonNotes)
                         }
                     }
-                    .appPanel(cornerRadius: 18)
+                    .padding(.top, 2)
 
                     VStack(alignment: .leading, spacing: 12) {
                         sectionHeader(title: store.currentCity.isEmpty ? "CITY NOTES" : "\(displayCity(store.currentCity))", count: cityOnlyNotes.count)
@@ -93,7 +93,7 @@ struct NotesScreen: View {
                             noteGrid(cityOnlyNotes)
                         }
                     }
-                    .appPanel(cornerRadius: 18)
+                    .padding(.top, 2)
 
                     if !hiddenAllNotes.isEmpty {
                         DisclosureGroup(isExpanded: $showAllNotes) {
@@ -104,7 +104,7 @@ struct NotesScreen: View {
                         } label: {
                             sectionHeader(title: "ALL NOTES", count: hiddenAllNotes.count)
                         }
-                        .appPanel(cornerRadius: 18)
+                        .padding(.top, 2)
                     }
                 }
                 .readableWidth()
@@ -249,7 +249,7 @@ struct NotesScreen: View {
 
                 noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 172, maxHeight: 172, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 158, maxHeight: 158, alignment: .topLeading)
             .padding(12)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
             .overlay(alignment: .leading) {
