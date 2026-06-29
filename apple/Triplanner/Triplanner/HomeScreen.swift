@@ -243,11 +243,11 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
+        .padding(11)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
             RoundedRectangle(cornerRadius: 20)
-                .stroke(.quaternary)
+                .stroke(Color.primary.opacity(0.055))
         }
     }
 
@@ -457,21 +457,21 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 92 : 82, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 86 : 78, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, isCompact ? 10 : 11)
         .padding(.vertical, isCompact ? 7 : 8)
-        .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 13)
                 .fill(tint)
-                .frame(width: 4)
-                .padding(.vertical, 9)
+                .frame(width: 3)
+                .padding(.vertical, 10)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(.quaternary)
+            RoundedRectangle(cornerRadius: 13)
+                .stroke(Color.primary.opacity(0.045))
         }
     }
 
@@ -542,21 +542,21 @@ private struct AccommodationSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 92 : 82, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 86 : 78, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, isCompact ? 10 : 11)
         .padding(.vertical, isCompact ? 7 : 8)
-        .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 13)
                 .fill(.purple)
-                .frame(width: 4)
-                .padding(.vertical, 9)
+                .frame(width: 3)
+                .padding(.vertical, 10)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(.quaternary)
+            RoundedRectangle(cornerRadius: 13)
+                .stroke(Color.primary.opacity(0.045))
         }
     }
 }
@@ -640,10 +640,10 @@ private struct StatChipContent: View {
         }
         .frame(maxWidth: .infinity, minHeight: 58, maxHeight: 58, alignment: .leading)
         .padding(11)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.quaternary)
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.primary.opacity(0.055))
         }
     }
 }
@@ -751,10 +751,10 @@ private struct HeroTodayLine: View {
         .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .stroke(.quaternary)
+                .stroke(Color.primary.opacity(0.05))
         }
     }
 }
