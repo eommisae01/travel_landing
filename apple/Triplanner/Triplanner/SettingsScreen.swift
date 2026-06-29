@@ -8,6 +8,7 @@ struct SettingsScreen: View {
     @State private var myMapsURL = ""
     @State private var outboundFlight = FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
     @State private var inboundFlight = FlightInfo(flightNumber: "", origin: "", destination: "", localDeparture: "", localArrival: "")
+    @State private var lastSavedAt: Date?
 
     var body: some View {
         NavigationStack {
@@ -18,6 +19,8 @@ struct SettingsScreen: View {
                     if let trip = store.trip {
                         SettingsTripHero(trip: trip, currentCity: store.currentCity)
                     }
+
+                    SettingsSaveBanner(status: saveStatusText)
 
                     if horizontalSizeClass == .compact {
                         VStack(spacing: 12) {
@@ -69,6 +72,7 @@ struct SettingsScreen: View {
                         Button(role: .destructive) {
                             store.resetDemo()
                             syncFields()
+                            lastSavedAt = Date()
                         } label: {
                             Label("데모 리셋", systemImage: "arrow.counterclockwise")
                                 .frame(maxWidth: .infinity)
@@ -112,6 +116,43 @@ struct SettingsScreen: View {
         store.updateAccommodation(accommodation)
         store.updateAccommodationAddress(accommodationAddress)
         store.updateMyMapsURL(myMapsURL)
+        lastSavedAt = Date()
+    }
+
+    private var saveStatusText: String {
+        guard let lastSavedAt else { return "저장 전" }
+        let seconds = max(0, Int(Date().timeIntervalSince(lastSavedAt)))
+        if seconds < 60 { return "방금 저장됨" }
+        return "\(seconds / 60)분 전 저장"
+    }
+}
+
+private struct SettingsSaveBanner: View {
+    var status: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: status == "저장 전" ? "exclamationmark.circle" : "checkmark.circle.fill")
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(status == "저장 전" ? .orange : .teal)
+                .frame(width: 30, height: 30)
+                .background((status == "저장 전" ? Color.orange : Color.teal).opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(status)
+                    .font(.subheadline.weight(.black))
+                Text("항공편, 숙소, 지도 링크는 저장 후 홈과 지도에 반영됩니다.")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Spacer()
+        }
+        .padding(11)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 15))
+        .overlay {
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(.quaternary)
+        }
     }
 }
 
@@ -175,11 +216,22 @@ private struct FlightEditorCard: View {
                     .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
                     .foregroundStyle(.teal)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.headline.weight(.black))
-                    Text("편명과 현지 출발/도착 시간")
+                    HStack(spacing: 6) {
+                        Text(title)
+                            .font(.headline.weight(.black))
+                        if !flight.flightNumber.isEmpty {
+                            Text(flight.flightNumber)
+                                .font(.caption2.weight(.black))
+                                .foregroundStyle(.teal)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(.teal.opacity(0.12), in: Capsule())
+                        }
+                    }
+                    Text(routeText)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
                 Spacer()
             }
@@ -198,6 +250,14 @@ private struct FlightEditorCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .appPanel(cornerRadius: 18)
+    }
+
+    private var routeText: String {
+        let origin = flight.origin.isEmpty ? "출발지" : flight.origin
+        let destination = flight.destination.isEmpty ? "도착지" : flight.destination
+        let departure = flight.localDeparture.isEmpty ? "--:--" : flight.localDeparture
+        let arrival = flight.localArrival.isEmpty ? "--:--" : flight.localArrival
+        return "\(origin) \(departure) → \(destination) \(arrival)"
     }
 }
 

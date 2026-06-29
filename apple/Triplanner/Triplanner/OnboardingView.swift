@@ -12,7 +12,20 @@ struct OnboardingView: View {
     @State private var myMapsURL = ""
 
     private let countries = ["일본", "한국", "대만", "태국", "프랑스", "이탈리아", "미국", "기타"]
-    private let cities = ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "기타"]
+    private let cityOptionsByCountry = [
+        "일본": ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "기타"],
+        "한국": ["서울", "부산", "제주", "강릉", "경주", "기타"],
+        "대만": ["타이베이", "타이중", "가오슝", "타이난", "기타"],
+        "태국": ["방콕", "치앙마이", "푸켓", "끄라비", "기타"],
+        "프랑스": ["파리", "니스", "리옹", "마르세유", "기타"],
+        "이탈리아": ["로마", "피렌체", "베네치아", "밀라노", "기타"],
+        "미국": ["뉴욕", "로스앤젤레스", "샌프란시스코", "시애틀", "기타"],
+        "기타": ["기타"]
+    ]
+
+    private var cities: [String] {
+        cityOptionsByCountry[country] ?? ["기타"]
+    }
 
     private var destination: String {
         cityPreset == "기타" ? customCity.trimmingCharacters(in: .whitespacesAndNewlines) : cityPreset
@@ -41,7 +54,7 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     OnboardingHero()
 
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 8)], spacing: 8) {
                         OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "Required" : "\(country) · \(destination)", iconName: "mappin.and.ellipse")
                         OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar")
                         OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane")
@@ -61,6 +74,11 @@ struct OnboardingView: View {
                             }
                             .pickerStyle(.menu)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .onChange(of: country) { _, newCountry in
+                                let nextCities = cityOptionsByCountry[newCountry] ?? ["기타"]
+                                cityPreset = nextCities.first ?? "기타"
+                                customCity = ""
+                            }
                         }
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 8)], spacing: 8) {
@@ -80,7 +98,7 @@ struct OnboardingView: View {
                         }
 
                         if cityPreset == "기타" {
-                            LabeledOnboardingField(title: "도시", iconName: "pencil", placeholder: "도시 직접 입력", text: $customCity)
+                            LabeledOnboardingField(title: "도시", iconName: "pencil", placeholder: country == "기타" ? "국가/도시 직접 입력" : "도시 직접 입력", text: $customCity)
                         }
                     }
                     .appPanel(cornerRadius: 18)
