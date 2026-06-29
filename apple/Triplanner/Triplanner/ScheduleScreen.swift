@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ScheduleScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @State private var selectedDate: Date?
     @State private var viewMode: ScheduleViewMode = .timeline
     @State private var isAddingSchedule = false
@@ -31,10 +32,10 @@ struct ScheduleScreen: View {
                             Spacer()
                             Text(viewMode == .timeline ? "Timeline" : "Calendar")
                                 .font(.caption2.weight(.black))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(viewMode == .calendar ? theme.accent : .secondary)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(.secondary.opacity(0.10), in: Capsule())
+                                .background((viewMode == .calendar ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
                         }
                         filterBar
 
@@ -137,13 +138,13 @@ struct ScheduleScreen: View {
             .frame(width: title == "전체" ? 92 : 112, alignment: .leading)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(isSelected ? Color.blue : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+            .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.blue.opacity(0.44) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.5 : 1)
+                    .stroke(isSelected ? theme.accent.opacity(0.44) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.5 : 1)
             }
-            .shadow(color: isSelected ? Color.blue.opacity(0.16) : .clear, radius: 7, x: 0, y: 4)
+            .shadow(color: isSelected ? theme.accent.opacity(0.16) : .clear, radius: 7, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -162,7 +163,7 @@ struct ScheduleScreen: View {
                         .font(.caption2.weight(.black))
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.teal)
+                .foregroundStyle(theme.accent)
             }
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 92), spacing: 7)], spacing: 7) {
@@ -180,7 +181,7 @@ struct ScheduleScreen: View {
                         .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 7)
-                        .background(isSelected ? Color.blue : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                        .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
                         .foregroundStyle(isSelected ? .white : .primary)
                     }
                     .buttonStyle(.plain)
@@ -212,7 +213,7 @@ struct ScheduleScreen: View {
                         .font(.caption.weight(.black))
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.teal)
+                .foregroundStyle(theme.accent)
             }
 
             HStack(spacing: 0) {
@@ -260,7 +261,7 @@ struct ScheduleScreen: View {
             HStack {
                 SectionLabel(title: "TIME GRID")
                 Spacer()
-                Text(calendarFocusDate.map(compactDayLabel) ?? "날짜 선택")
+                Text(selectedDate.map(compactDayLabel) ?? "전체 날짜")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
@@ -268,7 +269,9 @@ struct ScheduleScreen: View {
                     .background(.secondary.opacity(0.10), in: Capsule())
             }
 
-            if let focusDate = calendarFocusDate {
+            if selectedDate == nil && dates.count > 1 {
+                MultiDayCalendarGrid(dates: timelineDates.isEmpty ? dates : timelineDates, itemsForDate: items(on:))
+            } else if let focusDate = calendarFocusDate {
                 CalendarTimeGrid(date: focusDate, items: items(on: focusDate), dayLabel: dayTitle(for: focusDate))
             } else {
                 EmptyStateView(
@@ -421,8 +424,8 @@ struct ScheduleScreen: View {
                     Image(systemName: "plus")
                         .font(.caption.weight(.black))
                         .frame(width: 28, height: 28)
-                        .background(.teal.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
-                        .foregroundStyle(.teal)
+                        .background(theme.accent.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
+                        .foregroundStyle(theme.accent)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(dayTitle(for: date)) 일정 추가")
@@ -500,6 +503,133 @@ struct ScheduleScreen: View {
 private enum ScheduleViewMode: Hashable {
     case timeline
     case calendar
+}
+
+private struct MultiDayCalendarGrid: View {
+    var dates: [Date]
+    var itemsForDate: (Date) -> [ScheduleItem]
+
+    private var displayHours: [Int] {
+        let allHours = dates
+            .flatMap { itemsForDate($0) }
+            .compactMap { startHour(from: $0.startTime) }
+        guard let first = allHours.min(), let last = allHours.max() else {
+            return Array(8...20)
+        }
+        return Array(max(6, first - 1)...min(23, last + 2))
+    }
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: true) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 0) {
+                    Text("GMT+9")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 54, alignment: .trailing)
+                        .padding(.trailing, 9)
+                    ForEach(dates, id: \.self) { date in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(shortWeekday(date))
+                                .font(.caption2.weight(.black))
+                                .foregroundStyle(.secondary)
+                            Text(compactDate(date))
+                                .font(.subheadline.weight(.black))
+                        }
+                        .frame(width: 164, alignment: .leading)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 8)
+                        .background(.secondary.opacity(0.045))
+                    }
+                }
+
+                Divider().opacity(0.45)
+
+                ForEach(displayHours, id: \.self) { hour in
+                    HStack(alignment: .top, spacing: 0) {
+                        Text("\(hour):00")
+                            .font(.caption2.weight(.black).monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 54, alignment: .trailing)
+                            .padding(.trailing, 9)
+                            .padding(.top, 10)
+
+                        ForEach(dates, id: \.self) { date in
+                            let items = items(on: date, at: hour)
+                            MultiDayHourCell(items: items, minHeight: rowHeight(for: items))
+                        }
+                    }
+                }
+            }
+            .frame(minWidth: CGFloat(max(dates.count, 1)) * 180 + 54, alignment: .leading)
+        }
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
+    }
+
+    private func rowHeight(for items: [ScheduleItem]) -> CGFloat {
+        items.isEmpty ? 42 : CGFloat(max(items.count, 1)) * 50 + 8
+    }
+
+    private func items(on date: Date, at hour: Int) -> [ScheduleItem] {
+        let isFirstHour = hour == displayHours.first
+        return itemsForDate(date).filter { item in
+            guard let start = startHour(from: item.startTime) else { return isFirstHour }
+            return start == hour
+        }
+    }
+
+    private func startHour(from value: String) -> Int? {
+        let pieces = value.split(separator: ":")
+        guard let first = pieces.first, let hour = Int(first) else { return nil }
+        return hour
+    }
+
+    private func compactDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M.d"
+        return formatter.string(from: date)
+    }
+
+    private func shortWeekday(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "E"
+        return formatter.string(from: date)
+    }
+}
+
+private struct MultiDayHourCell: View {
+    var items: [ScheduleItem]
+    var minHeight: CGFloat
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            if items.isEmpty {
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.10))
+                    .frame(height: 1)
+                    .padding(.top, 15)
+            } else {
+                ForEach(items) { item in
+                    CalendarTimeBlock(item: item)
+                }
+                .padding(.vertical, 4)
+            }
+        }
+        .frame(width: 164, alignment: .topLeading)
+        .frame(minHeight: minHeight, alignment: .topLeading)
+        .padding(.horizontal, 8)
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(Color.secondary.opacity(0.12))
+                .frame(width: 0.5)
+        }
+    }
 }
 
 private struct CalendarTimeGrid: View {
