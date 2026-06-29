@@ -50,24 +50,6 @@ struct ChecklistScreen: View {
         sortedItems.filter(\.isDone)
     }
 
-    private var ownerSummaries: [(name: String, remaining: Int, total: Int)] {
-        let knownOwners = ["공통"] + store.members.map(\.name)
-        let extraOwners = Set(store.checklist.map(\.owner))
-            .subtracting(knownOwners)
-            .sorted()
-        let owners = (knownOwners + extraOwners).filter { owner in
-            store.checklist.contains { $0.owner == owner }
-        }
-        return owners.map { owner in
-            let ownerItems = store.checklist.filter { $0.owner == owner }
-            return (
-                name: owner,
-                remaining: ownerItems.filter { !$0.isDone }.count,
-                total: ownerItems.count
-            )
-        }
-    }
-
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -92,25 +74,6 @@ struct ChecklistScreen: View {
                             .tint(theme.accent)
 
                         ownerFilterBar
-
-                        if !ownerSummaries.isEmpty {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 7)], spacing: 7) {
-                                ForEach(ownerSummaries, id: \.name) { summary in
-                                    Button {
-                                        selectedOwner = summary.name
-                                    } label: {
-                                        OwnerProgressChip(
-                                            name: summary.name,
-                                            remaining: summary.remaining,
-                                            total: summary.total,
-                                            isSelected: selectedOwner == summary.name
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding(.top, 2)
-                        }
                     }
                     .appPanel(cornerRadius: 18)
 
@@ -127,7 +90,7 @@ struct ChecklistScreen: View {
                 .readableWidth(900)
                 .padding()
             }
-            .navigationTitle("체크리스트")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -149,21 +112,33 @@ struct ChecklistScreen: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 7) {
                 ForEach(filterOwners, id: \.self) { owner in
+                    let summary = ownerSummary(for: owner)
+                    let isSelected = selectedOwner == owner
                     Button {
                         selectedOwner = owner
                     } label: {
-                        Text(owner)
-                            .font(.caption.weight(.black))
-                            .lineLimit(1)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(selectedOwner == owner ? theme.accent : Color.secondary.opacity(0.10), in: Capsule())
-                            .foregroundStyle(selectedOwner == owner ? .white : .primary)
+                        HStack(spacing: 7) {
+                            Text(owner)
+                                .font(.caption.weight(.black))
+                                .lineLimit(1)
+                            Text("\(summary.remaining)/\(summary.total)")
+                                .font(.caption2.weight(.black).monospacedDigit())
+                                .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .background(isSelected ? theme.accent : Color.secondary.opacity(0.10), in: Capsule())
+                        .foregroundStyle(isSelected ? .white : .primary)
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
+    }
+
+    private func ownerSummary(for owner: String) -> (remaining: Int, total: Int) {
+        let items = owner == "전체" ? store.checklist : store.checklist.filter { $0.owner == owner }
+        return (items.filter { !$0.isDone }.count, items.count)
     }
 }
 
@@ -224,7 +199,7 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: 10) {
             Button(action: action) {
                 checkmarkIcon
             }
@@ -240,8 +215,8 @@ private struct ChecklistItemRow: View {
                 .font(.caption2.weight(.black))
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
-                .frame(width: 56, height: 26)
-                .background(ownerTint.opacity(0.11), in: RoundedRectangle(cornerRadius: 7))
+                .frame(width: 62, height: 28)
+                .background(ownerTint.opacity(0.11), in: RoundedRectangle(cornerRadius: 8))
                 .foregroundStyle(ownerTint)
 
             Button {
@@ -252,9 +227,9 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 3)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
@@ -275,7 +250,7 @@ private struct ChecklistItemRow: View {
         Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
             .font(.system(size: 17, weight: .bold))
             .foregroundStyle(item.isDone ? tint : .secondary)
-            .frame(width: 28, height: 28)
+            .frame(width: 30, height: 30)
             .contentShape(Circle())
     }
 
@@ -286,7 +261,7 @@ private struct ChecklistItemRow: View {
             .foregroundStyle(item.isDone ? .secondary : .primary)
             .lineLimit(2)
             .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
             .contentShape(Rectangle())
     }
 
@@ -294,7 +269,7 @@ private struct ChecklistItemRow: View {
         Image(systemName: "pencil")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 28, height: 28)
+            .frame(width: 30, height: 30)
             .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 
@@ -310,50 +285,6 @@ private struct ChecklistItemRow: View {
 
     private var rowBackground: Color {
         item.isDone ? Color.secondary.opacity(0.035) : Color.clear
-    }
-}
-
-private struct OwnerProgressChip: View {
-    @Environment(\.appTheme) private var theme
-    var name: String
-    var remaining: Int
-    var total: Int
-    var isSelected = false
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(isSelected ? tint : tint.opacity(0.22))
-                .frame(width: 8, height: 8)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(name)
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(isSelected ? tint : .secondary)
-                    .lineLimit(1)
-                Text("\(remaining)/\(total)")
-                    .font(.caption.weight(.black))
-                    .monospacedDigit()
-            }
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(tint.opacity(isSelected ? 0.14 : 0.08), in: RoundedRectangle(cornerRadius: 11))
-        .overlay {
-            RoundedRectangle(cornerRadius: 11)
-                .stroke(isSelected ? tint.opacity(0.34) : Color.clear, lineWidth: 1)
-        }
-    }
-
-    private var tint: Color {
-        switch name {
-        case "공통": return theme.accent
-        case "예지": return .pink
-        case "승환": return .blue
-        case "민지": return .orange
-        default: return .secondary
-        }
     }
 }
 
