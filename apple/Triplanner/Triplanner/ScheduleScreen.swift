@@ -95,10 +95,9 @@ struct ScheduleScreen: View {
                     selectedDate = nil
                 }
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
-                    let dayItems = items(on: date)
                     dayFilterButton(
                         title: "Day \(index + 1)",
-                        subtitle: "\(compactDayLabel(date)) · \(dayItems.count)개",
+                        subtitle: compactDayLabel(date),
                         isSelected: selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
                     ) {
                         selectedDate = date
@@ -110,23 +109,31 @@ struct ScheduleScreen: View {
 
     private func dayFilterButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.caption.weight(.black))
-                Text(subtitle)
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.caption.weight(.black))
+                    Text(subtitle)
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
+                }
+                Spacer(minLength: 0)
+                if isSelected {
+                    Circle()
+                        .fill(.white.opacity(0.92))
+                        .frame(width: 7, height: 7)
+                }
             }
-            .frame(width: title == "전체" ? 96 : 124, alignment: .leading)
-            .padding(.horizontal, 12)
+            .frame(width: title == "전체" ? 92 : 112, alignment: .leading)
+            .padding(.horizontal, 11)
             .padding(.vertical, 9)
-            .background(isSelected ? Color.blue : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+            .background(isSelected ? Color.teal : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 13))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(isSelected ? Color.blue.opacity(0.45) : Color.secondary.opacity(0.14), lineWidth: isSelected ? 1.5 : 1)
+                RoundedRectangle(cornerRadius: 13)
+                    .stroke(isSelected ? Color.teal.opacity(0.45) : Color.secondary.opacity(0.14), lineWidth: isSelected ? 1.5 : 1)
             }
-            .shadow(color: isSelected ? Color.blue.opacity(0.18) : .clear, radius: 8, x: 0, y: 4)
+            .shadow(color: isSelected ? Color.teal.opacity(0.18) : .clear, radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -134,14 +141,14 @@ struct ScheduleScreen: View {
     private var calendarPreview: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("CALENDAR VIEW")
+                Text("CALENDAR")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                 Spacer()
                 Button {
                     viewMode = .calendar
                 } label: {
-                    Label("크게 보기", systemImage: "arrow.up.left.and.arrow.down.right")
+                    Label("전체 보기", systemImage: "calendar")
                         .font(.caption2.weight(.black))
                 }
                 .buttonStyle(.plain)
@@ -183,7 +190,7 @@ struct ScheduleScreen: View {
             HStack {
                 SectionLabel(title: "CALENDAR")
                 Spacer()
-                Text("날짜를 누르면 해당 Day 타임라인으로 이동")
+                Text("탭하면 해당 Day 일정으로 이동합니다")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.secondary)
             }
@@ -278,7 +285,7 @@ struct ScheduleScreen: View {
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("\(items.count)개")
+                Text("\(items.count)")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
@@ -344,10 +351,10 @@ struct ScheduleRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .center, spacing: 5) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
-                    .font(.caption.weight(.black))
+                    .font(.caption.weight(.black).monospacedDigit())
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 if !item.endTime.isEmpty {
@@ -363,7 +370,7 @@ struct ScheduleRow: View {
                 if !isLast {
                     Rectangle()
                         .fill(kindColor.opacity(0.28))
-                        .frame(width: 2, height: 92)
+                        .frame(width: 2, height: 88)
                         .padding(.top, 24)
                 }
                 Image(systemName: kindIcon)
@@ -374,7 +381,7 @@ struct ScheduleRow: View {
                     .shadow(color: kindColor.opacity(0.22), radius: 6, x: 0, y: 3)
             }
             .frame(width: 24)
-            .frame(minHeight: 88, alignment: .top)
+            .frame(minHeight: 82, alignment: .top)
 
             VStack(alignment: .leading, spacing: 7) {
                 HStack(alignment: .top, spacing: 8) {
@@ -424,14 +431,30 @@ struct ScheduleRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.bottom, 12)
+            .padding(.horizontal, highlightBackground == nil ? 0 : 10)
+            .padding(.vertical, highlightBackground == nil ? 0 : 9)
+            .background {
+                if let highlightBackground {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(highlightBackground)
+                }
+            }
+            .overlay(alignment: .leading) {
+                if highlightBackground != nil {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(kindColor)
+                        .frame(width: 3)
+                        .padding(.vertical, 10)
+                }
+            }
+            .padding(.bottom, 10)
             .overlay(alignment: .bottom) {
                 Rectangle()
                     .fill(isLast ? Color.clear : Color.secondary.opacity(0.12))
                     .frame(height: 1)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 7)
         .sheet(isPresented: $isEditing) {
             ScheduleEditorSheet(existingItem: item, defaultDate: item.date)
                 .environmentObject(store)
@@ -453,6 +476,15 @@ struct ScheduleRow: View {
         case .food: return "fork.knife"
         case .flight: return "airplane"
         case .place: return "mappin"
+        }
+    }
+
+    private var highlightBackground: Color? {
+        switch item.kind {
+        case .move, .flight:
+            return kindColor.opacity(0.08)
+        case .food, .place:
+            return nil
         }
     }
 }
