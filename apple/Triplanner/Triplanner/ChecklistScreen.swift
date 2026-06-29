@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChecklistScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @State private var addSheetOpen = false
     @State private var selectedOwner = "전체"
 
@@ -85,21 +86,27 @@ struct ChecklistScreen: View {
                             Spacer()
                             Text("\(Int(progress * 100))%")
                                 .font(.title2.weight(.black))
-                                .foregroundStyle(progress >= 1 ? .teal : .primary)
+                                .foregroundStyle(progress >= 1 ? theme.accent : .primary)
                         }
                         ProgressView(value: progress)
-                            .tint(.teal)
+                            .tint(theme.accent)
 
                         ownerFilterBar
 
                         if !ownerSummaries.isEmpty {
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 7)], spacing: 7) {
                                 ForEach(ownerSummaries, id: \.name) { summary in
-                                    OwnerProgressChip(
-                                        name: summary.name,
-                                        remaining: summary.remaining,
-                                        total: summary.total
-                                    )
+                                    Button {
+                                        selectedOwner = summary.name
+                                    } label: {
+                                        OwnerProgressChip(
+                                            name: summary.name,
+                                            remaining: summary.remaining,
+                                            total: summary.total,
+                                            isSelected: selectedOwner == summary.name
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                             .padding(.top, 2)
@@ -107,7 +114,7 @@ struct ChecklistScreen: View {
                     }
                     .appPanel(cornerRadius: 18)
 
-                    ChecklistSection(title: "남은 준비", subtitle: "\(remainingItems.count)개", items: remainingItems, tint: .teal) { item in
+                    ChecklistSection(title: "남은 준비", subtitle: "\(remainingItems.count)개", items: remainingItems, tint: theme.accent) { item in
                         store.toggleChecklist(item)
                     }
 
@@ -150,7 +157,7 @@ struct ChecklistScreen: View {
                             .lineLimit(1)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(selectedOwner == owner ? Color.teal : Color.secondary.opacity(0.10), in: Capsule())
+                            .background(selectedOwner == owner ? theme.accent : Color.secondary.opacity(0.10), in: Capsule())
                             .foregroundStyle(selectedOwner == owner ? .white : .primary)
                     }
                     .buttonStyle(.plain)
@@ -209,6 +216,7 @@ private struct ChecklistSection: View {
 
 private struct ChecklistItemRow: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     var item: ChecklistItem
     var tint: Color = .teal
     var showsDivider = false
@@ -216,7 +224,7 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 9) {
+        HStack(alignment: .center, spacing: 8) {
             Button(action: action) {
                 checkmarkIcon
             }
@@ -232,7 +240,7 @@ private struct ChecklistItemRow: View {
                 .font(.caption2.weight(.black))
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
-                .frame(width: 52, height: 24)
+                .frame(width: 56, height: 26)
                 .background(ownerTint.opacity(0.11), in: RoundedRectangle(cornerRadius: 7))
                 .foregroundStyle(ownerTint)
 
@@ -244,9 +252,9 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(maxWidth: .infinity, minHeight: 40, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
         .padding(.horizontal, 9)
-        .padding(.vertical, 1)
+        .padding(.vertical, 3)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
@@ -265,9 +273,9 @@ private struct ChecklistItemRow: View {
 
     private var checkmarkIcon: some View {
         Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-            .font(.system(size: 18, weight: .bold))
+            .font(.system(size: 17, weight: .bold))
             .foregroundStyle(item.isDone ? tint : .secondary)
-            .frame(width: 30, height: 30)
+            .frame(width: 28, height: 28)
             .contentShape(Circle())
     }
 
@@ -278,7 +286,7 @@ private struct ChecklistItemRow: View {
             .foregroundStyle(item.isDone ? .secondary : .primary)
             .lineLimit(2)
             .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
             .contentShape(Rectangle())
     }
 
@@ -286,13 +294,13 @@ private struct ChecklistItemRow: View {
         Image(systemName: "pencil")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 30, height: 30)
+            .frame(width: 28, height: 28)
             .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private var ownerTint: Color {
         switch item.owner {
-        case "공통": return .teal
+        case "공통": return theme.accent
         case "예지": return .pink
         case "승환": return .blue
         case "민지": return .orange
@@ -306,19 +314,21 @@ private struct ChecklistItemRow: View {
 }
 
 private struct OwnerProgressChip: View {
+    @Environment(\.appTheme) private var theme
     var name: String
     var remaining: Int
     var total: Int
+    var isSelected = false
 
     var body: some View {
         HStack(spacing: 8) {
             Circle()
-                .fill(tint.opacity(0.22))
+                .fill(isSelected ? tint : tint.opacity(0.22))
                 .frame(width: 8, height: 8)
             VStack(alignment: .leading, spacing: 1) {
                 Text(name)
                     .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(isSelected ? tint : .secondary)
                     .lineLimit(1)
                 Text("\(remaining)/\(total)")
                     .font(.caption.weight(.black))
@@ -329,12 +339,16 @@ private struct OwnerProgressChip: View {
         .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 11))
+        .background(tint.opacity(isSelected ? 0.14 : 0.08), in: RoundedRectangle(cornerRadius: 11))
+        .overlay {
+            RoundedRectangle(cornerRadius: 11)
+                .stroke(isSelected ? tint.opacity(0.34) : Color.clear, lineWidth: 1)
+        }
     }
 
     private var tint: Color {
         switch name {
-        case "공통": return .teal
+        case "공통": return theme.accent
         case "예지": return .pink
         case "승환": return .blue
         case "민지": return .orange
@@ -345,6 +359,7 @@ private struct OwnerProgressChip: View {
 
 struct ChecklistEditorSheet: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @Environment(\.dismiss) private var dismiss
     var existingItem: ChecklistItem?
 
@@ -366,9 +381,9 @@ struct ChecklistEditorSheet: View {
                         HStack(spacing: 10) {
                             Image(systemName: "checklist")
                                 .font(.headline.weight(.bold))
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(theme.accent)
                                 .frame(width: 34, height: 34)
-                                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
                             TextField("예: 항공권 확인", text: $title)
                                 .textFieldStyle(.roundedBorder)
                         }
@@ -386,7 +401,7 @@ struct ChecklistEditorSheet: View {
                                         .font(.caption.weight(.black))
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 9)
-                                        .background(owner == name ? Color.teal : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                                        .background(owner == name ? theme.accent : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(owner == name ? .white : .primary)
                                 }
                                 .buttonStyle(.plain)
