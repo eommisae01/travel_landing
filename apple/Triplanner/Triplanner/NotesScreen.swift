@@ -2,6 +2,7 @@ import SwiftUI
 
 struct NotesScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @State private var addSheetOpen = false
     @State private var showAllNotes = false
 
@@ -43,7 +44,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 238), spacing: 8)], spacing: 8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 10)], spacing: 10) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -129,9 +130,10 @@ struct NotesScreen: View {
 
     private var notesOverview: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 136), spacing: 8)], spacing: 8) {
-            NotesMetricCard(title: "현재 보기", value: "\(currentNoteCount)", unit: "개", iconName: "mappin.and.ellipse", tint: .teal)
-            NotesMetricCard(title: "전체 자료", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: .blue)
-            NotesMetricCard(title: "이미지 묶음", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: .purple)
+            NotesMetricCard(title: "공통", value: "\(commonNotes.count)", unit: "개", iconName: "tray.full", tint: theme.accent)
+            NotesMetricCard(title: store.currentCity.isEmpty ? "지역" : displayCity(store.currentCity), value: "\(cityOnlyNotes.count)", unit: "개", iconName: "mappin.and.ellipse", tint: theme.secondaryAccent)
+            NotesMetricCard(title: "전체", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: .blue)
+            NotesMetricCard(title: "이미지", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: .purple)
         }
     }
 
@@ -212,8 +214,8 @@ struct NotesScreen: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
-            .padding(9)
+            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+            .padding(10)
             .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 14)
@@ -258,7 +260,7 @@ struct NotesScreen: View {
                 .offset(x: -8, y: 6)
             }
         }
-        .frame(width: 66, height: 66)
+        .frame(width: 72, height: 72)
         .overlay(alignment: .bottomTrailing) {
             if !note.imageNames.isEmpty {
                 Text("\(note.imageNames.count)")
@@ -446,6 +448,7 @@ private struct NotesMetricCard: View {
 
 struct AddNoteSheet: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
     @State private var bodyText = ""
@@ -499,6 +502,7 @@ struct AddNoteSheet: View {
                 }
             }
         }
+        .appScreenBackground()
     }
 
     private var parsedImages: [String] {
@@ -510,6 +514,7 @@ struct AddNoteSheet: View {
 }
 
 struct NoteDetailView: View {
+    @Environment(\.appTheme) private var theme
     var note: NoteGroup
     @State private var selectedImageIndex: Int?
 
@@ -525,8 +530,8 @@ struct NoteDetailView: View {
                         Image(systemName: "doc.text.image")
                             .font(.title3.weight(.black))
                             .frame(width: 40, height: 40)
-                            .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 13))
-                            .foregroundStyle(.teal)
+                            .background(theme.accent.opacity(0.14), in: RoundedRectangle(cornerRadius: 13))
+                            .foregroundStyle(theme.accent)
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text(note.title)
@@ -569,7 +574,7 @@ struct NoteDetailView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "photo.on.rectangle.angled")
                                 .font(.largeTitle)
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(theme.accent)
                             Text("시간표나 예약 캡처 이름을 추가하면 이곳에서 묶음 자료처럼 넘겨볼 수 있습니다.")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.secondary)
@@ -597,6 +602,7 @@ struct NoteDetailView: View {
             .padding()
         }
         .navigationTitle("")
+        .appScreenBackground()
         .sheet(isPresented: Binding(
             get: { selectedImageIndex != nil },
             set: { isPresented in
@@ -641,6 +647,7 @@ private struct MiniImageBadge: View {
 }
 
 private struct NoteImageTile: View {
+    @Environment(\.appTheme) private var theme
     var imageName: String
     var index: Int
 
@@ -651,8 +658,8 @@ private struct NoteImageTile: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.teal.opacity(0.22),
-                            Color.blue.opacity(0.14),
+                            theme.accent.opacity(0.22),
+                            theme.secondaryAccent.opacity(0.14),
                             Color.secondary.opacity(0.10)
                         ],
                         startPoint: .topLeading,
@@ -662,7 +669,7 @@ private struct NoteImageTile: View {
 
                 Image(systemName: "photo")
                     .font(.title.weight(.bold))
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(theme.accent)
             }
             .frame(height: 88)
             .overlay(alignment: .topTrailing) {
@@ -696,6 +703,7 @@ private struct NoteImageTile: View {
 
 private struct NoteImagePreview: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
     var note: NoteGroup
     var initialIndex: Int
     @State private var index = 0
@@ -718,7 +726,7 @@ private struct NoteImagePreview: View {
                     VStack(spacing: 14) {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.system(size: 56, weight: .bold))
-                            .foregroundStyle(.teal)
+                            .foregroundStyle(theme.accent)
                         Text(currentImageName)
                             .font(.title2.weight(.black))
                             .multilineTextAlignment(.center)
@@ -745,16 +753,16 @@ private struct NoteImagePreview: View {
                                     HStack(spacing: 6) {
                                         Text("\(itemIndex + 1)")
                                             .font(.caption2.weight(.black))
-                                            .foregroundStyle(itemIndex == index ? .white : .teal)
+                                            .foregroundStyle(itemIndex == index ? .white : theme.accent)
                                             .frame(width: 20, height: 20)
-                                            .background(itemIndex == index ? Color.teal : Color.teal.opacity(0.12), in: Circle())
+                                            .background(itemIndex == index ? theme.accent : theme.accent.opacity(0.12), in: Circle())
                                         Text(imageName)
                                             .font(.caption.weight(.black))
                                             .lineLimit(1)
                                     }
                                     .padding(.horizontal, 9)
                                     .padding(.vertical, 7)
-                                    .background(itemIndex == index ? Color.teal.opacity(0.12) : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                                    .background(itemIndex == index ? theme.accent.opacity(0.12) : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
                                 }
                                 .buttonStyle(.plain)
                             }
