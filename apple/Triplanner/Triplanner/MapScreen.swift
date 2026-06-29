@@ -41,7 +41,7 @@ struct MapScreen: View {
                                 tint: sectionColor(for: category)
                             )
 
-                            LazyVGrid(columns: placeGridColumns, spacing: 14) {
+                            LazyVGrid(columns: placeGridColumns, spacing: 10) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -92,9 +92,9 @@ struct MapScreen: View {
 
     private var placeGridColumns: [GridItem] {
         if horizontalSizeClass == .compact {
-            return [GridItem(.flexible(), spacing: 14)]
+            return [GridItem(.flexible(), spacing: 10)]
         }
-        return [GridItem(.adaptive(minimum: 320, maximum: 440), spacing: 14)]
+        return [GridItem(.adaptive(minimum: 380, maximum: 540), spacing: 10)]
     }
 
     private var placesTitle: String {
@@ -264,7 +264,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 10) {
             cardHeader
 
             memoPreview
@@ -280,7 +280,7 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 184, maxHeight: 184, alignment: .topLeading)
         .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
@@ -309,16 +309,16 @@ struct PlaceRow: View {
     }
 
     private var cardHeader: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: 9) {
             categoryBadge
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(place.name)
                     .font(.headline.weight(.black))
                     .lineLimit(2)
                     .minimumScaleFactor(0.80)
 
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Text(place.category)
                         .font(.caption2.weight(.black))
                         .foregroundStyle(categoryColor)
@@ -386,7 +386,7 @@ struct PlaceRow: View {
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 34, height: 34)
     }
 
     private var actionBar: some View {
@@ -433,14 +433,6 @@ struct PlaceRow: View {
                     isPlaceholder: true
                 )
             } else {
-                if !place.appNote.isEmpty {
-                    PlaceMemoLine(
-                        title: "앱",
-                        value: place.appNote,
-                        iconName: "note.text",
-                        tint: .secondary
-                    )
-                }
                 if !place.mapNote.isEmpty {
                     PlaceMemoLine(
                         title: "지도",
@@ -449,10 +441,18 @@ struct PlaceRow: View {
                         tint: theme.secondaryAccent
                     )
                 }
+                if !place.appNote.isEmpty {
+                    PlaceMemoLine(
+                        title: "앱",
+                        value: place.appNote,
+                        iconName: "note.text",
+                        tint: .secondary
+                    )
+                }
             }
         }
         .padding(.vertical, 1)
-        .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 54, alignment: .topLeading)
     }
 
     private var categoryColor: Color {
@@ -505,7 +505,7 @@ private struct PlaceMemoLine: View {
             Text(value.isEmpty ? "메모 없음" : value)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(isPlaceholder ? .tertiary : .secondary)
-                .lineLimit(2)
+                .lineLimit(1)
                 .truncationMode(.tail)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
