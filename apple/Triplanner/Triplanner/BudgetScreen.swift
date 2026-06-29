@@ -61,10 +61,18 @@ struct BudgetScreen: View {
                                         .foregroundStyle(.white)
                                         .frame(width: 34, height: 34)
                                         .background(spendingTint, in: RoundedRectangle(cornerRadius: 11))
-                                    Text("Budget")
-                                        .font(.title2.weight(.black))
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Trip limit")
+                                            .font(.caption.weight(.black))
+                                            .foregroundStyle(.secondary)
+                                        Text(budget > 0 ? "\(Int(budget)) \(currency)" : "Not set")
+                                            .font(.title3.weight(.black))
+                                            .monospacedDigit()
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.82)
+                                    }
                                 }
-                                Text(budget > 0 ? "현재 지출과 남은 금액" : "설정 버튼에서 이번 여행 Budget을 정하세요")
+                                Text(budget > 0 ? "현재 지출과 남은 금액을 한눈에 확인" : "Set 버튼으로 이번 여행 한도를 정할 수 있어요")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
@@ -75,7 +83,7 @@ struct BudgetScreen: View {
                             Button {
                                 isEditingBudget = true
                             } label: {
-                                Label(budget > 0 ? "수정" : "설정", systemImage: "slider.horizontal.3")
+                                Label(budget > 0 ? "Edit" : "Set", systemImage: "slider.horizontal.3")
                                     .font(.caption.weight(.black))
                                     .padding(.horizontal, 11)
                                     .padding(.vertical, 8)
@@ -109,7 +117,7 @@ struct BudgetScreen: View {
                         }
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
-                            BudgetStat(title: "설정 금액", value: budget > 0 ? "\(Int(budget))" : "미정", unit: currency)
+                            BudgetStat(title: "Limit", value: budget > 0 ? "\(Int(budget))" : "미정", unit: currency)
                             BudgetStat(title: balanceTitle, value: balanceValue, unit: currency)
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
