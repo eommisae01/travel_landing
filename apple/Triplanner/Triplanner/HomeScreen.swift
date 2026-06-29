@@ -195,9 +195,9 @@ struct HomeScreen: View {
     private func travelPanel(_ trip: Trip) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("FLIGHTS & STAY")
+                Label("FLIGHTS & STAY", systemImage: "airplane")
                     .font(.caption.weight(.black))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.accent)
                 Spacer()
                 Label("탭하면 복사", systemImage: "doc.on.doc")
                     .font(.caption2.weight(.black))
@@ -206,23 +206,27 @@ struct HomeScreen: View {
                     .padding(.vertical, 4)
                     .background(theme.accent.opacity(0.10), in: Capsule())
             }
+
             ViewThatFits(in: .horizontal) {
-                HStack(spacing: 8) {
-                    FlightSummaryRow(
-                        title: "가는 편",
-                        flight: trip.outbound,
-                        iconName: "airplane.departure",
-                        tint: theme.accent,
-                        isCompact: true
-                    )
-                    FlightSummaryRow(
-                        title: "오는 편",
-                        flight: trip.inbound,
-                        iconName: "airplane.arrival",
-                        tint: theme.secondaryAccent,
-                        isCompact: true
-                    )
-                    AccommodationSummaryRow(trip: trip, isCompact: true)
+                HStack(alignment: .top, spacing: 10) {
+                    VStack(spacing: 8) {
+                        FlightSummaryRow(
+                            title: "가는 편",
+                            flight: trip.outbound,
+                            iconName: "airplane.departure",
+                            tint: theme.accent
+                        )
+                        FlightSummaryRow(
+                            title: "오는 편",
+                            flight: trip.inbound,
+                            iconName: "airplane.arrival",
+                            tint: theme.secondaryAccent
+                        )
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    AccommodationSummaryRow(trip: trip)
+                        .frame(maxWidth: 360)
                 }
 
                 VStack(spacing: 8) {
@@ -243,7 +247,7 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(11)
+        .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
             RoundedRectangle(cornerRadius: 20)
@@ -412,20 +416,19 @@ private struct FlightSummaryRow: View {
     var flight: FlightInfo
     var iconName: String
     var tint: Color
-    var isCompact = false
 
     var body: some View {
         Button {
             copyToClipboard(flight.flightNumber.isEmpty ? "\(flight.origin) \(flight.destination)" : flight.flightNumber)
         } label: {
-            HStack(alignment: .center, spacing: 10) {
+            HStack(alignment: .center, spacing: 11) {
                 Image(systemName: iconName)
                     .font(.subheadline.weight(.black))
-                    .frame(width: isCompact ? 30 : 34, height: isCompact ? 30 : 34)
-                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: isCompact ? 9 : 10))
+                    .frame(width: 36, height: 36)
+                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
                     .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: isCompact ? 3 : 4) {
+                VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 8) {
                         Text(title)
                             .font(.caption.weight(.black))
@@ -438,7 +441,7 @@ private struct FlightSummaryRow: View {
                             .foregroundStyle(tint)
                     }
                     Text(routeText)
-                        .font((isCompact ? Font.caption : Font.subheadline).weight(.black))
+                        .font(.subheadline.weight(.black))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
                     ViewThatFits(in: .horizontal) {
@@ -457,11 +460,11 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 86 : 78, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 82, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, isCompact ? 10 : 11)
-        .padding(.vertical, isCompact ? 7 : 8)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 8)
         .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 13)
@@ -509,25 +512,24 @@ private struct RouteTimeBadge: View {
 
 private struct AccommodationSummaryRow: View {
     var trip: Trip
-    var isCompact = false
 
     var body: some View {
         Button {
             copyToClipboard(trip.accommodationAddress ?? trip.accommodation)
         } label: {
-            HStack(alignment: .center, spacing: 10) {
+            HStack(alignment: .center, spacing: 11) {
                 Image(systemName: "bed.double")
                     .font(.subheadline.weight(.black))
-                    .frame(width: isCompact ? 30 : 34, height: isCompact ? 30 : 34)
-                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: isCompact ? 9 : 10))
+                    .frame(width: 36, height: 36)
+                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
                     .foregroundStyle(.purple)
 
-                VStack(alignment: .leading, spacing: isCompact ? 3 : 4) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text("숙소")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.purple)
                     Text(trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
-                        .font((isCompact ? Font.caption : Font.subheadline).weight(.black))
+                        .font(.subheadline.weight(.black))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
                     if let address = trip.accommodationAddress, !address.isEmpty {
@@ -542,11 +544,11 @@ private struct AccommodationSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 86 : 78, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 82, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, isCompact ? 10 : 11)
-        .padding(.vertical, isCompact ? 7 : 8)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 8)
         .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 13)
