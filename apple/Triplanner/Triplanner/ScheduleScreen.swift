@@ -23,18 +23,18 @@ struct ScheduleScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 20) {
                     ScreenHeader(title: scheduleTitle, subtitle: scheduleSubtitle)
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 14) {
                         HStack {
-                            SectionLabel(title: "SCHEDULE")
+                            SectionLabel(title: "VIEW")
                             Spacer()
                             Text(selectedDate.map(compactDayLabel) ?? "전체")
-                                .font(.caption.weight(.black))
+                                .font(.subheadline.weight(.black))
                                 .foregroundStyle(theme.accent)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
                                 .background(theme.accent.opacity(0.10), in: Capsule())
                         }
                         filterBar
@@ -45,7 +45,7 @@ struct ScheduleScreen: View {
                             calendarPreview
                         }
                     }
-                    .appPanel(cornerRadius: 18)
+                    .appPanel(cornerRadius: 20)
 
                     if viewMode == .calendar {
                         calendarGrid
@@ -61,8 +61,8 @@ struct ScheduleScreen: View {
                         }
                     }
                 }
-                .readableWidth(1180)
-                .padding()
+                .readableWidth(1220)
+                .padding(22)
             }
             .navigationTitle("")
             .toolbar {
@@ -109,10 +109,10 @@ struct ScheduleScreen: View {
                     }
                 }
             }
-            .padding(5)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+            .padding(6)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
             .overlay {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(Color.primary.opacity(0.055))
             }
         }
@@ -120,28 +120,28 @@ struct ScheduleScreen: View {
 
     private func dayFilterButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 5) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.subheadline.weight(.black))
+                        .font(.headline.weight(.black))
                     Text(subtitle)
-                        .font(.caption.weight(.bold))
+                        .font(.subheadline.weight(.bold))
                         .foregroundStyle(isSelected ? .white.opacity(0.86) : .secondary)
                         .lineLimit(1)
                 }
 
                 Capsule()
                     .fill(isSelected ? .white.opacity(0.92) : Color.clear)
-                    .frame(height: 3)
+                    .frame(height: 4)
             }
-            .frame(width: title == "전체" ? 94 : 116, alignment: .leading)
-            .frame(minHeight: 50, alignment: .leading)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 14))
+            .frame(width: title == "전체" ? 108 : 132, alignment: .leading)
+            .frame(minHeight: 62, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 16))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(isSelected ? theme.accent.opacity(0.56) : Color.secondary.opacity(0.13), lineWidth: 1)
             }
         }
@@ -149,23 +149,23 @@ struct ScheduleScreen: View {
     }
 
     private var calendarPreview: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("CALENDAR")
-                    .font(.caption.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(.secondary)
                 Spacer()
                 Button {
                     viewMode = .calendar
                 } label: {
                     Label("전체 보기", systemImage: "calendar")
-                        .font(.caption.weight(.black))
+                        .font(.subheadline.weight(.black))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.accent)
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 9)], spacing: 9) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 10)], spacing: 10) {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
                     Button {
@@ -173,24 +173,24 @@ struct ScheduleScreen: View {
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Day \(index + 1)")
-                                .font(.caption.weight(.black))
-                            Text(compactDayLabel(date))
                                 .font(.subheadline.weight(.black))
+                            Text(compactDayLabel(date))
+                                .font(.headline.weight(.black))
                         }
-                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 9)
-                        .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                        .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
                         .foregroundStyle(isSelected ? .white : .primary)
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
@@ -218,10 +218,10 @@ struct ScheduleScreen: View {
                 HStack(spacing: 0) {
                     ForEach(weekdayLabels, id: \.self) { label in
                         Text(label)
-                            .font(.caption.weight(.black))
+                            .font(.subheadline.weight(.black))
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 38)
+                            .frame(height: 44)
                     }
                 }
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
@@ -254,16 +254,16 @@ struct ScheduleScreen: View {
                         .disabled(!isTripDay)
                     }
                 }
-                .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 18))
+                .clipShape(RoundedRectangle(cornerRadius: 18))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 18)
                         .stroke(Color.primary.opacity(0.065), lineWidth: 0.75)
                 }
             }
             .padding(.top, 2)
         }
-        .appPanel(cornerRadius: 18)
+        .appPanel(cornerRadius: 20)
     }
 
     private var calendarHeaderCopy: some View {
@@ -309,28 +309,28 @@ struct ScheduleScreen: View {
         Group {
             if selectedDate == nil {
                 ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .top, spacing: 12) {
+                    HStack(alignment: .top, spacing: 16) {
                         calendarTimeGridPanel
                             .frame(minWidth: 560)
                         calendarAgendaPanel
-                            .frame(width: 330)
+                            .frame(width: 350)
                     }
 
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 12) {
                         calendarTimeGridPanel
                         calendarAgendaPanel
                     }
                 }
             } else {
                 ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .top, spacing: 12) {
+                    HStack(alignment: .top, spacing: 16) {
                         calendarTimeGridPanel
                             .frame(minWidth: 460)
                         calendarAgendaPanel
-                            .frame(width: 320)
+                            .frame(width: 340)
                     }
 
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 12) {
                         calendarTimeGridPanel
                         calendarAgendaPanel
                     }
@@ -376,7 +376,7 @@ struct ScheduleScreen: View {
                         selectedDate = nil
                     } label: {
                         Label("전체", systemImage: "xmark")
-                            .font(.caption2.weight(.black))
+                            .font(.caption.weight(.black))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
@@ -392,13 +392,13 @@ struct ScheduleScreen: View {
                     .padding(.horizontal, 12)
                     .background(.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
             } else {
-                VStack(spacing: 8) {
+                VStack(spacing: 9) {
                     ForEach(agendaItems.prefix(selectedDate == nil ? 8 : 5)) { item in
                         CalendarAgendaRow(item: item)
                     }
                     if agendaItems.count > (selectedDate == nil ? 8 : 5) {
                         Text("+ \(agendaItems.count - (selectedDate == nil ? 8 : 5))개 더 있음")
-                            .font(.caption2.weight(.black))
+                            .font(.caption.weight(.black))
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, 2)
@@ -406,10 +406,10 @@ struct ScheduleScreen: View {
                 }
             }
         }
-        .padding(12)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 15))
+        .padding(14)
+        .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 17))
         .overlay {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 17)
                 .stroke(.quaternary)
         }
     }
@@ -428,10 +428,10 @@ struct ScheduleScreen: View {
                 timelineSection(date: selectedDate ?? Date(), items: visibleItems)
             }
         }
-        .padding(10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
         .overlay {
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 22)
                 .stroke(.quaternary)
         }
     }
@@ -487,33 +487,33 @@ struct ScheduleScreen: View {
             HStack(alignment: .center, spacing: 10) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(dayTitle(for: date))
-                        .font(.title3.weight(.black))
+                        .font(.title2.weight(.black))
                     Text(compactDayLabel(date))
-                        .font(.subheadline.weight(.black))
+                        .font(.headline.weight(.black))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text("\(items.count)")
-                    .font(.caption2.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
                     .background(.secondary.opacity(0.10), in: Capsule())
                 Button {
                     openScheduleEditor(for: date)
                 } label: {
-                    Image(systemName: "plus")
-                        .font(.subheadline.weight(.black))
-                        .frame(width: 32, height: 32)
-                        .background(theme.accent.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
+                        Image(systemName: "plus")
+                        .font(.headline.weight(.black))
+                        .frame(width: 36, height: 36)
+                        .background(theme.accent.opacity(0.13), in: RoundedRectangle(cornerRadius: 11))
                         .foregroundStyle(theme.accent)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(dayTitle(for: date)) 일정 추가")
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .background(.background.opacity(0.44), in: RoundedRectangle(cornerRadius: 15))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .background(.background.opacity(0.48), in: RoundedRectangle(cornerRadius: 17))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(theme.accent)
@@ -617,12 +617,16 @@ private struct ScheduleModeSwitch: View {
     @Binding var viewMode: ScheduleViewMode
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             modeButton(.timeline)
             modeButton(.calendar)
         }
-        .padding(4)
-        .background(.secondary.opacity(0.075), in: RoundedRectangle(cornerRadius: 15))
+        .padding(5)
+        .background(.secondary.opacity(0.075), in: RoundedRectangle(cornerRadius: 17))
+        .overlay {
+            RoundedRectangle(cornerRadius: 17)
+                .stroke(Color.primary.opacity(0.045))
+        }
     }
 
     private func modeButton(_ mode: ScheduleViewMode) -> some View {
@@ -631,12 +635,12 @@ private struct ScheduleModeSwitch: View {
             viewMode = mode
         } label: {
             Label(mode.title, systemImage: mode.iconName)
-                .font(.caption.weight(.black))
-                .frame(maxWidth: .infinity, minHeight: 34)
+                .font(.subheadline.weight(.black))
+                .frame(maxWidth: .infinity, minHeight: 42)
                 .foregroundStyle(isSelected ? .white : .primary)
-                .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+                .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 14))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 14)
                         .stroke(isSelected ? theme.accent.opacity(0.38) : Color.secondary.opacity(0.10))
                 }
         }
@@ -651,11 +655,11 @@ private struct CalendarHeaderButtonLabel: View {
 
     var body: some View {
         Label(title, systemImage: iconName)
-            .font(.caption.weight(.black))
+            .font(.subheadline.weight(.black))
             .lineLimit(1)
             .minimumScaleFactor(0.82)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
             .background(tint.opacity(0.11), in: Capsule())
             .foregroundStyle(tint)
     }
@@ -681,21 +685,21 @@ private struct MultiDayCalendarGrid: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 0) {
                     Text("GMT+9")
-                        .font(.caption.weight(.black))
+                        .font(.subheadline.weight(.black))
                         .foregroundStyle(.secondary)
-                        .frame(width: 64, alignment: .trailing)
-                        .padding(.trailing, 12)
+                        .frame(width: 72, alignment: .trailing)
+                        .padding(.trailing, 14)
                     ForEach(dates, id: \.self) { date in
                         VStack(alignment: .leading, spacing: 2) {
                             Text(shortWeekday(date))
-                                .font(.caption.weight(.black))
+                                .font(.subheadline.weight(.black))
                                 .foregroundStyle(.secondary)
                             Text(compactDate(date))
-                                .font(.headline.weight(.black))
+                                .font(.title3.weight(.black))
                         }
-                        .frame(width: 230, alignment: .leading)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 10)
+                        .frame(width: 250, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
                         .background(theme.accent.opacity(0.055))
                         .overlay(alignment: .leading) {
                             Rectangle()
@@ -711,10 +715,10 @@ private struct MultiDayCalendarGrid: View {
                     let hourHeight = rowHeight(forHour: hour)
                     HStack(alignment: .top, spacing: 0) {
                         Text("\(hour):00")
-                            .font(.caption.weight(.black).monospacedDigit())
+                            .font(.subheadline.weight(.black).monospacedDigit())
                             .foregroundStyle(.secondary)
-                            .frame(width: 64, alignment: .trailing)
-                            .padding(.trailing, 12)
+                            .frame(width: 72, alignment: .trailing)
+                            .padding(.trailing, 14)
                             .padding(.top, 12)
 
                         ForEach(dates, id: \.self) { date in
@@ -730,11 +734,11 @@ private struct MultiDayCalendarGrid: View {
                     }
                 }
             }
-            .frame(minWidth: CGFloat(max(dates.count, 1)) * 248 + 64, alignment: .leading)
+            .frame(minWidth: CGFloat(max(dates.count, 1)) * 270 + 72, alignment: .leading)
         }
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 15))
+        .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 17))
         .overlay {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 17)
                 .stroke(.quaternary)
         }
     }
@@ -743,7 +747,7 @@ private struct MultiDayCalendarGrid: View {
         let maxItems = dates
             .map { items(on: $0, at: hour).count }
             .max() ?? 0
-        return maxItems == 0 ? 58 : CGFloat(maxItems) * 68 + 14
+        return maxItems == 0 ? 64 : CGFloat(maxItems) * 78 + 16
     }
 
     private func items(on date: Date, at hour: Int) -> [ScheduleItem] {
@@ -793,9 +797,9 @@ private struct MultiDayHourCell: View {
                 .padding(.vertical, 4)
             }
         }
-        .frame(width: 230, alignment: .topLeading)
+        .frame(width: 250, alignment: .topLeading)
         .frame(height: rowHeight, alignment: .topLeading)
-        .padding(.horizontal, 9)
+        .padding(.horizontal, 10)
         .overlay(alignment: .leading) {
             Rectangle()
                 .fill(Color.secondary.opacity(0.12))
@@ -823,21 +827,21 @@ private struct CalendarTimeGrid: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(dayLabel)
-                        .font(.subheadline.weight(.black))
+                        .font(.headline.weight(.black))
                     Text(compactDate)
-                        .font(.caption.weight(.bold))
+                        .font(.subheadline.weight(.bold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text("\(items.count)개")
-                    .font(.caption.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(theme.accent)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
                     .background(theme.accent.opacity(0.10), in: Capsule())
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
             .background(theme.accent.opacity(0.055))
 
             Divider().opacity(0.45)
@@ -852,9 +856,9 @@ private struct CalendarTimeGrid: View {
                 }
             }
         }
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 15))
+        .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 17))
         .overlay {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 17)
                 .stroke(.quaternary)
         }
     }
@@ -887,14 +891,14 @@ private struct CalendarHourRow: View {
     var isLast: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(alignment: .top, spacing: 15) {
             Text(hourLabel)
-                .font(.caption.weight(.black).monospacedDigit())
+                .font(.subheadline.weight(.black).monospacedDigit())
                 .foregroundStyle(.secondary)
-                .frame(width: 60, alignment: .trailing)
-                .padding(.top, 10)
+                .frame(width: 66, alignment: .trailing)
+                .padding(.top, 12)
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Rectangle()
                     .fill(Color.secondary.opacity(isLast ? 0.07 : 0.13))
                     .frame(height: 0.7)
@@ -910,12 +914,12 @@ private struct CalendarHourRow: View {
             }
             .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .topLeading)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 3)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 4)
     }
 
     private var rowHeight: CGFloat {
-        items.isEmpty ? 50 : CGFloat(max(1, items.count)) * 60 + 12
+        items.isEmpty ? 58 : CGFloat(max(1, items.count)) * 72 + 14
     }
 
     private var hourLabel: String {
@@ -928,10 +932,10 @@ private struct CalendarTimeBlock: View {
     var item: ScheduleItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack(alignment: .center, spacing: 6) {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .center, spacing: 7) {
                 Text(timeText)
-                    .font(.caption.weight(.black).monospacedDigit())
+                    .font(.subheadline.weight(.black).monospacedDigit())
                     .foregroundStyle(tint)
                     .lineLimit(1)
 
@@ -947,7 +951,7 @@ private struct CalendarTimeBlock: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
-                    .font(.subheadline.weight(.black))
+                    .font(.headline.weight(.black))
                     .foregroundStyle(.primary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -960,10 +964,10 @@ private struct CalendarTimeBlock: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 56, alignment: .topLeading)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 9)
-        .background(tint.opacity(0.075), in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 66, alignment: .topLeading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
+        .background(tint.opacity(0.075), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(tint)
@@ -971,7 +975,7 @@ private struct CalendarTimeBlock: View {
                 .padding(.vertical, 9)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(tint.opacity(0.13))
         }
     }
@@ -997,11 +1001,11 @@ private struct CalendarAgendaRow: View {
     var item: ScheduleItem
 
     var body: some View {
-        HStack(spacing: 11) {
+        HStack(spacing: 12) {
             Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
-                .font(.subheadline.weight(.black).monospacedDigit())
+                .font(.headline.weight(.black).monospacedDigit())
                 .foregroundStyle(kindColor)
-                .frame(width: 58, alignment: .trailing)
+                .frame(width: 66, alignment: .trailing)
 
             Circle()
                 .fill(kindColor)
@@ -1009,7 +1013,7 @@ private struct CalendarAgendaRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
-                    .font(.subheadline.weight(.black))
+                    .font(.headline.weight(.black))
                     .lineLimit(1)
                 if !item.note.isEmpty {
                     Text(item.note)
@@ -1020,10 +1024,10 @@ private struct CalendarAgendaRow: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 48, alignment: .center)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 4)
-        .background(kindColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .center)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 5)
+        .background(kindColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 14))
     }
 
     private var kindColor: Color {
@@ -1050,10 +1054,10 @@ private struct CalendarDayCell: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 5) {
                 Text(dayNumber)
-                    .font(.subheadline.weight(.black).monospacedDigit())
+                    .font(.headline.weight(.black).monospacedDigit())
                     .foregroundStyle(dayNumberForeground)
-                    .frame(width: 30, height: 30)
-                    .background(dayNumberBackground, in: RoundedRectangle(cornerRadius: 10))
+                    .frame(width: 34, height: 34)
+                    .background(dayNumberBackground, in: RoundedRectangle(cornerRadius: 11))
                 Spacer(minLength: 4)
                 if itemCount > 0 {
                     Label("\(itemCount)", systemImage: "list.bullet")
@@ -1068,7 +1072,7 @@ private struct CalendarDayCell: View {
 
             if let dayLabel {
                 Text(dayLabel)
-                    .font(.caption.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(dayLabelForeground)
                     .lineLimit(1)
             } else {
@@ -1084,23 +1088,23 @@ private struct CalendarDayCell: View {
                                 .fill(eventDotColor)
                                 .frame(width: 3, height: 12)
                             Text(title)
-                                .font(.caption2.weight(.bold))
+                                .font(.caption.weight(.bold))
                                 .minimumScaleFactor(0.86)
                                 .foregroundStyle(secondaryForeground)
                                 .lineLimit(1)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding(.horizontal, 5)
-                        .padding(.vertical, 3)
-                        .background(eventBackground, in: RoundedRectangle(cornerRadius: 6))
+                        .padding(.vertical, 4)
+                        .background(eventBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
                 }
             } else {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 104, maxHeight: 104, alignment: .topLeading)
-        .padding(9)
+        .frame(maxWidth: .infinity, minHeight: 118, maxHeight: 118, alignment: .topLeading)
+        .padding(10)
         .background(cellBackground)
         .overlay {
             Rectangle()
@@ -1175,57 +1179,57 @@ struct ScheduleRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
-                    .font(.caption.weight(.black).monospacedDigit())
+                    .font(.subheadline.weight(.black).monospacedDigit())
                     .foregroundStyle(kindColor)
                     .lineLimit(1)
                 if !item.endTime.isEmpty {
                     Text(item.endTime)
-                        .font(.caption2.weight(.black))
+                        .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 52)
-            .padding(.top, 6)
+            .frame(width: 60)
+            .padding(.top, 8)
 
             ZStack(alignment: .top) {
                 if !isLast {
                     Rectangle()
                         .fill(kindColor.opacity(0.20))
-                        .frame(width: 2, height: 76)
-                        .padding(.top, 23)
+                        .frame(width: 2, height: 88)
+                        .padding(.top, 27)
                 }
                 Image(systemName: kindIcon)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.white)
-                    .frame(width: 22, height: 22)
+                    .frame(width: 26, height: 26)
                     .background(kindColor, in: Circle())
                     .shadow(color: kindColor.opacity(0.22), radius: 6, x: 0, y: 3)
             }
-            .frame(width: 22)
-            .frame(minHeight: 76, alignment: .top)
+            .frame(width: 26)
+            .frame(minHeight: 88, alignment: .top)
 
             VStack(alignment: .leading, spacing: 7) {
                 HStack(alignment: .top, spacing: 8) {
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(spacing: 6) {
                             Text(item.kind.rawValue)
-                                .font(.caption2.weight(.black))
+                                .font(.caption.weight(.black))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
                                 .background(kindColor.opacity(0.12), in: Capsule())
                                 .foregroundStyle(kindColor)
                             if !item.placeName.isEmpty {
                                 Text(item.placeName)
-                                    .font(.caption2.weight(.bold))
+                                    .font(.caption.weight(.bold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
                             }
                         }
                         Text(item.title)
-                            .font(.headline.weight(.black))
+                            .font(.title3.weight(.black))
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -1234,9 +1238,9 @@ struct ScheduleRow: View {
                         isEditing = true
                     } label: {
                         Image(systemName: "pencil")
-                            .font(.caption.weight(.black))
-                            .frame(width: 25, height: 25)
-                            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                            .font(.subheadline.weight(.black))
+                            .frame(width: 32, height: 32)
+                            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -1256,10 +1260,10 @@ struct ScheduleRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 11)
             .background {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(rowBackground)
             }
             .overlay(alignment: .leading) {
@@ -1271,11 +1275,11 @@ struct ScheduleRow: View {
                 }
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(kindColor.opacity(item.kind == .move || item.kind == .flight ? 0.16 : 0.04))
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 5)
         .sheet(isPresented: $isEditing) {
             ScheduleEditorSheet(existingItem: item, defaultDate: item.date)
                 .environmentObject(store)
