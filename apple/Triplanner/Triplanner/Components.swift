@@ -102,15 +102,32 @@ struct ScreenHeader: View {
     var subtitle: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(theme.accent)
-                .frame(width: 5, height: subtitle.isEmpty ? 34 : 52)
-                .padding(.top, 2)
+        HStack(alignment: .center, spacing: 11) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 13)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                theme.accent.opacity(0.90),
+                                theme.secondaryAccent.opacity(0.62)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                Circle()
+                    .fill(.white.opacity(0.28))
+                    .frame(width: 14, height: 14)
+                    .offset(x: 8, y: -8)
+                Image(systemName: "square.grid.2x2.fill")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.white)
+            }
+            .frame(width: 42, height: 42)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .font(.system(size: 26, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
@@ -124,7 +141,7 @@ struct ScreenHeader: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 2)
+        .padding(.bottom, 1)
     }
 }
 
