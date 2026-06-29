@@ -44,7 +44,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 10)], spacing: 10) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 11)], spacing: 11) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -183,93 +183,76 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            HStack(alignment: .center, spacing: 11) {
-                notePreviewStrip(note)
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top, spacing: 9) {
+                    NoteKindIconBadge(iconName: noteKindIcon(note), tint: noteAccent(note))
 
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text(note.title)
                             .font(.subheadline.weight(.black))
                             .lineLimit(1)
-                        Spacer(minLength: 0)
-                        Image(systemName: "chevron.right")
+                        Text(noteKindTitle(note))
                             .font(.caption2.weight(.black))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(noteAccent(note))
                     }
 
-                    Text(note.body.isEmpty ? "메모 없음" : note.body)
-                        .lineLimit(2)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
 
-                    HStack(spacing: 6) {
-                        NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
-                        NoteKindPill(
-                            title: note.imageNames.isEmpty ? "텍스트" : "\(note.imageNames.count)장",
-                            iconName: note.imageNames.isEmpty ? "text.alignleft" : "photo.stack",
-                            tint: .secondary
-                        )
-                        Spacer(minLength: 0)
-                    }
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary.opacity(0.72))
+                        .frame(width: 24, height: 24)
+                        .background(.secondary.opacity(0.08), in: Circle())
                 }
+
+                Text(note.body.isEmpty ? "메모 없음" : note.body)
+                    .lineLimit(2)
+                    .font(.caption.weight(.semibold))
+                    .lineSpacing(2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
+
+                Spacer(minLength: 0)
+
+                noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 96, maxHeight: 96, alignment: .center)
-            .padding(10)
-            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
+            .frame(maxWidth: .infinity, minHeight: 142, maxHeight: 142, alignment: .topLeading)
+            .padding(11)
+            .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 15))
             .overlay(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 15)
                     .fill(noteAccent(note))
                     .frame(width: 4)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 11)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(.quaternary)
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(noteAccent(note).opacity(0.14))
             }
         }
         .buttonStyle(.plain)
     }
 
-    private func notePreviewStrip(_ note: NoteGroup) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 13)
-                .fill(
-                    LinearGradient(
-                        colors: note.imageNames.isEmpty
-                            ? [Color.secondary.opacity(0.10), Color.secondary.opacity(0.05)]
-                            : [noteAccent(note).opacity(0.22), theme.secondaryAccent.opacity(0.12), Color.secondary.opacity(0.06)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
+    private func noteAttachmentStrip(_ note: NoteGroup) -> some View {
+        HStack(spacing: 6) {
             if note.imageNames.isEmpty {
-                Image(systemName: noteKindIcon(note))
-                    .font(.title3.weight(.black))
-                    .foregroundStyle(noteAccent(note))
-                    .frame(width: 38, height: 38)
-                    .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 12))
+                NoteKindPill(title: "텍스트 메모", iconName: "text.alignleft", tint: .secondary)
             } else {
-                ZStack(alignment: .center) {
-                    ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
-                        MiniImageBadge(title: imageName, index: index, tint: noteAccent(note), compact: true)
-                            .offset(x: CGFloat(index - 1) * 7, y: CGFloat(index - 1) * -5)
-                            .rotationEffect(.degrees(Double(index - 1) * 4))
-                    }
+                ForEach(Array(note.imageNames.prefix(2).enumerated()), id: \.offset) { index, imageName in
+                    NoteAttachmentChip(title: imageName, index: index, tint: noteAccent(note))
+                }
+                if note.imageNames.count > 2 {
+                    Text("+\(note.imageNames.count - 2)")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.white)
+                        .frame(width: 28, height: 28)
+                        .background(noteAccent(note), in: Circle())
                 }
             }
-        }
-        .frame(width: 70, height: 70)
-        .overlay(alignment: .bottomTrailing) {
-            if !note.imageNames.isEmpty {
-                Text("\(note.imageNames.count)")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.white)
-                    .frame(width: 22, height: 22)
-                    .background(noteAccent(note), in: Circle())
-                    .padding(5)
-            }
+            Spacer(minLength: 0)
+            Label(note.imageNames.isEmpty ? "Text" : "\(note.imageNames.count)장", systemImage: note.imageNames.isEmpty ? "doc.text" : "photo.stack")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -324,6 +307,42 @@ private struct NoteKindPill: View {
             .padding(.vertical, 4)
             .background(tint.opacity(0.11), in: Capsule())
             .foregroundStyle(tint)
+    }
+}
+
+private struct NoteKindIconBadge: View {
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        Image(systemName: iconName)
+            .font(.subheadline.weight(.black))
+            .frame(width: 34, height: 34)
+            .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
+            .foregroundStyle(tint)
+    }
+}
+
+private struct NoteAttachmentChip: View {
+    var title: String
+    var index: Int
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text("\(index + 1)")
+                .font(.system(size: 9, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(width: 16, height: 16)
+                .background(tint, in: Circle())
+            Text(title)
+                .font(.caption2.weight(.black))
+                .lineLimit(1)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 6)
+        .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 
