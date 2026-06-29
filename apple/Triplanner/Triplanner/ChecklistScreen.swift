@@ -210,12 +210,12 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 9) {
             Button(action: action) {
                 checkmarkIcon
             }
             .buttonStyle(.plain)
-            .frame(width: 30, height: rowHeight)
+            .frame(width: 28, height: rowHeight)
             .accessibilityLabel(item.isDone ? "완료 해제" : "완료")
 
             Button(action: action) {
@@ -224,7 +224,7 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .leading)
 
-            HStack(spacing: 5) {
+            HStack(spacing: 6) {
                 ownerPill
 
                 Button {
@@ -235,10 +235,10 @@ private struct ChecklistItemRow: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("항목 수정")
             }
-            .frame(height: rowHeight, alignment: .center)
+            .frame(width: 106, height: rowHeight, alignment: .trailing)
         }
         .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .center)
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 11)
         .padding(.vertical, 0)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
@@ -256,12 +256,12 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { 40 }
+    private var rowHeight: CGFloat { 38 }
 
     private var checkmarkIcon: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
-                .fill(item.isDone ? tint.opacity(0.15) : Color.secondary.opacity(0.06))
+                .fill(item.isDone ? tint.opacity(0.14) : Color.secondary.opacity(0.045))
             RoundedRectangle(cornerRadius: 8)
                 .stroke(item.isDone ? tint.opacity(0.42) : Color.secondary.opacity(0.16), lineWidth: 1)
             if item.isDone {
@@ -270,7 +270,7 @@ private struct ChecklistItemRow: View {
                     .foregroundStyle(tint)
             }
         }
-        .frame(width: 24, height: 24)
+        .frame(width: 23, height: 23)
         .contentShape(RoundedRectangle(cornerRadius: 8))
     }
 
@@ -292,7 +292,7 @@ private struct ChecklistItemRow: View {
             .lineLimit(1)
             .minimumScaleFactor(0.78)
             .padding(.horizontal, 8)
-            .frame(minWidth: 46, maxWidth: 68, minHeight: 24, maxHeight: 24)
+            .frame(minWidth: 48, maxWidth: 66, minHeight: 23, maxHeight: 23)
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
     }
@@ -301,8 +301,8 @@ private struct ChecklistItemRow: View {
         Image(systemName: "pencil")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 26, height: 26)
-            .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+            .frame(width: 25, height: 25)
+            .background(.secondary.opacity(0.065), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private var ownerTint: Color {
