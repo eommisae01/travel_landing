@@ -202,6 +202,16 @@ struct ScheduleScreen: View {
                 }
                 Spacer()
                 Button {
+                    selectedDate = nil
+                } label: {
+                    Label("전체", systemImage: "square.grid.2x2")
+                        .font(.caption.weight(.black))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(selectedDate == nil ? .secondary : theme.accent)
+                .disabled(selectedDate == nil)
+
+                Button {
                     openScheduleEditor(for: selectedDate ?? dates.first ?? Date())
                 } label: {
                     Label("추가", systemImage: "plus")
@@ -254,7 +264,6 @@ struct ScheduleScreen: View {
                 }
             }
 
-            calendarDaySummaryStrip
             calendarDetailPanels
         }
         .appPanel(cornerRadius: 18)
@@ -263,9 +272,18 @@ struct ScheduleScreen: View {
     private var calendarDetailPanels: some View {
         Group {
             if selectedDate == nil {
-                VStack(alignment: .leading, spacing: 10) {
-                    calendarTimeGridPanel
-                    calendarAgendaPanel
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 12) {
+                        calendarTimeGridPanel
+                            .frame(minWidth: 560)
+                        calendarAgendaPanel
+                            .frame(width: 330)
+                    }
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        calendarTimeGridPanel
+                        calendarAgendaPanel
+                    }
                 }
             } else {
                 ViewThatFits(in: .horizontal) {
@@ -283,57 +301,6 @@ struct ScheduleScreen: View {
                 }
             }
         }
-    }
-
-    private var calendarDaySummaryStrip: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                SectionLabel(title: "DAYS")
-                Spacer()
-                Text(selectedDate.map(compactDayLabel) ?? "전체 날짜")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.secondary.opacity(0.10), in: Capsule())
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    Button {
-                        selectedDate = nil
-                    } label: {
-                        CalendarSummaryCard(
-                            dayTitle: "전체",
-                            dateTitle: "\(dates.count)일",
-                            itemCount: allVisibleItemsSorted.count,
-                            firstTitle: allVisibleItemsSorted.first?.title ?? "전체 일정",
-                            isSelected: selectedDate == nil
-                        )
-                    }
-                    .buttonStyle(.plain)
-
-                    ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
-                        let dayItems = items(on: date)
-                        let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
-                        Button {
-                            selectedDate = date
-                        } label: {
-                            CalendarSummaryCard(
-                                dayTitle: "Day \(index + 1)",
-                                dateTitle: compactDayLabel(date),
-                                itemCount: dayItems.count,
-                                firstTitle: dayItems.first?.title,
-                                isSelected: isSelected
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.vertical, 1)
-            }
-        }
-        .padding(.vertical, 2)
     }
 
     private var calendarTimeGridPanel: some View {
@@ -1010,54 +977,6 @@ private struct CalendarAgendaRow: View {
         case .flight: return .purple
         case .place: return theme.accent
         }
-    }
-}
-
-private struct CalendarSummaryCard: View {
-    @Environment(\.appTheme) private var theme
-    var dayTitle: String
-    var dateTitle: String
-    var itemCount: Int
-    var firstTitle: String?
-    var isSelected: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(dayTitle)
-                        .font(.caption.weight(.black))
-                    Text(dateTitle)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(isSelected ? .white.opacity(0.78) : .secondary)
-                }
-                Spacer(minLength: 8)
-                Text("\(itemCount)")
-                    .font(.caption2.weight(.black))
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 4)
-                    .background(isSelected ? .white.opacity(0.18) : Color.secondary.opacity(0.10), in: Capsule())
-                    .foregroundStyle(isSelected ? .white : .secondary)
-            }
-
-            Text(firstTitle ?? "일정 없음")
-                .font(.caption.weight(.black))
-                .foregroundStyle(isSelected ? .white : .primary)
-                .lineLimit(1)
-
-            Rectangle()
-                .fill(isSelected ? .white.opacity(0.46) : theme.accent.opacity(itemCount > 0 ? 0.28 : 0.10))
-                .frame(height: 3)
-                .clipShape(Capsule())
-        }
-        .frame(width: 150, height: 82, alignment: .topLeading)
-        .padding(10)
-        .background(isSelected ? theme.accent : Color.secondary.opacity(0.065), in: RoundedRectangle(cornerRadius: 14))
-        .overlay {
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(isSelected ? theme.accent.opacity(0.36) : Color.secondary.opacity(0.12), lineWidth: isSelected ? 1.5 : 1)
-        }
-        .shadow(color: isSelected ? theme.accent.opacity(0.16) : .clear, radius: 8, x: 0, y: 4)
     }
 }
 
