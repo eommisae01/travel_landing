@@ -32,7 +32,7 @@ struct MapScreen: View {
                     }
 
                     ForEach(groupedPlaces, id: \.0) { category, places in
-                        VStack(alignment: .leading, spacing: 22) {
+                        VStack(alignment: .leading, spacing: 20) {
                             PlaceCategoryHeader(
                                 title: category,
                                 count: places.count,
@@ -41,14 +41,14 @@ struct MapScreen: View {
                                 tint: sectionColor(for: category)
                             )
 
-                            LazyVGrid(columns: placeGridColumns, spacing: 22) {
+                            LazyVGrid(columns: placeGridColumns, spacing: 18) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
                             }
                         }
-                        .padding(24)
-                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 26))
+                        .padding(22)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 26))
                         .overlay {
                             RoundedRectangle(cornerRadius: 26)
                                 .stroke(sectionColor(for: category).opacity(0.12))
@@ -99,7 +99,7 @@ struct MapScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 14)]
         }
-        return [GridItem(.adaptive(minimum: 430, maximum: 620), spacing: 22)]
+        return [GridItem(.adaptive(minimum: 540, maximum: 680), spacing: 18)]
     }
 
     private var placesTitle: String {
@@ -271,15 +271,12 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 16) {
             cardHeader
 
             memoPreview
 
             Spacer(minLength: 0)
-
-            Divider()
-                .opacity(0.42)
 
             actionBar
         }
@@ -287,13 +284,13 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 324, maxHeight: 324, alignment: .topLeading)
-        .padding(24)
-        .background(.background.opacity(0.95), in: RoundedRectangle(cornerRadius: 24))
+        .frame(maxWidth: .infinity, minHeight: 304, maxHeight: 304, alignment: .topLeading)
+        .padding(22)
+        .background(.background.opacity(0.96), in: RoundedRectangle(cornerRadius: 24))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
-                .frame(width: 4)
+                .frame(width: 5)
                 .padding(.vertical, 22)
         }
         .overlay {
@@ -316,12 +313,12 @@ struct PlaceRow: View {
     }
 
     private var cardHeader: some View {
-        HStack(alignment: .top, spacing: 18) {
+            HStack(alignment: .top, spacing: 16) {
             categoryBadge
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 9) {
                 Text(place.name)
-                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .font(.system(size: 29, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
                     .fixedSize(horizontal: false, vertical: true)
@@ -330,7 +327,7 @@ struct PlaceRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            HStack(spacing: 9) {
+            HStack(spacing: 8) {
                 Button {
                     store.toggleFavorite(place)
                 } label: {
@@ -373,14 +370,14 @@ struct PlaceRow: View {
             RoundedRectangle(cornerRadius: 15)
                 .fill(categoryColor.opacity(0.13))
             Image(systemName: categoryIcon)
-                .font(.system(size: 26, weight: .black))
+                .font(.system(size: 24, weight: .black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 64, height: 64)
+        .frame(width: 58, height: 58)
     }
 
     private var actionBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             if let url = URL(string: place.mapURL) {
                 Link(destination: url) {
                     PlaceCardActionLabel(title: "지도", iconName: "map", tint: .blue)
@@ -410,12 +407,14 @@ struct PlaceRow: View {
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity)
         }
+        .padding(6)
+        .background(.secondary.opacity(0.055), in: RoundedRectangle(cornerRadius: 17))
     }
 
     private var memoPreview: some View {
         let hasBothNotes = !place.mapNote.isEmpty && !place.appNote.isEmpty
 
-        return VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 9) {
             if place.appNote.isEmpty && place.mapNote.isEmpty {
                 PlaceMemoLine(
                     title: "메모",
@@ -446,20 +445,20 @@ struct PlaceRow: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 112, maxHeight: 112, alignment: .topLeading)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(categoryColor.opacity(0.060), in: RoundedRectangle(cornerRadius: 18))
+        .frame(maxWidth: .infinity, minHeight: 106, maxHeight: 106, alignment: .topLeading)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 13)
+        .background(categoryColor.opacity(0.052), in: RoundedRectangle(cornerRadius: 18))
     }
 
     private var cardBadges: some View {
         HStack(spacing: 7) {
             Text(place.category)
-                .font(.system(size: 17, weight: .black, design: .rounded))
+                .font(.system(size: 16, weight: .black, design: .rounded))
                 .foregroundStyle(categoryColor)
                 .lineLimit(1)
-                .padding(.horizontal, 11)
-                .padding(.vertical, 7)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(categoryColor.opacity(0.10), in: Capsule())
 
             if place.isFavorite {
@@ -467,7 +466,7 @@ struct PlaceRow: View {
                     .font(.system(size: 15, weight: .black))
                     .labelStyle(.iconOnly)
                     .foregroundStyle(.yellow)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 27, height: 27)
                     .background(.yellow.opacity(0.13), in: Capsule())
                     .accessibilityLabel("별표")
             }
@@ -476,7 +475,7 @@ struct PlaceRow: View {
                 Image(systemName: "link")
                     .font(.system(size: 15, weight: .black))
                     .foregroundStyle(.blue)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 27, height: 27)
                     .background(.blue.opacity(0.10), in: Capsule())
                     .accessibilityLabel("지도 링크 있음")
             }
@@ -509,9 +508,9 @@ struct PlaceRow: View {
 
     private func actionIcon(_ iconName: String, tint: Color) -> some View {
         Image(systemName: iconName)
-            .font(.system(size: 19, weight: .black))
-            .frame(width: 46, height: 46)
-            .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+            .font(.system(size: 18, weight: .black))
+            .frame(width: 42, height: 42)
+            .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 13))
             .foregroundStyle(tint)
     }
 }
@@ -527,14 +526,14 @@ private struct PlaceMemoLine: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: iconName)
-                .font(.system(size: 17, weight: .black))
+                .font(.system(size: 16, weight: .black))
                 .foregroundStyle(isPlaceholder ? .secondary : tint)
-                .frame(width: 38, height: 38)
-                .background(tint.opacity(isPlaceholder ? 0.07 : 0.11), in: RoundedRectangle(cornerRadius: 12))
+                .frame(width: 34, height: 34)
+                .background(tint.opacity(isPlaceholder ? 0.07 : 0.11), in: RoundedRectangle(cornerRadius: 11))
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .font(.system(size: 15, weight: .black, design: .rounded))
                     .foregroundStyle(isPlaceholder ? .secondary : tint)
                 Text(value.isEmpty ? "메모 없음" : value)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
@@ -543,7 +542,7 @@ private struct PlaceMemoLine: View {
                     .truncationMode(.tail)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
     }
 }
 
@@ -554,12 +553,12 @@ private struct PlaceCardActionLabel: View {
 
     var body: some View {
         Label(title, systemImage: iconName)
-            .font(.system(size: 17, weight: .black, design: .rounded))
+            .font(.system(size: 16, weight: .black, design: .rounded))
             .lineLimit(1)
             .minimumScaleFactor(0.86)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .padding(.horizontal, 12)
-            .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 15))
+            .frame(maxWidth: .infinity, minHeight: 43)
+            .padding(.horizontal, 10)
+            .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 13))
             .foregroundStyle(tint)
     }
 }
@@ -574,23 +573,25 @@ private struct PlaceDetailSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 18) {
                     ScreenHeader(title: place.name, subtitle: place.category)
 
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 14) {
                         SectionLabel(title: "MEMO")
                         DetailMemoRow(title: "앱 메모", value: place.appNote, iconName: "note.text")
                         DetailMemoRow(title: "지도 메모", value: place.mapNote, iconName: "map")
                     }
-                    .appPanel(cornerRadius: 18)
+                    .appPanel(cornerRadius: 22)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: 10) {
                         Button {
                             dismiss()
                             isScheduling = true
                         } label: {
                             Label("일정에 넣기", systemImage: "calendar.badge.plus")
                                 .frame(maxWidth: .infinity)
+                                .font(.headline.weight(.black))
+                                .padding(.vertical, 7)
                         }
                         .buttonStyle(.borderedProminent)
 
@@ -600,6 +601,8 @@ private struct PlaceDetailSheet: View {
                         } label: {
                             Label("수정", systemImage: "pencil")
                                 .frame(maxWidth: .infinity)
+                                .font(.headline.weight(.black))
+                                .padding(.vertical, 7)
                         }
                         .buttonStyle(.bordered)
                     }
@@ -609,12 +612,13 @@ private struct PlaceDetailSheet: View {
                             Label("Google Maps 열기", systemImage: "arrow.up.right.square")
                                 .font(.headline.weight(.bold))
                                 .frame(maxWidth: .infinity)
+                                .padding(.vertical, 7)
                         }
                         .buttonStyle(.bordered)
                     }
                 }
-                .readableWidth(560)
-                .padding()
+                .readableWidth(620)
+                .padding(24)
             }
             .navigationTitle("")
             .toolbar {
@@ -642,18 +646,18 @@ private struct DetailMemoRow: View {
     var iconName: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: iconName)
-                .font(.caption.weight(.black))
+                .font(.headline.weight(.black))
                 .foregroundStyle(.secondary)
-                .frame(width: 30, height: 30)
-                .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
-            VStack(alignment: .leading, spacing: 3) {
+                .frame(width: 40, height: 40)
+                .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.caption.weight(.black))
+                    .font(.callout.weight(.black))
                     .foregroundStyle(.secondary)
                 Text(value.isEmpty ? "입력 전" : value)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.body.weight(.semibold))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -703,29 +707,29 @@ struct PlaceScheduleSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 18) {
                     ScreenHeader(title: "일정에 넣기", subtitle: place.name)
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 14) {
                         SectionLabel(title: "WHEN")
                         if dateOptions.isEmpty {
                             DatePicker("날짜", selection: $date, displayedComponents: .date)
                                 .datePickerStyle(.compact)
                         } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 10)], spacing: 10) {
                                 ForEach(Array(dateOptions.enumerated()), id: \.offset) { index, option in
                                     Button {
                                         date = option
                                     } label: {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text("Day \(index + 1)")
-                                                .font(.caption2.weight(.black))
-                                            Text(compactDayLabel(option))
                                                 .font(.caption.weight(.black))
+                                            Text(compactDayLabel(option))
+                                                .font(.callout.weight(.black))
                                         }
                                         .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 8)
+                                        .padding(.horizontal, 11)
+                                        .padding(.vertical, 10)
                                         .background(isSameDay(option, date) ? theme.accent : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(isSameDay(option, date) ? .white : .primary)
                                     }
@@ -739,42 +743,43 @@ struct PlaceScheduleSheet: View {
                             LabeledPlaceField(title: "종료", iconName: "clock.badge.checkmark", placeholder: "13:00", text: $endTime)
                         }
                     }
-                    .appPanel(cornerRadius: 18)
+                    .appPanel(cornerRadius: 22)
 
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "PLACE")
-                        HStack(spacing: 10) {
+                        HStack(spacing: 12) {
                             Image(systemName: placeIcon)
-                                .font(.headline.weight(.bold))
-                                .frame(width: 38, height: 38)
-                                .background(placeTint.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+                                .font(.title3.weight(.bold))
+                                .frame(width: 46, height: 46)
+                                .background(placeTint.opacity(0.14), in: RoundedRectangle(cornerRadius: 14))
                                 .foregroundStyle(placeTint)
-                            VStack(alignment: .leading, spacing: 3) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text(place.name)
-                                    .font(.headline.weight(.black))
+                                    .font(.title3.weight(.black))
                                 Text(place.category)
-                                    .font(.caption.weight(.bold))
+                                    .font(.callout.weight(.bold))
                                     .foregroundStyle(.secondary)
                             }
                         }
                         if !place.mapNote.isEmpty {
                             Label(place.mapNote, systemImage: "map")
-                                .font(.caption.weight(.bold))
+                                .font(.callout.weight(.bold))
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .appPanel(cornerRadius: 18)
+                    .appPanel(cornerRadius: 22)
 
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "MEMO")
                         TextField("일정에 같이 남길 메모", text: $note, axis: .vertical)
+                            .font(.body.weight(.semibold))
                             .textFieldStyle(.roundedBorder)
                             .lineLimit(3...6)
                     }
-                    .appPanel(cornerRadius: 18)
+                    .appPanel(cornerRadius: 22)
                 }
-                .readableWidth(620)
-                .padding()
+                .readableWidth(680)
+                .padding(24)
             }
             .navigationTitle("일정에 넣기")
             .toolbar {
