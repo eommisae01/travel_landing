@@ -56,7 +56,7 @@ struct NotesScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 10)]
         }
-        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 10)]
+        return [GridItem(.adaptive(minimum: 318, maximum: 430), spacing: 10)]
     }
 
     private var featuredNotes: [NoteGroup] {
@@ -211,29 +211,64 @@ struct NotesScreen: View {
     }
 
     private func sectionHeader(title: String, count: Int) -> some View {
-        HStack {
-            SectionLabel(title: title)
+        HStack(spacing: 9) {
+            Image(systemName: sectionIcon(title))
+                .font(.caption.weight(.black))
+                .foregroundStyle(sectionTint(title))
+                .frame(width: 26, height: 26)
+                .background(sectionTint(title).opacity(0.11), in: RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                Text(sectionSubtitle(title))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
             Spacer()
             Text("\(count)")
                 .font(.caption2.weight(.black))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(sectionTint(title))
                 .padding(.horizontal, 7)
                 .padding(.vertical, 3)
-                .background(.secondary.opacity(0.10), in: Capsule())
+                .background(sectionTint(title).opacity(0.10), in: Capsule())
         }
+        .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
+    }
+
+    private func sectionTint(_ title: String) -> Color {
+        if title == "COMMON" { return theme.accent }
+        if title == "ALL NOTES" { return .secondary }
+        return theme.secondaryAccent
+    }
+
+    private func sectionIcon(_ title: String) -> String {
+        if title == "COMMON" { return "tray.full.fill" }
+        if title == "ALL NOTES" { return "square.grid.2x2.fill" }
+        return "mappin.and.ellipse"
+    }
+
+    private func sectionSubtitle(_ title: String) -> String {
+        if title == "COMMON" { return "여러 지역에서 같이 쓰는 자료" }
+        if title == "ALL NOTES" { return "다른 지역 자료까지 펼쳐 보기" }
+        return "현재 여행지에서 바로 볼 자료"
     }
 
     private func noteCard(_ note: NoteGroup) -> some View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 9) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 10) {
                     NoteKindIconBadge(iconName: noteKindIcon(note), tint: noteAccent(note))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(note.title)
-                            .font(.headline.weight(.black))
+                            .font(.subheadline.weight(.black))
                             .lineLimit(2)
                             .minimumScaleFactor(0.82)
 
@@ -249,23 +284,23 @@ struct NotesScreen: View {
                     .font(.caption.weight(.semibold))
                     .lineSpacing(2)
                     .foregroundStyle(note.body.isEmpty ? .tertiary : .secondary)
-                    .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .topLeading)
 
                 Spacer(minLength: 0)
 
                 noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
-            .padding(13)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+            .frame(maxWidth: .infinity, minHeight: 162, maxHeight: 162, alignment: .topLeading)
+            .padding(12)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
                     .fill(noteAccent(note))
                     .frame(width: 3)
-                    .padding(.vertical, 13)
+                    .padding(.vertical, 12)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(noteAccent(note).opacity(0.14))
             }
             .shadow(color: Color.primary.opacity(0.022), radius: 8, x: 0, y: 4)
@@ -301,7 +336,7 @@ struct NotesScreen: View {
                 .padding(.vertical, 6)
                 .background(.secondary.opacity(0.08), in: Capsule())
         }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -561,7 +596,7 @@ private struct FeaturedNoteTile: View {
                     .lineLimit(2)
             }
         }
-        .frame(width: 198, height: 164, alignment: .topLeading)
+        .frame(width: 184, height: 152, alignment: .topLeading)
         .padding(9)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
