@@ -129,12 +129,48 @@ struct NotesScreen: View {
     }
 
     private var notesOverview: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 136), spacing: 8)], spacing: 8) {
-            NotesMetricCard(title: "공통", value: "\(commonNotes.count)", unit: "개", iconName: "tray.full", tint: theme.accent)
-            NotesMetricCard(title: store.currentCity.isEmpty ? "지역" : displayCity(store.currentCity), value: "\(cityOnlyNotes.count)", unit: "개", iconName: "mappin.and.ellipse", tint: theme.secondaryAccent)
-            NotesMetricCard(title: "전체", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: theme.warmAccent)
-            NotesMetricCard(title: "이미지", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: theme.secondaryAccent)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 11) {
+                Image(systemName: "doc.text.image.fill")
+                    .font(.headline.weight(.black))
+                    .frame(width: 40, height: 40)
+                    .background(theme.accent.opacity(0.14), in: RoundedRectangle(cornerRadius: 13))
+                    .foregroundStyle(theme.accent)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(store.currentCity.isEmpty ? "All Trip Materials" : "\(displayCity(store.currentCity)) Materials")
+                        .font(.headline.weight(.black))
+                    Text("공통 자료와 현재 지역 자료를 먼저 보여줍니다.")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Text("\(currentNoteCount)")
+                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(theme.accent)
+            }
+
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    NoteOverviewChip(title: "공통", value: commonNotes.count, unit: "개", iconName: "tray.full", tint: theme.accent)
+                    NoteOverviewChip(title: "지역", value: cityOnlyNotes.count, unit: "개", iconName: "mappin.and.ellipse", tint: theme.secondaryAccent)
+                    NoteOverviewChip(title: "이미지", value: store.notes.reduce(0) { $0 + $1.imageNames.count }, unit: "장", iconName: "photo.stack", tint: theme.warmAccent)
+                    NoteOverviewChip(title: "전체", value: store.notes.count, unit: "개", iconName: "square.grid.2x2", tint: .secondary)
+                }
+
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 8)], spacing: 8) {
+                    NoteOverviewChip(title: "공통", value: commonNotes.count, unit: "개", iconName: "tray.full", tint: theme.accent)
+                    NoteOverviewChip(title: "지역", value: cityOnlyNotes.count, unit: "개", iconName: "mappin.and.ellipse", tint: theme.secondaryAccent)
+                    NoteOverviewChip(title: "이미지", value: store.notes.reduce(0) { $0 + $1.imageNames.count }, unit: "장", iconName: "photo.stack", tint: theme.warmAccent)
+                    NoteOverviewChip(title: "전체", value: store.notes.count, unit: "개", iconName: "square.grid.2x2", tint: .secondary)
+                }
+            }
         }
+        .appPanel(cornerRadius: 18)
     }
 
     private var featuredNotesRail: some View {
@@ -462,40 +498,40 @@ private struct FeaturedNoteTile: View {
     }
 }
 
-private struct NotesMetricCard: View {
+private struct NoteOverviewChip: View {
     var title: String
-    var value: String
+    var value: Int
     var unit: String
     var iconName: String
     var tint: Color
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 7) {
             Image(systemName: iconName)
-                .font(.subheadline.weight(.bold))
-                .frame(width: 30, height: 30)
-                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 9))
                 .foregroundStyle(tint)
+                .frame(width: 16)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption.weight(.black))
+                    .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text(value)
-                        .font(.headline.weight(.black))
-                    Text(unit)
+                    Text("\(value)")
                         .font(.caption.weight(.black))
+                        .monospacedDigit()
+                    Text(unit)
+                        .font(.caption2.weight(.black))
                         .foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
-        .padding(9)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
-            RoundedRectangle(cornerRadius: 13)
-                .stroke(.quaternary)
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(tint.opacity(0.10))
         }
     }
 }
