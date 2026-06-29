@@ -140,7 +140,7 @@ private struct SettingsSaveBanner: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(status)
                     .font(.subheadline.weight(.black))
-                Text("수정한 뒤 저장하면 홈, 지도, 일정 화면에 바로 반영됩니다.")
+                Text("저장하면 홈, 지도, 일정 화면에 바로 반영됩니다.")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -149,6 +149,12 @@ private struct SettingsSaveBanner: View {
         }
         .padding(11)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 15))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 15)
+                .fill(.teal)
+                .frame(width: 4)
+                .padding(.vertical, 9)
+        }
         .overlay {
             RoundedRectangle(cornerRadius: 15)
                 .stroke(.quaternary)
@@ -162,7 +168,7 @@ private struct SettingsTripHero: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            Image(systemName: "person.2.badge.gearshape")
+            Image(systemName: "map.fill")
                 .font(.title3.weight(.black))
                 .foregroundStyle(.white)
                 .frame(width: 48, height: 48)
@@ -178,15 +184,40 @@ private struct SettingsTripHero: View {
                     .lineLimit(2)
             }
             Spacer()
-            Text("LOCAL")
-                .font(.caption2.weight(.black))
-                .foregroundStyle(.teal)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
-                .background(.teal.opacity(0.12), in: Capsule())
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("LOCAL")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.teal)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(.teal.opacity(0.12), in: Capsule())
+                Text("\(trip.cities.count) cities")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .background {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.teal.opacity(0.15),
+                            Color.blue.opacity(0.06),
+                            Color.secondary.opacity(0.035)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        }
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.teal)
+                .frame(width: 5)
+                .padding(.vertical, 15)
+        }
         .overlay {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(.quaternary)
@@ -207,14 +238,18 @@ private struct FlightEditorCard: View {
     var title: String
     @Binding var flight: FlightInfo
 
+    private var tint: Color {
+        title.contains("오는") ? .blue : .teal
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: title.contains("오는") ? "airplane.arrival" : "airplane.departure")
                     .font(.headline.weight(.bold))
                     .frame(width: 34, height: 34)
-                    .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
-                    .foregroundStyle(.teal)
+                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                    .foregroundStyle(tint)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(title)
@@ -222,10 +257,10 @@ private struct FlightEditorCard: View {
                         if !flight.flightNumber.isEmpty {
                             Text(flight.flightNumber)
                                 .font(.caption2.weight(.black))
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(tint)
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
-                                .background(.teal.opacity(0.12), in: Capsule())
+                                .background(tint.opacity(0.12), in: Capsule())
                         }
                     }
                     Text(routeText)
@@ -250,6 +285,12 @@ private struct FlightEditorCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .appPanel(cornerRadius: 18)
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(tint)
+                .frame(width: 4)
+                .padding(.vertical, 12)
+        }
     }
 
     private var routeText: String {
@@ -276,9 +317,14 @@ private struct SettingsField: View {
                 .frame(width: 32, height: 32)
                 .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
                 .padding(.top, axis == .vertical ? 1 : 0)
-            TextField(placeholder, text: $text, axis: axis)
-                .textFieldStyle(.roundedBorder)
-                .lineLimit(axis == .vertical ? 2...5 : 1...1)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                TextField(placeholder, text: $text, axis: axis)
+                    .textFieldStyle(.roundedBorder)
+                    .lineLimit(axis == .vertical ? 2...5 : 1...1)
+            }
         }
     }
 }

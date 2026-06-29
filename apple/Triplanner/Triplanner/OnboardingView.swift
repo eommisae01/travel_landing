@@ -55,10 +55,10 @@ struct OnboardingView: View {
                     OnboardingHero()
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 8)], spacing: 8) {
-                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "Required" : "\(country) · \(destination)", iconName: "mappin.and.ellipse")
-                        OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar")
-                        OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane")
-                        OnboardingSummaryChip(title: "Map", value: mapSummary, iconName: "map")
+                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "Required" : "\(country) · \(destination)", iconName: "mappin.and.ellipse", tint: .teal)
+                        OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar", tint: .blue)
+                        OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane", tint: .purple)
+                        OnboardingSummaryChip(title: "Map", value: mapSummary, iconName: "map", tint: .orange)
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
@@ -181,14 +181,12 @@ struct OnboardingView: View {
 
 private struct OnboardingHero: View {
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "sparkles")
-                .font(.title2.weight(.black))
-                .foregroundStyle(.white)
-                .frame(width: 46, height: 46)
-                .background(.teal, in: RoundedRectangle(cornerRadius: 15))
-
-            VStack(alignment: .leading, spacing: 5) {
+        HStack(alignment: .center, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("TRIPLANNER")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .tracking(1.4)
                 Text("새 여행 만들기")
                     .font(.system(size: 30, weight: .black, design: .rounded))
                     .lineLimit(1)
@@ -199,9 +197,36 @@ private struct OnboardingHero: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
+
+            Image(systemName: "map.fill")
+                .font(.title2.weight(.black))
+                .foregroundStyle(.white)
+                .frame(width: 48, height: 48)
+                .background(.teal, in: RoundedRectangle(cornerRadius: 16))
         }
-        .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .padding(.horizontal, 18)
+        .padding(.vertical, 17)
+        .background {
+            RoundedRectangle(cornerRadius: 22)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.teal.opacity(0.16),
+                            Color.blue.opacity(0.07),
+                            Color.secondary.opacity(0.04)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        }
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 22)
+                .fill(.teal)
+                .frame(width: 5)
+                .padding(.vertical, 16)
+        }
         .overlay {
             RoundedRectangle(cornerRadius: 22)
                 .stroke(.quaternary)
@@ -213,14 +238,15 @@ private struct OnboardingSummaryChip: View {
     var title: String
     var value: String
     var iconName: String
+    var tint: Color
 
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: iconName)
                 .font(.caption.weight(.black))
-                .foregroundStyle(.teal)
+                .foregroundStyle(tint)
                 .frame(width: 26, height: 26)
-                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.caption2.weight(.black))
@@ -268,14 +294,19 @@ private struct LabeledOnboardingField: View {
     @Binding var text: String
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(alignment: .center, spacing: 10) {
             Image(systemName: iconName)
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(.teal)
                 .frame(width: 32, height: 32)
                 .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-            TextField(placeholder, text: $text)
-                .textFieldStyle(.roundedBorder)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                TextField(placeholder, text: $text)
+                    .textFieldStyle(.roundedBorder)
+            }
         }
     }
 }
