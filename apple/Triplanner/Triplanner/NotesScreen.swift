@@ -3,6 +3,7 @@ import SwiftUI
 struct NotesScreen: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.appTheme) private var theme
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var addSheetOpen = false
     @State private var showAllNotes = false
 
@@ -44,11 +45,18 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 320, maximum: 420), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: noteGridColumns, spacing: 14) {
             ForEach(notes) { note in
                 noteCard(note)
             }
         }
+    }
+
+    private var noteGridColumns: [GridItem] {
+        if horizontalSizeClass == .compact {
+            return [GridItem(.flexible(), spacing: 14)]
+        }
+        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 14)]
     }
 
     private var featuredNotes: [NoteGroup] {
@@ -219,21 +227,19 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 11) {
                 HStack(alignment: .top, spacing: 10) {
                     NoteKindIconBadge(iconName: noteKindIcon(note), tint: noteAccent(note))
 
-                    VStack(alignment: .leading, spacing: 3) {
+                    VStack(alignment: .leading, spacing: 5) {
                         Text(note.title)
-                            .font(.subheadline.weight(.black))
+                            .font(.headline.weight(.black))
                             .lineLimit(2)
-                            .minimumScaleFactor(0.86)
-                        Text(noteKindTitle(note))
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(noteAccent(note))
-                    }
+                            .minimumScaleFactor(0.82)
 
-                    Spacer(minLength: 0)
+                        NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                     NoteCountBadge(count: note.imageNames.count, tint: noteAccent(note))
                 }
@@ -243,46 +249,57 @@ struct NotesScreen: View {
                     .font(.caption.weight(.semibold))
                     .lineSpacing(2)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 36, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, minHeight: 40, alignment: .topLeading)
 
                 Spacer(minLength: 0)
 
                 noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 158, maxHeight: 158, alignment: .topLeading)
-            .padding(12)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
+            .padding(13)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
             .overlay(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 2.5)
                     .fill(noteAccent(note))
                     .frame(width: 3)
                     .padding(.vertical, 13)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(noteAccent(note).opacity(0.10))
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(noteAccent(note).opacity(0.12))
             }
+            .shadow(color: Color.primary.opacity(0.022), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
 
     private func noteAttachmentStrip(_ note: NoteGroup) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             if note.imageNames.isEmpty {
-                NoteKindPill(title: "텍스트 메모", iconName: "text.alignleft", tint: .secondary)
+                NoteAttachmentSummary(
+                    title: "텍스트 메모",
+                    detail: "이미지 없음",
+                    iconName: "text.alignleft",
+                    tint: .secondary
+                )
             } else {
-                ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
-                    NoteSmallImageTile(title: imageName, index: index, tint: noteAccent(note))
+                HStack(spacing: -7) {
+                    ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
+                        MiniImageBadge(title: imageName, index: index, tint: noteAccent(note), compact: true)
+                            .zIndex(Double(3 - index))
+                    }
                 }
-                if note.imageNames.count > 3 {
-                    Text("+\(note.imageNames.count - 3)")
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(.white)
-                        .frame(width: 30, height: 30)
-                        .background(noteAccent(note), in: Circle())
-                }
+
+                NoteAttachmentSummary(
+                    title: "\(note.imageNames.count)장 묶음",
+                    detail: note.imageNames.prefix(2).joined(separator: ", "),
+                    iconName: "photo.stack",
+                    tint: noteAccent(note)
+                )
             }
+
             Spacer(minLength: 0)
+
             Label("열기", systemImage: "chevron.right")
                 .font(.caption2.weight(.black))
                 .foregroundStyle(.secondary)
@@ -290,7 +307,7 @@ struct NotesScreen: View {
                 .padding(.vertical, 6)
                 .background(.secondary.opacity(0.08), in: Capsule())
         }
-        .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -372,6 +389,35 @@ private struct NoteCountBadge: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 5)
             .background((count == 0 ? Color.secondary : tint).opacity(0.10), in: Capsule())
+    }
+}
+
+private struct NoteAttachmentSummary: View {
+    var title: String
+    var detail: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 7) {
+            Image(systemName: iconName)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 22, height: 22)
+                .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(tint)
+                    .lineLimit(1)
+                Text(detail.isEmpty ? "상세 보기에서 확인" : detail)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: 190, alignment: .leading)
     }
 }
 
