@@ -32,7 +32,7 @@ struct MainTabView: View {
 
     private var sidebarLayout: some View {
         NavigationSplitView {
-            List(selection: $selectedSection) {
+            List {
                 Section("TRIP") {
                     SidebarTripSummary(
                         city: displayCity(store.currentCity),
@@ -47,8 +47,17 @@ struct MainTabView: View {
 
                 Section("메뉴") {
                     ForEach(AppSection.allCases) { section in
-                        SidebarMenuRow(section: section, count: badgeCount(for: section))
-                            .tag(section)
+                        Button {
+                            selectedSection = section
+                        } label: {
+                            SidebarMenuRow(
+                                section: section,
+                                count: badgeCount(for: section),
+                                isSelected: selectedSection == section
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .listRowInsets(EdgeInsets(top: 3, leading: 10, bottom: 3, trailing: 10))
                     }
                 }
             }
@@ -170,16 +179,19 @@ private struct SidebarTripSummary: View {
 private struct SidebarMenuRow: View {
     var section: AppSection
     var count: Int?
+    var isSelected = false
 
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: section.iconName)
                 .font(.subheadline.weight(.bold))
-                .frame(width: 22)
-                .foregroundStyle(.teal)
+                .foregroundStyle(isSelected ? .white : .teal)
+                .frame(width: 28, height: 28)
+                .background(isSelected ? Color.teal : Color.teal.opacity(0.11), in: RoundedRectangle(cornerRadius: 9))
             VStack(alignment: .leading, spacing: 1) {
                 Text(section.title)
-                    .font(.headline.weight(.semibold))
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(isSelected ? .primary : .primary)
                 Text(section.sidebarSubtitle)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
@@ -189,12 +201,15 @@ private struct SidebarMenuRow: View {
             if let count {
                 Text("\(count)")
                     .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(isSelected ? .teal : .secondary)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
-                    .background(.secondary.opacity(0.10), in: Capsule())
+                    .background((isSelected ? Color.teal : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
+        .background(isSelected ? Color.teal.opacity(0.10) : Color.clear, in: RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -384,10 +399,10 @@ private struct MoreMetric: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: iconName)
-                .font(.headline.weight(.bold))
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(tint)
-                .frame(width: 34, height: 34)
-                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
+                .frame(width: 32, height: 32)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption.weight(.black))
@@ -402,11 +417,11 @@ private struct MoreMetric: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
-        .padding(10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+        .padding(9)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
         }
     }
@@ -421,10 +436,10 @@ private struct MoreRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: iconName)
-                .font(.headline.weight(.bold))
-                .frame(width: 38, height: 38)
+                .font(.subheadline.weight(.bold))
+                .frame(width: 34, height: 34)
                 .foregroundStyle(.white)
-                .background(tint, in: RoundedRectangle(cornerRadius: 12))
+                .background(tint, in: RoundedRectangle(cornerRadius: 11))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
@@ -439,11 +454,11 @@ private struct MoreRow: View {
                 .font(.caption.weight(.black))
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 54, alignment: .center)
-        .padding(11)
-        .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity, minHeight: 50, alignment: .center)
+        .padding(10)
+        .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(.quaternary)
         }
     }

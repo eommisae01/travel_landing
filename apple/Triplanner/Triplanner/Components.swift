@@ -28,15 +28,20 @@ struct ScreenHeader: View {
     var subtitle: String
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 12) {
-            VStack(alignment: .leading, spacing: 5) {
+        HStack(alignment: .top, spacing: 12) {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(.teal)
+                .frame(width: 5, height: subtitle.isEmpty ? 34 : 52)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .font(.system(size: 28, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -66,12 +71,12 @@ struct EmptyStateView: View {
     var iconName: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 10) {
             Image(systemName: iconName)
-                .font(.headline.weight(.bold))
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(.teal)
-                .frame(width: 42, height: 42)
-                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+                .frame(width: 36, height: 36)
+                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
@@ -84,11 +89,11 @@ struct EmptyStateView: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 88, alignment: .center)
-        .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 72, alignment: .center)
+        .padding(12)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
         }
     }
@@ -97,20 +102,31 @@ struct EmptyStateView: View {
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
-            .padding(14)
+            .padding(12)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(.quaternary)
             }
+            .shadow(color: Color.primary.opacity(0.035), radius: 8, x: 0, y: 4)
     }
 
     func appScreenBackground() -> some View {
         self
             .background {
-                Color.secondary
-                    .opacity(0.035)
-                    .ignoresSafeArea()
+                ZStack {
+                    Color.secondary.opacity(0.028)
+                    LinearGradient(
+                        colors: [
+                            Color.teal.opacity(0.045),
+                            Color.clear,
+                            Color.secondary.opacity(0.026)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
+                .ignoresSafeArea()
             }
             .tint(.teal)
     }
