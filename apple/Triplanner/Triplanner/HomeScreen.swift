@@ -193,7 +193,7 @@ struct HomeScreen: View {
     }
 
     private func travelPanel(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             HStack {
                 Label("FLIGHTS & STAY", systemImage: "airplane")
                     .font(.caption.weight(.black))
@@ -247,16 +247,16 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .padding(11)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
 
     private var statusStrip: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 154), spacing: 10)], spacing: 10) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 148), spacing: 9)], spacing: 9) {
             StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개", iconName: "checklist", tint: theme.accent) {
                 showingChecklistSummary = true
             }
@@ -421,14 +421,14 @@ private struct FlightSummaryRow: View {
         Button {
             copyToClipboard(flight.flightNumber.isEmpty ? "\(flight.origin) \(flight.destination)" : flight.flightNumber)
         } label: {
-            HStack(alignment: .center, spacing: 11) {
+            HStack(alignment: .center, spacing: 10) {
                 Image(systemName: iconName)
                     .font(.subheadline.weight(.black))
-                    .frame(width: 36, height: 36)
-                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
+                    .frame(width: 32, height: 32)
+                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(title)
                             .font(.caption.weight(.black))
@@ -460,11 +460,11 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 82, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
         .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 13)
@@ -504,8 +504,8 @@ private struct RouteTimeBadge: View {
             .foregroundStyle(tint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 4)
         .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 9))
     }
 }
@@ -517,14 +517,14 @@ private struct AccommodationSummaryRow: View {
         Button {
             copyToClipboard(trip.accommodationAddress ?? trip.accommodation)
         } label: {
-            HStack(alignment: .center, spacing: 11) {
+            HStack(alignment: .center, spacing: 10) {
                 Image(systemName: "bed.double")
                     .font(.subheadline.weight(.black))
-                    .frame(width: 36, height: 36)
-                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
+                    .frame(width: 32, height: 32)
+                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(.purple)
 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("숙소")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.purple)
@@ -544,11 +544,11 @@ private struct AccommodationSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 82, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
         .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 13)
@@ -617,10 +617,10 @@ private struct StatChipContent: View {
     var tint: Color
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 9) {
             Image(systemName: iconName)
-                .font(.headline.weight(.bold))
-                .frame(width: 34, height: 34)
+                .font(.subheadline.weight(.bold))
+                .frame(width: 31, height: 31)
                 .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                 .foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 2) {
@@ -640,11 +640,11 @@ private struct StatChipContent: View {
             }
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 58, maxHeight: 58, alignment: .leading)
-        .padding(11)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity, minHeight: 54, maxHeight: 54, alignment: .leading)
+        .padding(10)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
