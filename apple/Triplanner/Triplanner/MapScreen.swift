@@ -40,7 +40,7 @@ struct MapScreen: View {
                                 tint: sectionColor(for: category)
                             )
 
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 340), spacing: 12)], spacing: 12) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 312, maximum: 374), spacing: 12)], spacing: 12) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -259,12 +259,7 @@ struct PlaceRow: View {
         VStack(alignment: .leading, spacing: 10) {
             cardHeader
 
-            Text(summaryText)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
+            memoPreview
 
             ViewThatFits(in: .horizontal) {
                 placePills
@@ -284,7 +279,7 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 164, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 178, maxHeight: 178, alignment: .topLeading)
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
         .background(.background.opacity(0.68), in: RoundedRectangle(cornerRadius: 14))
@@ -416,6 +411,24 @@ struct PlaceRow: View {
         }
     }
 
+    private var memoPreview: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            PlaceMemoLine(
+                title: "앱",
+                value: place.appNote,
+                iconName: "note.text",
+                tint: .secondary
+            )
+            PlaceMemoLine(
+                title: "지도",
+                value: place.mapNote,
+                iconName: "map",
+                tint: theme.secondaryAccent
+            )
+        }
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
+    }
+
     private var placePills: some View {
         HStack(spacing: 6) {
             PlaceMiniPill(title: place.category, iconName: categoryIcon, tint: categoryColor)
@@ -450,13 +463,6 @@ struct PlaceRow: View {
         }
     }
 
-    private var summaryText: String {
-        if !place.appNote.isEmpty, !place.mapNote.isEmpty { return "\(place.appNote) · \(place.mapNote)" }
-        if !place.appNote.isEmpty { return place.appNote }
-        if !place.mapNote.isEmpty { return place.mapNote }
-        return "메모 없음"
-    }
-
     private var hasMapLink: Bool {
         URL(string: place.mapURL) != nil
     }
@@ -467,6 +473,31 @@ struct PlaceRow: View {
             .frame(width: 31, height: 31)
             .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
             .foregroundStyle(tint)
+    }
+}
+
+private struct PlaceMemoLine: View {
+    var title: String
+    var value: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 5) {
+            Image(systemName: iconName)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 13)
+            Text(title)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(tint)
+            Text(value.isEmpty ? "메모 없음" : value)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
