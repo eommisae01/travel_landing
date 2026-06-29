@@ -37,7 +37,7 @@ struct ScheduleScreen: View {
                         }
                         .pickerStyle(.segmented)
 
-                        if !dates.isEmpty {
+                        if !dates.isEmpty && viewMode == .timeline {
                             calendarPreview
                         }
                     }
@@ -256,7 +256,7 @@ struct ScheduleScreen: View {
     }
 
     private var timelineList: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             if selectedDate == nil {
                 ForEach(timelineDates, id: \.self) { date in
                     timelineSection(date: date, items: items(on: date))
@@ -265,10 +265,10 @@ struct ScheduleScreen: View {
                 timelineSection(date: selectedDate ?? Date(), items: visibleItems)
             }
         }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .padding(10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(.quaternary)
         }
     }
@@ -278,7 +278,7 @@ struct ScheduleScreen: View {
     }
 
     private func timelineSection(date: Date, items: [ScheduleItem]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 9) {
             HStack(alignment: .center, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(dayTitle(for: date))
@@ -321,6 +321,7 @@ struct ScheduleScreen: View {
                     ScheduleRow(item: item, isLast: index == items.count - 1)
                 }
             }
+            .padding(.horizontal, 2)
         }
     }
 
@@ -378,11 +379,11 @@ struct ScheduleRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            VStack(alignment: .center, spacing: 5) {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .trailing, spacing: 4) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
                     .font(.caption.weight(.black).monospacedDigit())
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(kindColor)
                     .lineLimit(1)
                 if !item.endTime.isEmpty {
                     Text(item.endTime)
@@ -390,35 +391,35 @@ struct ScheduleRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 54)
-            .padding(.top, 5)
+            .frame(width: 58)
+            .padding(.top, 7)
 
             ZStack(alignment: .top) {
                 if !isLast {
                     Rectangle()
-                        .fill(kindColor.opacity(0.28))
+                        .fill(kindColor.opacity(0.24))
                         .frame(width: 2, height: 88)
-                        .padding(.top, 24)
+                        .padding(.top, 26)
                 }
                 Image(systemName: kindIcon)
-                    .font(.caption.weight(.black))
+                    .font(.caption2.weight(.black))
                     .foregroundStyle(.white)
-                    .frame(width: 22, height: 22)
+                    .frame(width: 24, height: 24)
                     .background(kindColor, in: Circle())
                     .shadow(color: kindColor.opacity(0.22), radius: 6, x: 0, y: 3)
             }
             .frame(width: 24)
-            .frame(minHeight: 82, alignment: .top)
+            .frame(minHeight: 86, alignment: .top)
 
-            VStack(alignment: .leading, spacing: 7) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 5) {
                         HStack(spacing: 6) {
                             Text(item.kind.rawValue)
                                 .font(.caption2.weight(.black))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(kindColor.opacity(0.13), in: Capsule())
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(kindColor.opacity(0.12), in: Capsule())
                                 .foregroundStyle(kindColor)
                             if !item.placeName.isEmpty {
                                 Text(item.placeName)
@@ -438,8 +439,9 @@ struct ScheduleRow: View {
                     } label: {
                         Image(systemName: "pencil")
                             .font(.caption.weight(.black))
-                            .frame(width: 28, height: 28)
-                            .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: 9))
+                            .frame(width: 26, height: 26)
+                            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                            .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("일정 수정")
@@ -458,30 +460,26 @@ struct ScheduleRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, highlightBackground == nil ? 0 : 10)
-            .padding(.vertical, highlightBackground == nil ? 0 : 9)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 9)
             .background {
-                if let highlightBackground {
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(highlightBackground)
-                }
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(rowBackground)
             }
             .overlay(alignment: .leading) {
-                if highlightBackground != nil {
+                if item.kind == .move || item.kind == .flight {
                     RoundedRectangle(cornerRadius: 2)
                         .fill(kindColor)
                         .frame(width: 3)
                         .padding(.vertical, 10)
                 }
             }
-            .padding(.bottom, 10)
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(isLast ? Color.clear : Color.secondary.opacity(0.12))
-                    .frame(height: 1)
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(kindColor.opacity(item.kind == .move || item.kind == .flight ? 0.16 : 0.08))
             }
         }
-        .padding(.vertical, 7)
+        .padding(.vertical, 5)
         .sheet(isPresented: $isEditing) {
             ScheduleEditorSheet(existingItem: item, defaultDate: item.date)
                 .environmentObject(store)
@@ -506,12 +504,12 @@ struct ScheduleRow: View {
         }
     }
 
-    private var highlightBackground: Color? {
+    private var rowBackground: Color {
         switch item.kind {
         case .move, .flight:
             return kindColor.opacity(0.08)
         case .food, .place:
-            return nil
+            return Color.secondary.opacity(0.035)
         }
     }
 }
