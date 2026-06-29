@@ -94,7 +94,7 @@ struct MapScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 14)]
         }
-        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 14)]
+        return [GridItem(.adaptive(minimum: 320, maximum: 440), spacing: 14)]
     }
 
     private var placesTitle: String {
@@ -264,7 +264,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             cardHeader
 
             memoPreview
@@ -280,17 +280,17 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 184, maxHeight: 184, alignment: .topLeading)
-        .padding(13)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
                 .frame(width: 4)
-                .padding(.vertical, 13)
+                .padding(.vertical, 12)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(categoryColor.opacity(place.isFavorite ? 0.26 : 0.09))
         }
         .shadow(color: Color.primary.opacity(0.025), radius: 9, x: 0, y: 4)
@@ -312,7 +312,7 @@ struct PlaceRow: View {
         HStack(alignment: .top, spacing: 10) {
             categoryBadge
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(place.name)
                     .font(.headline.weight(.black))
                     .lineLimit(2)
@@ -341,14 +341,6 @@ struct PlaceRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 6) {
-                Button {
-                    store.toggleFavorite(place)
-                } label: {
-                    actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
-
                 Menu {
                     Button {
                         isShowingDetail = true
@@ -374,6 +366,14 @@ struct PlaceRow: View {
                     actionIcon("ellipsis", tint: .secondary)
                 }
                 .buttonStyle(.plain)
+
+                Button {
+                    store.toggleFavorite(place)
+                } label: {
+                    actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
             }
         }
     }
@@ -386,7 +386,7 @@ struct PlaceRow: View {
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 38, height: 38)
+        .frame(width: 36, height: 36)
     }
 
     private var actionBar: some View {
@@ -423,22 +423,36 @@ struct PlaceRow: View {
     }
 
     private var memoPreview: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            PlaceMemoLine(
-                title: "앱",
-                value: place.appNote,
-                iconName: "note.text",
-                tint: .secondary
-            )
-            PlaceMemoLine(
-                title: "지도",
-                value: place.mapNote,
-                iconName: "map",
-                tint: theme.secondaryAccent
-            )
+        VStack(alignment: .leading, spacing: 5) {
+            if place.appNote.isEmpty && place.mapNote.isEmpty {
+                PlaceMemoLine(
+                    title: "메모",
+                    value: "상세를 열어 앱 메모 추가",
+                    iconName: "note.text",
+                    tint: .secondary,
+                    isPlaceholder: true
+                )
+            } else {
+                if !place.appNote.isEmpty {
+                    PlaceMemoLine(
+                        title: "앱",
+                        value: place.appNote,
+                        iconName: "note.text",
+                        tint: .secondary
+                    )
+                }
+                if !place.mapNote.isEmpty {
+                    PlaceMemoLine(
+                        title: "지도",
+                        value: place.mapNote,
+                        iconName: "map",
+                        tint: theme.secondaryAccent
+                    )
+                }
+            }
         }
-        .padding(.vertical, 2)
-        .frame(maxWidth: .infinity, minHeight: 56, alignment: .topLeading)
+        .padding(.vertical, 1)
+        .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
     }
 
     private var categoryColor: Color {
@@ -466,7 +480,7 @@ struct PlaceRow: View {
     private func actionIcon(_ iconName: String, tint: Color) -> some View {
         Image(systemName: iconName)
             .font(.caption.weight(.black))
-            .frame(width: 31, height: 31)
+            .frame(width: 30, height: 30)
             .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
             .foregroundStyle(tint)
     }
@@ -477,6 +491,7 @@ private struct PlaceMemoLine: View {
     var value: String
     var iconName: String
     var tint: Color
+    var isPlaceholder = false
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -489,7 +504,7 @@ private struct PlaceMemoLine: View {
                 .foregroundStyle(tint)
             Text(value.isEmpty ? "메모 없음" : value)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isPlaceholder ? .tertiary : .secondary)
                 .lineLimit(2)
                 .truncationMode(.tail)
         }
@@ -507,7 +522,7 @@ private struct PlaceCardActionLabel: View {
             .font(.caption2.weight(.black))
             .lineLimit(1)
             .minimumScaleFactor(0.86)
-            .frame(maxWidth: .infinity, minHeight: 30)
+            .frame(maxWidth: .infinity, minHeight: 28)
             .padding(.horizontal, 7)
             .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
             .foregroundStyle(tint)
