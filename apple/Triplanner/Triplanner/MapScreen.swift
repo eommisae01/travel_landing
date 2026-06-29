@@ -94,7 +94,7 @@ struct MapScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 10)]
         }
-        return [GridItem(.adaptive(minimum: 292, maximum: 360), spacing: 10)]
+        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 12)]
     }
 
     private var placesTitle: String {
@@ -264,7 +264,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 10) {
             cardHeader
 
             memoPreview
@@ -280,9 +280,9 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
-        .padding(12)
-        .background(.background.opacity(0.78), in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 204, maxHeight: 204, alignment: .topLeading)
+        .padding(13)
+        .background(.background, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
@@ -291,9 +291,9 @@ struct PlaceRow: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(categoryColor.opacity(place.isFavorite ? 0.34 : 0.12), lineWidth: place.isFavorite ? 1.2 : 0.8)
+                .stroke(categoryColor.opacity(place.isFavorite ? 0.34 : 0.16), lineWidth: place.isFavorite ? 1.2 : 0.8)
         }
-        .shadow(color: Color.primary.opacity(0.024), radius: 7, x: 0, y: 3)
+        .shadow(color: Color.primary.opacity(0.035), radius: 8, x: 0, y: 4)
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
                 .environmentObject(store)
@@ -314,9 +314,9 @@ struct PlaceRow: View {
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(place.name)
-                    .font(.subheadline.weight(.black))
+                    .font(.headline.weight(.black))
                     .lineLimit(2)
-                    .minimumScaleFactor(0.82)
+                    .minimumScaleFactor(0.78)
                     .fixedSize(horizontal: false, vertical: true)
 
                 cardBadges
@@ -406,7 +406,7 @@ struct PlaceRow: View {
     }
 
     private var memoPreview: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 5) {
             if place.appNote.isEmpty && place.mapNote.isEmpty {
                 PlaceMemoLine(
                     title: "메모",
@@ -434,7 +434,7 @@ struct PlaceRow: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 48, maxHeight: 48, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
         .clipped()
     }
 
@@ -524,7 +524,7 @@ private struct PlaceMemoLine: View {
                 Text(value.isEmpty ? "메모 없음" : value)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(isPlaceholder ? .tertiary : .secondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .truncationMode(.tail)
             }
         }
