@@ -252,7 +252,7 @@ struct HomeScreen: View {
     }
 
     private var statusStrip: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 14)], spacing: 14) {
             StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개", iconName: "checklist", tint: theme.accent) {
                 showingChecklistSummary = true
             }
@@ -266,9 +266,9 @@ struct HomeScreen: View {
                 sectionTitle("TODAY")
                 Spacer()
                 Text(todaySummary)
-                    .font(.caption2.weight(.black))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .font(.caption.weight(.black))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(.secondary.opacity(0.10), in: Capsule())
                     .foregroundStyle(.secondary)
             }
@@ -293,10 +293,10 @@ struct HomeScreen: View {
                 sectionTitle("TODAY NOTES")
                 Spacer()
                 Text(focusDate.map(compactDateLabel) ?? "전체")
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(.secondary.opacity(0.10), in: Capsule())
             }
             if focusNotes.isEmpty {
@@ -408,7 +408,7 @@ struct HomeScreen: View {
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.subheadline.weight(.black))
+            .font(.headline.weight(.black))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -431,15 +431,15 @@ private struct FlightSummaryRow: View {
                     .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 13))
                     .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: 7) {
+                VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 8) {
                         Text(title)
-                            .font(.caption.weight(.black))
+                            .font(.subheadline.weight(.black))
                             .foregroundStyle(tint)
                         Text(flight.flightNumber.isEmpty ? "편명 입력 전" : flight.flightNumber)
-                            .font(.caption.weight(.black))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
+                            .font(.subheadline.weight(.black))
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 4)
                             .background(tint.opacity(0.12), in: Capsule())
                             .foregroundStyle(tint)
                     }
@@ -463,11 +463,11 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 96, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 108, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 13)
@@ -495,7 +495,7 @@ private struct RouteTimeBadge: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(.secondary)
             HStack(spacing: 4) {
                 Text(city.isEmpty ? "미정" : city)
@@ -503,12 +503,12 @@ private struct RouteTimeBadge: View {
                 Text(time.isEmpty ? "--:--" : time)
                     .monospacedDigit()
             }
-            .font(.caption.weight(.black))
+            .font(.subheadline.weight(.black))
             .foregroundStyle(tint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 7)
-        .padding(.vertical, 4)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
         .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 9))
     }
 }
@@ -531,10 +531,10 @@ private struct AccommodationSummaryRow: View {
                 VStack(alignment: .leading, spacing: isTall ? 10 : 7) {
                     HStack(spacing: 7) {
                         Text("숙소")
-                            .font(.caption.weight(.black))
+                            .font(.subheadline.weight(.black))
                             .foregroundStyle(.purple)
                         Text("주소 복사")
-                            .font(.caption2.weight(.black))
+                            .font(.caption.weight(.black))
                             .foregroundStyle(.purple)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 3)
@@ -546,14 +546,14 @@ private struct AccommodationSummaryRow: View {
                         .minimumScaleFactor(0.78)
                     if let address = trip.accommodationAddress, !address.isEmpty {
                         Text(address)
-                            .font(.caption.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .lineLimit(isTall ? 4 : 2)
                     }
                     if isTall {
                         Spacer(minLength: 0)
                         Label("탭하면 주소가 복사돼요", systemImage: "doc.on.doc")
-                            .font(.caption2.weight(.black))
+                            .font(.caption.weight(.black))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -564,11 +564,11 @@ private struct AccommodationSummaryRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: isTall ? 206 : 96, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isTall ? 222 : 108, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 13)
@@ -640,30 +640,30 @@ private struct StatChipContent: View {
         HStack(spacing: 11) {
             Image(systemName: iconName)
                 .font(.subheadline.weight(.black))
-                .frame(width: 36, height: 36)
-                .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 11))
+                .frame(width: 42, height: 42)
+                .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 13))
                 .foregroundStyle(tint)
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.caption.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(.secondary)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(value)
-                        .font(.title3.weight(.black))
+                        .font(.title2.weight(.black))
                         .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.76)
                     Text(unit)
-                        .font(.caption2.weight(.black))
+                        .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
             }
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 66, maxHeight: 66, alignment: .leading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, minHeight: 84, maxHeight: 84, alignment: .leading)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
         .overlay {
             RoundedRectangle(cornerRadius: 15)
@@ -719,14 +719,14 @@ private struct CityChipRail: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "mappin.circle")
-                    .font(.caption2.weight(.black))
+                    .font(.subheadline.weight(.black))
                 Text(title)
-                    .font(.caption.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .lineLimit(1)
             }
             .foregroundStyle(isSelected ? theme.accent : .secondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
             .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.08), in: Capsule())
             .overlay {
                 Capsule()
@@ -769,10 +769,10 @@ private struct HeroTodayLine: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 7) {
                     Text("TODAY")
-                        .font(.caption2.weight(.black))
+                        .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
                     Text(title)
-                        .font(.caption2.weight(.black))
+                        .font(.caption.weight(.black))
                         .foregroundStyle(accent)
                 }
 
@@ -801,9 +801,9 @@ private struct HeroTodayLine: View {
             Spacer(minLength: 8)
             HeroCountPill(title: "일정", value: scheduleCount, tint: accent)
         }
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
+        .frame(maxWidth: .infinity, minHeight: 72, alignment: .center)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay {
             RoundedRectangle(cornerRadius: 14)
@@ -833,9 +833,9 @@ private struct HeroCountPill: View {
     var body: some View {
         HStack(spacing: 4) {
             Text(title)
-                .font(.caption2.weight(.black))
-            Text("\(value)")
                 .font(.caption.weight(.black))
+            Text("\(value)")
+                .font(.subheadline.weight(.black))
                 .monospacedDigit()
         }
         .foregroundStyle(tint)
@@ -862,21 +862,21 @@ private struct CompactScheduleRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 64)
-            .frame(minHeight: 52)
+            .frame(width: 76)
+            .frame(minHeight: 64)
             .background(kindColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 12))
 
             RoundedRectangle(cornerRadius: 2)
                 .fill(kindColor)
-                .frame(width: 3, height: 50)
+                .frame(width: 3, height: 58)
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(item.title)
-                        .font(.headline.weight(.black))
+                        .font(.title3.weight(.black))
                         .lineLimit(1)
                     Text(item.kind.rawValue)
-                        .font(.caption2.weight(.black))
+                        .font(.caption.weight(.black))
                         .foregroundStyle(kindColor)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -891,9 +891,9 @@ private struct CompactScheduleRow: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 11)
-        .padding(.vertical, 9)
-        .frame(maxWidth: .infinity, minHeight: 70, alignment: .center)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 11)
+        .frame(maxWidth: .infinity, minHeight: 86, alignment: .center)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 15))
         .overlay {
             RoundedRectangle(cornerRadius: 15)
@@ -916,41 +916,44 @@ private struct CompactNoteCard: View {
     var note: NoteGroup
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "doc.text.image")
-                .font(.subheadline.weight(.bold))
-                .frame(width: 30, height: 30)
-                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
-                .foregroundStyle(theme.accent)
+        HStack(alignment: .center, spacing: 13) {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "doc.text.image")
+                    .font(.headline.weight(.bold))
+                    .frame(width: 46, height: 46)
+                    .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+                    .foregroundStyle(theme.accent)
 
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 6) {
-                    Text(note.title)
-                        .font(.subheadline.weight(.black))
-                        .lineLimit(1)
-                    if !note.imageNames.isEmpty {
-                        Label("\(note.imageNames.count)", systemImage: "photo")
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(theme.accent)
-                    }
+                if !note.imageNames.isEmpty {
+                    Text("\(note.imageNames.count)")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.white)
+                        .frame(width: 18, height: 18)
+                        .background(theme.accent, in: Circle())
+                        .offset(x: 5, y: -5)
                 }
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(note.title)
+                    .font(.headline.weight(.black))
+                    .lineLimit(1)
                 Text(note.body)
-                    .font(.caption)
+                    .font(.callout.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
             Spacer(minLength: 6)
             Image(systemName: "chevron.right")
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(.secondary)
-                .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
+        .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
         }
     }
@@ -959,10 +962,10 @@ private struct CompactNoteCard: View {
 private extension View {
     func panelStyle() -> some View {
         self
-            .padding(14)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+            .padding(18)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
             .overlay {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(.quaternary)
             }
     }
