@@ -70,7 +70,7 @@ struct ScheduleScreen: View {
                 .readableWidth()
                 .padding()
             }
-            .navigationTitle("일정")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -435,7 +435,7 @@ struct ScheduleScreen: View {
             .background(.background.opacity(0.38), in: RoundedRectangle(cornerRadius: 13))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(.blue)
+                    .fill(theme.accent)
                     .frame(width: 3)
                     .padding(.vertical, 10)
             }
@@ -633,6 +633,7 @@ private struct MultiDayHourCell: View {
 }
 
 private struct CalendarTimeGrid: View {
+    @Environment(\.appTheme) private var theme
     var date: Date
     var items: [ScheduleItem]
     var dayLabel: String
@@ -658,10 +659,10 @@ private struct CalendarTimeGrid: View {
                 Spacer()
                 Text("\(items.count)개")
                     .font(.caption2.weight(.black))
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(theme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(.teal.opacity(0.10), in: Capsule())
+                    .background(theme.accent.opacity(0.10), in: Capsule())
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 9)
@@ -707,6 +708,7 @@ private struct CalendarTimeGrid: View {
 }
 
 private struct CalendarHourRow: View {
+    @Environment(\.appTheme) private var theme
     var hour: Int
     var items: [ScheduleItem]
     var isLast: Bool
@@ -724,7 +726,7 @@ private struct CalendarHourRow: View {
                     .fill(Color.secondary.opacity(isLast ? 0 : 0.18))
                     .frame(width: 1)
                 Circle()
-                    .fill(items.isEmpty ? Color.secondary.opacity(0.28) : Color.teal)
+                    .fill(items.isEmpty ? Color.secondary.opacity(0.28) : theme.accent)
                     .frame(width: items.isEmpty ? 5 : 8, height: items.isEmpty ? 5 : 8)
                     .padding(.top, 14)
             }
@@ -759,6 +761,7 @@ private struct CalendarHourRow: View {
 }
 
 private struct CalendarTimeBlock: View {
+    @Environment(\.appTheme) private var theme
     var item: ScheduleItem
 
     var body: some View {
@@ -815,12 +818,13 @@ private struct CalendarTimeBlock: View {
         case .food: return .orange
         case .move: return .blue
         case .flight: return .purple
-        case .place: return .teal
+        case .place: return theme.accent
         }
     }
 }
 
 private struct CalendarAgendaRow: View {
+    @Environment(\.appTheme) private var theme
     var item: ScheduleItem
 
     var body: some View {
@@ -857,12 +861,13 @@ private struct CalendarAgendaRow: View {
         case .food: return .orange
         case .move: return .blue
         case .flight: return .purple
-        case .place: return .teal
+        case .place: return theme.accent
         }
     }
 }
 
 private struct CalendarDayCell: View {
+    @Environment(\.appTheme) private var theme
     var dayNumber: String
     var dayLabel: String?
     var firstItemTitle: String?
@@ -871,10 +876,10 @@ private struct CalendarDayCell: View {
     var isSelected: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
                 Text(dayNumber)
-                    .font(.title3.weight(.black).monospacedDigit())
+                    .font(.headline.weight(.black).monospacedDigit())
                     .foregroundStyle(primaryForeground)
                 Spacer(minLength: 4)
                 if itemCount > 0 {
@@ -912,23 +917,24 @@ private struct CalendarDayCell: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 88, alignment: .topLeading)
-        .padding(9)
+        .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
+        .padding(8)
         .background(cellBackground, in: RoundedRectangle(cornerRadius: 13))
         .overlay {
             RoundedRectangle(cornerRadius: 13)
                 .stroke(borderColor, lineWidth: isSelected ? 1.5 : 1)
         }
+        .shadow(color: isSelected ? theme.accent.opacity(0.14) : .clear, radius: 8, x: 0, y: 4)
         .opacity(isTripDay ? 1 : 0.36)
     }
 
     private var cellBackground: Color {
-        if isSelected { return .teal }
+        if isSelected { return theme.accent }
         return isTripDay ? Color.secondary.opacity(0.065) : Color.secondary.opacity(0.035)
     }
 
     private var borderColor: Color {
-        if isSelected { return Color.teal.opacity(0.36) }
+        if isSelected { return theme.accent.opacity(0.36) }
         return isTripDay ? Color.secondary.opacity(0.12) : Color.clear
     }
 
@@ -941,7 +947,7 @@ private struct CalendarDayCell: View {
     }
 
     private var dayLabelForeground: Color {
-        isSelected ? .white.opacity(0.82) : .teal
+        isSelected ? .white.opacity(0.82) : theme.accent
     }
 
     private var counterBackground: Color {
@@ -955,6 +961,7 @@ private struct CalendarDayCell: View {
 
 struct ScheduleRow: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     var item: ScheduleItem
     var isLast = false
     @State private var isEditing = false
@@ -1072,7 +1079,7 @@ struct ScheduleRow: View {
         case .move: return .blue
         case .food: return .orange
         case .flight: return .purple
-        case .place: return .teal
+        case .place: return theme.accent
         }
     }
 
@@ -1098,6 +1105,7 @@ struct ScheduleRow: View {
 struct ScheduleEditorSheet: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
 
     var existingItem: ScheduleItem?
     var defaultDate: Date
@@ -1176,7 +1184,7 @@ struct ScheduleEditorSheet: View {
                 .readableWidth(620)
                 .padding()
             }
-            .navigationTitle(existingItem == nil ? "추가" : "수정")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("닫기") {
@@ -1244,7 +1252,7 @@ struct ScheduleEditorSheet: View {
         case .move: return .blue
         case .food: return .orange
         case .flight: return .purple
-        case .place: return .teal
+        case .place: return theme.accent
         }
     }
 }
