@@ -95,7 +95,7 @@ struct SettingsScreen: View {
                     }
                     .padding(.top, 2)
                 }
-                .readableWidth(820)
+                .readableWidth(1040)
                 .padding()
             }
             .navigationTitle("")
@@ -187,53 +187,19 @@ private struct ThemeActivePreview: View {
     var theme: AppTheme
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            ZStack(alignment: .bottomLeading) {
-                RoundedRectangle(cornerRadius: 17)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                theme.accent.opacity(0.92),
-                                theme.secondaryAccent.opacity(0.70),
-                                theme.warmAccent.opacity(0.48)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                VStack(alignment: .leading, spacing: 7) {
-                    HStack(spacing: 5) {
-                        paletteDot(theme.accent)
-                        paletteDot(theme.secondaryAccent)
-                        paletteDot(theme.warmAccent)
-                    }
-                    Text(theme.title)
-                        .font(.headline.weight(.black))
-                        .foregroundStyle(.white)
-                    Text(theme.subtitle)
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.white.opacity(0.82))
-                }
-                .padding(12)
-            }
-            .frame(width: 148, height: 102)
-
-            VStack(alignment: .leading, spacing: 7) {
-                Text("Active Theme")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
-                Text(theme.moodLine)
-                    .font(.subheadline.weight(.black))
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) {
+                themePreviewCard
+                    .frame(width: 148, height: 102)
+                themeDescription
+                Spacer(minLength: 0)
             }
 
-            Spacer(minLength: 0)
+            VStack(alignment: .leading, spacing: 10) {
+                themePreviewCard
+                    .frame(maxWidth: .infinity, minHeight: 92)
+                themeDescription
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 116, alignment: .center)
         .padding(10)
@@ -241,6 +207,54 @@ private struct ThemeActivePreview: View {
         .overlay {
             RoundedRectangle(cornerRadius: 18)
                 .stroke(theme.accent.opacity(0.20))
+        }
+    }
+
+    private var themePreviewCard: some View {
+        ZStack(alignment: .bottomLeading) {
+            RoundedRectangle(cornerRadius: 17)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            theme.accent.opacity(0.92),
+                            theme.secondaryAccent.opacity(0.70),
+                            theme.warmAccent.opacity(0.48)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 5) {
+                    paletteDot(theme.accent)
+                    paletteDot(theme.secondaryAccent)
+                    paletteDot(theme.warmAccent)
+                }
+                Text(theme.title)
+                    .font(.headline.weight(.black))
+                    .foregroundStyle(.white)
+                Text(theme.subtitle)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.white.opacity(0.82))
+            }
+            .padding(12)
+        }
+    }
+
+    private var themeDescription: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text("Active Theme")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+            Text(theme.moodLine)
+                .font(.subheadline.weight(.black))
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
         }
     }
 
@@ -457,33 +471,20 @@ private struct SettingsTripHero: View {
     var currentCity: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: "map.fill")
-                .font(.title3.weight(.black))
-                .foregroundStyle(.white)
-                .frame(width: 48, height: 48)
-                .background(theme.accent, in: RoundedRectangle(cornerRadius: 16))
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text(currentCity.isEmpty ? trip.name : displayCity(currentCity))
-                    .font(.title2.weight(.black))
-                    .lineLimit(1)
-                Text("\(trip.country) · \(trip.cities.map(displayCity).joined(separator: " / "))")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) {
+                heroIcon
+                tripTitleBlock
+                Spacer()
+                tripScopeBlock
             }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(currentCity.isEmpty ? "ALL TRIP" : "LOCAL")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(theme.accent)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(theme.accent.opacity(0.12), in: Capsule())
-                Text("\(trip.cities.count) cities")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    heroIcon
+                    tripTitleBlock
+                }
+                tripScopeBlock
             }
         }
         .padding(16)
@@ -511,6 +512,41 @@ private struct SettingsTripHero: View {
         .overlay {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(.quaternary)
+        }
+    }
+
+    private var heroIcon: some View {
+        Image(systemName: "map.fill")
+            .font(.title3.weight(.black))
+            .foregroundStyle(.white)
+            .frame(width: 48, height: 48)
+            .background(theme.accent, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var tripTitleBlock: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(currentCity.isEmpty ? trip.name : displayCity(currentCity))
+                .font(.title2.weight(.black))
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+            Text("\(trip.country) · \(trip.cities.map(displayCity).joined(separator: " / "))")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+    }
+
+    private var tripScopeBlock: some View {
+        HStack(spacing: 7) {
+            Text(currentCity.isEmpty ? "ALL TRIP" : "LOCAL")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(theme.accent)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(theme.accent.opacity(0.12), in: Capsule())
+            Text("\(trip.cities.count) cities")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
         }
     }
 
