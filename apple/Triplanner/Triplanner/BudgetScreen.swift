@@ -250,15 +250,19 @@ private struct ExpenseRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: 9) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(categoryColor)
+                .frame(width: 3, height: 38)
+
             Image(systemName: iconName)
-                .font(.subheadline.weight(.bold))
-                .frame(width: 32, height: 32)
-                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .font(.caption.weight(.black))
+                .frame(width: 28, height: 28)
+                .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
                 .foregroundStyle(categoryColor)
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(expense.title)
                         .font(.subheadline.weight(.black))
                         .lineLimit(1)
@@ -270,15 +274,15 @@ private struct ExpenseRow: View {
                         .foregroundStyle(categoryColor)
                 }
 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 5)], alignment: .leading, spacing: 5) {
-                    ExpensePill(title: "결제", value: expense.paidBy, tint: .teal)
-                    ExpensePill(title: "부담", value: expense.intendedPayer, tint: .blue)
-                    ExpensePill(title: "사용", value: participantText, tint: .secondary)
+                HStack(spacing: 6) {
+                    ExpenseMetaText(title: "결제", value: expense.paidBy, tint: .teal)
+                    ExpenseMetaText(title: "부담", value: expense.intendedPayer, tint: .blue)
+                    ExpenseMetaText(title: "사용", value: participantText, tint: .secondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(alignment: .trailing, spacing: 3) {
+            VStack(alignment: .trailing, spacing: 1) {
                 Text("\(Int(expense.amount))")
                     .font(.headline.weight(.black))
                     .monospacedDigit()
@@ -292,22 +296,22 @@ private struct ExpenseRow: View {
                 isEditing = true
             } label: {
                 Image(systemName: "pencil")
-                    .font(.caption.weight(.black))
+                    .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                    .frame(width: 24, height: 24)
+                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 7))
             }
             .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 54, alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.background.opacity(0.42))
+        .frame(maxWidth: .infinity, minHeight: 48, alignment: .center)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .background(.background.opacity(0.50))
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(Color.secondary.opacity(0.12))
+                .fill(Color.secondary.opacity(0.10))
                 .frame(height: 0.5)
-                .padding(.leading, 52)
+                .padding(.leading, 48)
         }
         .sheet(isPresented: $isEditing) {
             ExpenseEditorSheet(existingExpense: expense)
@@ -343,24 +347,20 @@ private struct ExpenseRow: View {
     }
 }
 
-private struct ExpensePill: View {
+private struct ExpenseMetaText: View {
     var title: String
     var value: String
     var tint: Color
 
     var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: 2) {
             Text(title)
-                .font(.caption2.weight(.black))
                 .foregroundStyle(.secondary)
             Text(value.isEmpty ? "미정" : value)
-                .font(.caption2.weight(.black))
                 .foregroundStyle(tint == .secondary ? .secondary : tint)
                 .lineLimit(1)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background((tint == .secondary ? Color.secondary : tint).opacity(0.09), in: Capsule())
+        .font(.caption2.weight(.black))
     }
 }
 
