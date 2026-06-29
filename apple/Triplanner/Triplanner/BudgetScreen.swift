@@ -57,19 +57,10 @@ struct BudgetScreen: View {
                                 .background(spendingTint, in: RoundedRectangle(cornerRadius: 15))
 
                             VStack(alignment: .leading, spacing: 4) {
-                                HStack(spacing: 7) {
-                                    Text("Budget")
-                                        .font(.system(size: 30, weight: .black, design: .rounded))
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.78)
-                                    Text("SPENT")
-                                        .font(.caption2.weight(.black))
-                                        .foregroundStyle(spendingTint)
-                                        .padding(.horizontal, 7)
-                                        .padding(.vertical, 4)
-                                        .background(spendingTint.opacity(0.11), in: Capsule())
-                                }
-                                Text("지출, Limit, 부담 대상을 한 화면에서 확인")
+                                Text("현재 지출")
+                                    .font(.headline.weight(.black))
+                                    .lineLimit(1)
+                                Text(budget > 0 ? "사용률과 남은 금액을 바로 확인" : "Budget을 설정하면 진행률이 계산됩니다")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
@@ -83,13 +74,24 @@ struct BudgetScreen: View {
                                 }
                             }
                             Spacer()
-                            VStack(alignment: .trailing, spacing: 4) {
+                            VStack(alignment: .trailing, spacing: 8) {
                                 Text(budget > 0 ? "\(Int(progress * 100))%" : "미정")
                                     .font(.title3.weight(.black))
                                     .foregroundStyle(spendingTint)
                                 Text("사용률")
                                     .font(.caption2.weight(.black))
                                     .foregroundStyle(.secondary)
+                                Button {
+                                    isEditingBudget = true
+                                } label: {
+                                    Label(budget > 0 ? "수정" : "설정", systemImage: "slider.horizontal.3")
+                                        .font(.caption.weight(.black))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 7)
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(spendingTint)
+                                .background(spendingTint.opacity(0.12), in: Capsule())
                             }
                         }
 
@@ -106,22 +108,10 @@ struct BudgetScreen: View {
                         }
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
-                            BudgetStat(title: "Budget", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
+                            BudgetStat(title: "설정 금액", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: balanceTitle, value: balanceValue, unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
-
-                        Button {
-                            isEditingBudget = true
-                        } label: {
-                            Label(budget > 0 ? "Budget 수정" : "Budget 설정", systemImage: "slider.horizontal.3")
-                                .font(.caption.weight(.black))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 9)
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(spendingTint)
-                        .background(spendingTint.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
                     }
                     .appPanel(cornerRadius: 18)
 
@@ -161,7 +151,7 @@ struct BudgetScreen: View {
                 .readableWidth(900)
                 .padding()
             }
-            .navigationTitle("")
+            .navigationTitle("Budget")
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button {
