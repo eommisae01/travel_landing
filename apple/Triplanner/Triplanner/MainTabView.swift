@@ -252,7 +252,7 @@ private struct CompactMoreScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Manage", subtitle: "체크리스트, Budget, 설정을 빠르게 열기")
+                    CompactMoreHeader(currentCity: displayCity(store.currentCity))
 
                     MoreSummaryStrip(
                         checklistCount: remainingChecklistCount,
@@ -265,11 +265,13 @@ private struct CompactMoreScreen: View {
                         MoreTripCard(trip: trip, currentCity: displayCity(store.currentCity))
                     }
 
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(title: "CONTROLS")
+
                         NavigationLink {
                             ChecklistScreen()
                         } label: {
-                            MoreActionTile(
+                            MoreActionRow(
                                 title: "체크리스트",
                                 subtitle: "남은 준비 \(remainingChecklistCount)개",
                                 iconName: "checklist",
@@ -280,7 +282,7 @@ private struct CompactMoreScreen: View {
                         NavigationLink {
                             BudgetScreen()
                         } label: {
-                            MoreActionTile(
+                            MoreActionRow(
                                 title: "Budget",
                                 subtitle: "현재 지출 \(totalExpense) \(store.trip?.budgetCurrency ?? "JPY")",
                                 iconName: "creditcard",
@@ -291,7 +293,7 @@ private struct CompactMoreScreen: View {
                         NavigationLink {
                             SettingsScreen()
                         } label: {
-                            MoreActionTile(
+                            MoreActionRow(
                                 title: "설정",
                                 subtitle: "항공편, 숙소, 공유 지도",
                                 iconName: "gearshape",
@@ -299,11 +301,12 @@ private struct CompactMoreScreen: View {
                             )
                         }
                     }
+                    .appPanel(cornerRadius: 18)
                 }
                 .readableWidth(680)
                 .padding()
             }
-            .navigationTitle("Manage")
+            .navigationTitle("More")
         }
         .appScreenBackground()
     }
@@ -315,6 +318,41 @@ private struct CompactMoreScreen: View {
         case "도쿄": return "Tokyo"
         default: return city.isEmpty ? "Trip" : city
         }
+    }
+}
+
+private struct CompactMoreHeader: View {
+    @Environment(\.appTheme) private var theme
+    var currentCity: String
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "ellipsis.circle.fill")
+                .font(.title2.weight(.black))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+                .background(
+                    LinearGradient(
+                        colors: [theme.accent, theme.secondaryAccent.opacity(0.82)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: RoundedRectangle(cornerRadius: 15)
+                )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("More")
+                    .font(.system(size: 26, weight: .black, design: .rounded))
+                    .lineLimit(1)
+                Text("\(currentCity) controls")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -343,10 +381,10 @@ private struct MoreTripCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.headline.weight(.bold))
-                    .frame(width: 38, height: 38)
+                    .font(.subheadline.weight(.black))
+                    .frame(width: 36, height: 36)
                     .foregroundStyle(.white)
-                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 13))
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 12))
                 VStack(alignment: .leading, spacing: 3) {
                     Text(currentCity)
                         .font(.headline.weight(.black))
@@ -364,7 +402,7 @@ private struct MoreTripCard: View {
                     .background(theme.accent.opacity(0.11), in: Capsule())
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: 7) {
                 MoreTripInfoLine(iconName: "bed.double", title: "숙소", value: trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
                 if let address = trip.accommodationAddress, !address.isEmpty {
                     MoreTripInfoLine(iconName: "mappin", title: "주소", value: address)
@@ -450,49 +488,41 @@ private struct MoreMetric: View {
     }
 }
 
-private struct MoreActionTile: View {
+private struct MoreActionRow: View {
     var title: String
     var subtitle: String
     var iconName: String
     var tint: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: iconName)
-                    .font(.subheadline.weight(.black))
-                    .frame(width: 34, height: 34)
-                    .foregroundStyle(tint)
-                    .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 11))
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.secondary)
-            }
-
+        HStack(spacing: 11) {
+            Image(systemName: iconName)
+                .font(.subheadline.weight(.black))
+                .frame(width: 34, height: 34)
+                .foregroundStyle(tint)
+                .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 11))
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.headline.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .lineLimit(1)
                 Text(subtitle)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .minimumScaleFactor(0.82)
             }
+            Spacer(minLength: 8)
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 108, alignment: .topLeading)
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(tint.opacity(0.18))
-        }
-        .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(tint)
-                .frame(width: 4)
-                .padding(.vertical, 11)
         }
     }
 }
