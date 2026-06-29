@@ -20,9 +20,14 @@ struct SettingsScreen: View {
 
                     if let trip = store.trip {
                         SettingsTripHero(trip: trip, currentCity: store.currentCity)
+                        SettingsOverviewGrid(
+                            status: saveStatusText,
+                            stay: trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation,
+                            mapURL: myMapsURL.isEmpty ? trip.myMapsURL : myMapsURL
+                        )
+                    } else {
+                        SettingsSaveBanner(status: saveStatusText)
                     }
-
-                    SettingsSaveBanner(status: saveStatusText)
 
                     ThemePickerCard(selectedTheme: selectedTheme) { theme in
                         themeRawValue = theme.rawValue
@@ -40,18 +45,20 @@ struct SettingsScreen: View {
                         }
                     }
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "STAY")
-                        SettingsField(title: "이름", iconName: "bed.double", placeholder: "숙소 이름", text: $accommodation)
-                        SettingsField(title: "주소", iconName: "mappin", placeholder: "숙소 주소", text: $accommodationAddress, axis: .vertical)
-                    }
-                    .appPanel(cornerRadius: 18)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 270), spacing: 12)], spacing: 12) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            SectionLabel(title: "STAY")
+                            SettingsField(title: "이름", iconName: "bed.double", placeholder: "숙소 이름", text: $accommodation)
+                            SettingsField(title: "주소", iconName: "mappin", placeholder: "숙소 주소", text: $accommodationAddress, axis: .vertical)
+                        }
+                        .appPanel(cornerRadius: 18)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "MAP")
-                        SettingsField(title: "링크", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL, axis: .vertical)
+                        VStack(alignment: .leading, spacing: 12) {
+                            SectionLabel(title: "MY MAPS")
+                            SettingsField(title: "링크", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL, axis: .vertical)
+                        }
+                        .appPanel(cornerRadius: 18)
                     }
-                    .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(title: "INVITE")
@@ -259,6 +266,72 @@ private struct ThemePreviewMock: View {
                 Circle()
                     .stroke(.white.opacity(0.76), lineWidth: 1)
             }
+    }
+}
+
+private struct SettingsOverviewGrid: View {
+    @Environment(\.appTheme) private var theme
+    var status: String
+    var stay: String
+    var mapURL: String
+
+    var body: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 172), spacing: 9)], spacing: 9) {
+            SettingsOverviewTile(
+                title: "저장",
+                value: status,
+                iconName: "checkmark.circle.fill",
+                tint: theme.accent
+            )
+            SettingsOverviewTile(
+                title: "숙소",
+                value: stay,
+                iconName: "bed.double.fill",
+                tint: theme.secondaryAccent
+            )
+            SettingsOverviewTile(
+                title: "지도",
+                value: mapURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "My Maps 입력 전" : "My Maps 연결됨",
+                iconName: "map.fill",
+                tint: theme.warmAccent
+            )
+        }
+    }
+}
+
+private struct SettingsOverviewTile: View {
+    var title: String
+    var value: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconName)
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 34, height: 34)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.caption.weight(.black))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 8)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
+        .overlay {
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(.quaternary)
+        }
     }
 }
 
