@@ -251,10 +251,25 @@ struct ScheduleScreen: View {
             }
 
             calendarDaySummaryStrip
-            calendarTimeGridPanel
-            calendarAgendaPanel
+            calendarDetailPanels
         }
         .appPanel(cornerRadius: 18)
+    }
+
+    private var calendarDetailPanels: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .top, spacing: 10) {
+                calendarTimeGridPanel
+                    .frame(minWidth: 420)
+                calendarAgendaPanel
+                    .frame(width: 300)
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                calendarTimeGridPanel
+                calendarAgendaPanel
+            }
+        }
     }
 
     private var calendarDaySummaryStrip: some View {
@@ -988,7 +1003,9 @@ private struct CalendarDayCell: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(dayNumber)
                     .font(.headline.weight(.black).monospacedDigit())
-                    .foregroundStyle(primaryForeground)
+                    .foregroundStyle(dayNumberForeground)
+                    .frame(width: 30, height: 30)
+                    .background(dayNumberBackground, in: Circle())
                 Spacer(minLength: 4)
                 if itemCount > 0 {
                     Text("\(itemCount)")
@@ -1036,33 +1053,41 @@ private struct CalendarDayCell: View {
     }
 
     private var cellBackground: Color {
-        if isSelected { return theme.accent }
+        if isSelected { return theme.accent.opacity(0.10) }
         return isTripDay ? Color.secondary.opacity(0.065) : Color.secondary.opacity(0.035)
     }
 
     private var borderColor: Color {
-        if isSelected { return theme.accent.opacity(0.36) }
+        if isSelected { return theme.accent.opacity(0.48) }
         return isTripDay ? Color.secondary.opacity(0.12) : Color.clear
     }
 
     private var primaryForeground: Color {
-        isSelected ? .white : (isTripDay ? .primary : .secondary)
+        isTripDay ? .primary : .secondary
+    }
+
+    private var dayNumberForeground: Color {
+        isSelected ? .white : primaryForeground
+    }
+
+    private var dayNumberBackground: Color {
+        isSelected ? theme.accent : .clear
     }
 
     private var secondaryForeground: Color {
-        isSelected ? .white.opacity(0.78) : .secondary
+        isSelected ? .primary : .secondary
     }
 
     private var dayLabelForeground: Color {
-        isSelected ? .white.opacity(0.82) : theme.accent
+        isSelected ? theme.accent : theme.accent
     }
 
     private var counterBackground: Color {
-        isSelected ? .white.opacity(0.20) : .secondary.opacity(0.12)
+        isSelected ? theme.accent.opacity(0.16) : .secondary.opacity(0.12)
     }
 
     private var counterForeground: Color {
-        isSelected ? .white : .secondary
+        isSelected ? theme.accent : .secondary
     }
 }
 
