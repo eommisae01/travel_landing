@@ -118,12 +118,12 @@ struct ScreenHeader: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 43, weight: .black, design: .rounded))
+                    .font(.system(size: 47, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -141,7 +141,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: 17, weight: .black, design: .rounded))
+            .font(.system(size: 18, weight: .black, design: .rounded))
             .tracking(0.2)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
