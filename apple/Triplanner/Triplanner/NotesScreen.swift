@@ -31,7 +31,7 @@ struct NotesScreen: View {
                                 iconName: "doc.text.image"
                             )
                         } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 156), spacing: 7)], spacing: 7) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 8)], spacing: 8) {
                                 ForEach(selectedCityNotes) { note in
                                     noteCard(note)
                                 }
@@ -43,7 +43,7 @@ struct NotesScreen: View {
                     if !otherNotes.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
                             sectionHeader(title: "ALL NOTES", count: otherNotes.count)
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 156), spacing: 7)], spacing: 7) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 8)], spacing: 8) {
                                 ForEach(otherNotes) { note in
                                     noteCard(note)
                                 }
@@ -98,7 +98,7 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 9) {
                 notePreviewStrip(note)
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -124,11 +124,11 @@ struct NotesScreen: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 118, alignment: .topLeading)
-            .padding(8)
-            .background(.background.opacity(0.72), in: RoundedRectangle(cornerRadius: 12))
+            .frame(maxWidth: .infinity, minHeight: 136, alignment: .topLeading)
+            .padding(9)
+            .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 14))
             .overlay {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 14)
                     .stroke(.quaternary)
             }
         }
@@ -149,7 +149,7 @@ struct NotesScreen: View {
                 )
 
             if !note.imageNames.isEmpty {
-                Label("\(note.imageNames.count)", systemImage: "photo.stack")
+                Label("묶음 \(note.imageNames.count)", systemImage: "photo.stack")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.teal)
                     .padding(.horizontal, 7)
@@ -175,7 +175,7 @@ struct NotesScreen: View {
             }
             .padding(9)
         }
-        .frame(height: 52)
+        .frame(height: 62)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -237,17 +237,17 @@ struct AddNoteSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ScreenHeader(title: "Note 추가", subtitle: "시간표, 예약, 현장 정보를 한 묶음으로 저장합니다.")
+                    ScreenHeader(title: "자료 추가", subtitle: "시간표, 예약, 현장 정보를 한 묶음으로 저장합니다.")
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "TITLE")
+                        SectionLabel(title: "제목")
                         TextField("예: 페리 시간표", text: $title)
                             .textFieldStyle(.roundedBorder)
                     }
                     .appPanel()
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "BODY")
+                        SectionLabel(title: "메모")
                         TextField("메모", text: $bodyText, axis: .vertical)
                             .textFieldStyle(.roundedBorder)
                             .lineLimit(5...12)
@@ -255,7 +255,7 @@ struct AddNoteSheet: View {
                     .appPanel()
 
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "IMAGE BUNDLE")
+                        SectionLabel(title: "이미지 묶음")
                         TextField("예: 페리 전체, 왕복 시간표, 버스 환승", text: $imageText)
                             .textFieldStyle(.roundedBorder)
                         Text("여러 장은 쉼표로 구분해두면 자료 상세에서 묶음으로 보입니다.")
@@ -333,7 +333,7 @@ struct NoteDetailView: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        SectionLabel(title: "IMAGE BUNDLE")
+                        SectionLabel(title: "이미지 묶음")
                         Spacer()
                         if !note.imageNames.isEmpty {
                             Label("\(note.imageNames.count)장", systemImage: "photo.stack")
@@ -397,15 +397,25 @@ private struct MiniImageBadge: View {
     var index: Int
 
     var body: some View {
-        Text(String(title.prefix(1)))
-            .font(.caption2.weight(.black))
-            .foregroundStyle(.teal)
-            .frame(width: 34, height: 34)
-            .background(.background.opacity(index == 0 ? 0.84 : 0.68), in: RoundedRectangle(cornerRadius: 11))
-            .overlay {
-                RoundedRectangle(cornerRadius: 11)
-                    .stroke(.background, lineWidth: 2)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 3) {
+                Image(systemName: "photo")
+                    .font(.caption2.weight(.black))
+                Text("\(index + 1)")
+                    .font(.caption2.weight(.black))
             }
+            Text(title)
+                .font(.system(size: 8, weight: .black))
+                .lineLimit(1)
+        }
+        .foregroundStyle(.teal)
+        .frame(width: 46, height: 38, alignment: .leading)
+        .padding(.horizontal, 7)
+        .background(.background.opacity(index == 0 ? 0.86 : 0.70), in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(.background, lineWidth: 2)
+        }
     }
 }
 
