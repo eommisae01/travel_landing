@@ -703,6 +703,7 @@ private struct MultiDayCalendarGrid: View {
                 Divider().opacity(0.45)
 
                 ForEach(displayHours, id: \.self) { hour in
+                    let hourHeight = rowHeight(forHour: hour)
                     HStack(alignment: .top, spacing: 0) {
                         Text("\(hour):00")
                             .font(.caption2.weight(.black).monospacedDigit())
@@ -713,8 +714,14 @@ private struct MultiDayCalendarGrid: View {
 
                         ForEach(dates, id: \.self) { date in
                             let items = items(on: date, at: hour)
-                            MultiDayHourCell(items: items, minHeight: rowHeight(for: items))
+                            MultiDayHourCell(items: items, rowHeight: hourHeight)
                         }
+                    }
+                    .background(hour.isMultiple(of: 2) ? Color.primary.opacity(0.012) : Color.clear)
+                    .overlay(alignment: .bottom) {
+                        Rectangle()
+                            .fill(Color.secondary.opacity(0.085))
+                            .frame(height: 0.5)
                     }
                 }
             }
@@ -727,8 +734,11 @@ private struct MultiDayCalendarGrid: View {
         }
     }
 
-    private func rowHeight(for items: [ScheduleItem]) -> CGFloat {
-        items.isEmpty ? 44 : CGFloat(max(items.count, 1)) * 54 + 8
+    private func rowHeight(forHour hour: Int) -> CGFloat {
+        let maxItems = dates
+            .map { items(on: $0, at: hour).count }
+            .max() ?? 0
+        return maxItems == 0 ? 48 : CGFloat(maxItems) * 54 + 10
     }
 
     private func items(on date: Date, at hour: Int) -> [ScheduleItem] {
@@ -762,15 +772,15 @@ private struct MultiDayCalendarGrid: View {
 
 private struct MultiDayHourCell: View {
     var items: [ScheduleItem]
-    var minHeight: CGFloat
+    var rowHeight: CGFloat
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             if items.isEmpty {
                 Rectangle()
-                    .fill(Color.secondary.opacity(0.10))
+                    .fill(Color.secondary.opacity(0.055))
                     .frame(height: 1)
-                    .padding(.top, 15)
+                    .padding(.top, 13)
             } else {
                 ForEach(items) { item in
                     CalendarTimeBlock(item: item)
@@ -779,7 +789,7 @@ private struct MultiDayHourCell: View {
             }
         }
         .frame(width: 172, alignment: .topLeading)
-        .frame(minHeight: minHeight, alignment: .topLeading)
+        .frame(height: rowHeight, alignment: .topLeading)
         .padding(.horizontal, 8)
         .overlay(alignment: .leading) {
             Rectangle()
