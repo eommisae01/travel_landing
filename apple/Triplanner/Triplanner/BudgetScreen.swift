@@ -99,14 +99,14 @@ struct BudgetScreen: View {
                             HStack {
                                 Text("0")
                                 Spacer()
-                                Text(budget > 0 ? "\(Int(budget)) \(store.trip?.budgetCurrency ?? "JPY")" : "Limit 미정")
+                                Text(budget > 0 ? "\(Int(budget)) \(store.trip?.budgetCurrency ?? "JPY")" : "Budget 미정")
                             }
                             .font(.caption2.weight(.black))
                             .foregroundStyle(.secondary)
                         }
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
-                            BudgetStat(title: "Limit", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
+                            BudgetStat(title: "Budget", value: budget > 0 ? "\(Int(budget))" : "미정", unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: balanceTitle, value: balanceValue, unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
@@ -114,7 +114,7 @@ struct BudgetScreen: View {
                         Button {
                             isEditingBudget = true
                         } label: {
-                            Label(budget > 0 ? "Limit 수정" : "Limit 설정", systemImage: "slider.horizontal.3")
+                            Label(budget > 0 ? "Budget 수정" : "Budget 설정", systemImage: "slider.horizontal.3")
                                 .font(.caption.weight(.black))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 9)
@@ -167,7 +167,7 @@ struct BudgetScreen: View {
                     Button {
                         isEditingBudget = true
                     } label: {
-                        Label("Limit 설정", systemImage: "slider.horizontal.3")
+                        Label("Budget 설정", systemImage: "slider.horizontal.3")
                     }
                     Button {
                         isAddingExpense = true
@@ -209,10 +209,10 @@ private struct BudgetLimitSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Budget Limit", subtitle: "이번 여행에서 함께 확인할 총 한도")
+                    ScreenHeader(title: "Budget 설정", subtitle: "이번 여행에서 함께 확인할 총 한도")
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel(title: "LIMIT")
+                        SectionLabel(title: "BUDGET")
                         HStack(spacing: 10) {
                             TextField("예: 150000", text: $amount)
                                 .textFieldStyle(.roundedBorder)
@@ -220,7 +220,7 @@ private struct BudgetLimitSheet: View {
                                 .textFieldStyle(.roundedBorder)
                                 .frame(maxWidth: 92)
                         }
-                        Text("0으로 저장하면 Budget 화면에는 Limit 미정으로 표시됩니다.")
+                        Text("0으로 저장하면 Budget 화면에는 Budget 미정으로 표시됩니다.")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
