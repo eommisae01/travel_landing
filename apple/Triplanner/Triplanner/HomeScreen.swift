@@ -157,7 +157,6 @@ struct HomeScreen: View {
             HeroTodayLine(
                 title: todaySummary,
                 scheduleCount: focusItems.count,
-                noteCount: focusNotes.count,
                 accent: theme.accent,
                 secondaryAccent: theme.secondaryAccent
             )
@@ -619,29 +618,31 @@ private struct StatChipContent: View {
     var body: some View {
         HStack(spacing: 9) {
             Image(systemName: iconName)
-                .font(.subheadline.weight(.bold))
-                .frame(width: 31, height: 31)
-                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .font(.caption.weight(.black))
+                .frame(width: 29, height: 29)
+                .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
                 .foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption.weight(.bold))
+                    .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(value)
-                        .font(.title3.weight(.black))
+                        .font(.headline.weight(.black))
+                        .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.76)
                     Text(unit)
-                        .font(.caption.weight(.black))
+                        .font(.caption2.weight(.black))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
             }
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 54, maxHeight: 54, alignment: .leading)
-        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 50, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 13))
         .overlay {
             RoundedRectangle(cornerRadius: 13)
@@ -732,7 +733,6 @@ private struct CityChipRail: View {
 private struct HeroTodayLine: View {
     var title: String
     var scheduleCount: Int
-    var noteCount: Int
     var accent: Color
     var secondaryAccent: Color
 
@@ -753,7 +753,6 @@ private struct HeroTodayLine: View {
             }
             Spacer(minLength: 8)
             HeroCountPill(title: "일정", value: scheduleCount, tint: accent)
-            HeroCountPill(title: "Notes", value: noteCount, tint: secondaryAccent)
         }
         .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
         .padding(.horizontal, 10)
