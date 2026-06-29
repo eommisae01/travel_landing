@@ -122,13 +122,23 @@ struct HomeScreen: View {
     }
 
     private func cityHero(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: isWideLayout ? 18 : 15) {
+        VStack(alignment: .leading, spacing: isWideLayout ? 16 : 14) {
             HStack(alignment: .center, spacing: 14) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("TRIP")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary)
-                        .tracking(1.3)
+                    HStack(spacing: 7) {
+                        Text("TRIP")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(.secondary)
+                            .tracking(1.3)
+                        if let dateRange = dateRange(for: trip) {
+                            Text(dateRange)
+                                .font(.caption2.weight(.black))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 4)
+                                .background(.background.opacity(0.62), in: Capsule())
+                        }
+                    }
                     cityMenu
                 }
 
@@ -137,42 +147,20 @@ struct HomeScreen: View {
                 CityCountBadge(count: store.trip?.cities.count ?? 0)
             }
 
-            HStack(spacing: 8) {
-                if let dateRange = dateRange(for: trip) {
-                    Label(dateRange, systemImage: "calendar")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(.background.opacity(0.62), in: Capsule())
-                }
-                Spacer(minLength: 0)
-            }
+            CityChipRail(
+                cities: trip.cities,
+                currentCity: store.currentCity
+            )
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: isWideLayout ? 180 : 132), spacing: 8)], spacing: 8) {
-                HeroMetric(
-                    title: "TODAY",
-                    value: todaySummary,
-                    iconName: "sun.max",
-                    tint: .orange
-                )
-                HeroMetric(
-                    title: "준비",
-                    value: "\(undoneChecklistCount)개 남음",
-                    iconName: "checklist",
-                    tint: .teal
-                )
-                HeroMetric(
-                    title: "지출",
-                    value: "\(expenseTotal) \(trip.budgetCurrency)",
-                    iconName: "creditcard",
-                    tint: .blue
-                )
-            }
+            HeroTodayLine(
+                title: todaySummary,
+                scheduleCount: focusItems.count,
+                noteCount: focusNotes.count
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, isWideLayout ? 24 : 20)
-        .padding(.vertical, isWideLayout ? 22 : 18)
+        .padding(.vertical, isWideLayout ? 20 : 18)
         .background {
             RoundedRectangle(cornerRadius: 24)
                 .fill(
@@ -203,7 +191,7 @@ struct HomeScreen: View {
     private func travelPanel(_ trip: Trip) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("TRAVEL INFO")
+                Text("FLIGHTS & STAY")
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -214,7 +202,7 @@ struct HomeScreen: View {
                     .padding(.vertical, 4)
                     .background(.secondary.opacity(0.10), in: Capsule())
             }
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 FlightSummaryRow(
                     title: "가는 편",
                     flight: trip.outbound,
@@ -330,7 +318,7 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .center, spacing: 8) {
                 Text(cityDisplayName(store.currentCity))
-                    .font(.system(size: isWideLayout ? 76 : 48, weight: .black, design: .rounded))
+                    .font(.system(size: isWideLayout ? 64 : 44, weight: .black, design: .rounded))
                     .minimumScaleFactor(0.70)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
@@ -396,14 +384,14 @@ private struct FlightSummaryRow: View {
         Button {
             copyToClipboard(flight.flightNumber.isEmpty ? "\(flight.origin) \(flight.destination)" : flight.flightNumber)
         } label: {
-            HStack(alignment: .center, spacing: 11) {
+            HStack(alignment: .center, spacing: 10) {
                 Image(systemName: iconName)
                     .font(.subheadline.weight(.black))
-                    .frame(width: 34, height: 34)
-                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
+                    .frame(width: 31, height: 31)
+                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(title)
                             .font(.caption.weight(.black))
@@ -432,7 +420,7 @@ private struct FlightSummaryRow: View {
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 14)
@@ -485,14 +473,14 @@ private struct AccommodationSummaryRow: View {
         Button {
             copyToClipboard(trip.accommodationAddress ?? trip.accommodation)
         } label: {
-            HStack(alignment: .center, spacing: 11) {
+            HStack(alignment: .center, spacing: 10) {
                 Image(systemName: "bed.double")
                     .font(.subheadline.weight(.black))
-                    .frame(width: 34, height: 34)
-                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
+                    .frame(width: 31, height: 31)
+                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(.purple)
 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("숙소")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.purple)
@@ -515,7 +503,7 @@ private struct AccommodationSummaryRow: View {
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 14)
@@ -627,38 +615,99 @@ private struct CityCountBadge: View {
     }
 }
 
-private struct HeroMetric: View {
-    var title: String
-    var value: String
-    var iconName: String
-    var tint: Color
+private struct CityChipRail: View {
+    var cities: [String]
+    var currentCity: String
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: iconName)
-                .font(.caption.weight(.black))
-                .foregroundStyle(tint)
-                .frame(width: 24, height: 24)
-                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 7) {
+                ForEach(cities, id: \.self) { city in
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(city == currentCity ? Color.teal : Color.secondary.opacity(0.34))
+                            .frame(width: 6, height: 6)
+                        Text(displayName(city))
+                            .font(.caption.weight(.black))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(city == currentCity ? .primary : .secondary)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 6)
+                    .background((city == currentCity ? Color.teal : Color.secondary).opacity(city == currentCity ? 0.13 : 0.08), in: Capsule())
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func displayName(_ city: String) -> String {
+        switch city {
+        case "타카마쓰": return "Takamatsu"
+        case "나오시마": return "Naoshima"
+        case "도쿄": return "Tokyo"
+        case "오사카": return "Osaka"
+        case "후쿠오카": return "Fukuoka"
+        case "삿포로": return "Sapporo"
+        case "교토": return "Kyoto"
+        case "서울": return "Seoul"
+        default: return city.isEmpty ? "Trip" : city
+        }
+    }
+}
+
+private struct HeroTodayLine: View {
+    var title: String
+    var scheduleCount: Int
+    var noteCount: Int
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Image(systemName: "sun.max.fill")
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(.orange)
+                .frame(width: 30, height: 30)
+                .background(.orange.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("TODAY")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
-                Text(value)
-                    .font(.caption.weight(.black))
+                Text(title)
+                    .font(.subheadline.weight(.black))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.82)
             }
-            Spacer(minLength: 0)
+            Spacer(minLength: 8)
+            HeroCountPill(title: "일정", value: scheduleCount, tint: .teal)
+            HeroCountPill(title: "Notes", value: noteCount, tint: .purple)
         }
-        .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 7)
+        .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.quaternary)
         }
+    }
+}
+
+private struct HeroCountPill: View {
+    var title: String
+    var value: Int
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(title)
+                .font(.caption2.weight(.black))
+            Text("\(value)")
+                .font(.caption.weight(.black))
+                .monospacedDigit()
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(tint.opacity(0.11), in: Capsule())
     }
 }
 
