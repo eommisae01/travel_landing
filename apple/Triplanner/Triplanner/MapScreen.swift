@@ -37,7 +37,7 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 7)], spacing: 7) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 116), spacing: 6)], spacing: 6) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -170,11 +170,11 @@ struct PlaceRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .top, spacing: 7) {
                 Image(systemName: categoryIcon)
                     .font(.caption.weight(.black))
-                    .frame(width: 26, height: 26)
-                    .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 8))
+                    .frame(width: 24, height: 24)
+                    .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 7))
                     .foregroundStyle(categoryColor)
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -194,8 +194,8 @@ struct PlaceRow: View {
                     } label: {
                         Image(systemName: "pencil")
                             .font(.caption.weight(.black))
-                            .frame(width: 23, height: 23)
-                            .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+                            .frame(width: 24, height: 24)
+                            .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -205,8 +205,8 @@ struct PlaceRow: View {
                     } label: {
                         Image(systemName: place.isFavorite ? "star.fill" : "star")
                             .font(.caption.weight(.black))
-                            .frame(width: 23, height: 23)
-                            .background((place.isFavorite ? Color.yellow : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                            .frame(width: 24, height: 24)
+                            .background((place.isFavorite ? Color.yellow : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
                             .foregroundStyle(place.isFavorite ? .yellow : .secondary)
                     }
                     .buttonStyle(.plain)
@@ -228,12 +228,12 @@ struct PlaceRow: View {
                             .lineLimit(2)
                     }
                 }
-                .frame(maxWidth: .infinity, minHeight: 28, alignment: .topLeading)
+                .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
             } else {
                 Text("메모 없음")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.tertiary)
-                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
             }
 
             Spacer(minLength: 0)
@@ -243,8 +243,8 @@ struct PlaceRow: View {
                         Label("지도", systemImage: "map")
                             .frame(maxWidth: .infinity)
                     }
-                    .padding(.vertical, 5)
-                    .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
                     .foregroundStyle(.primary)
                 }
                 Button {
@@ -253,18 +253,18 @@ struct PlaceRow: View {
                     Label("일정", systemImage: "calendar.badge.plus")
                         .frame(maxWidth: .infinity)
                 }
-                .padding(.vertical, 5)
-                .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                .padding(.vertical, 4)
+                .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
                 .foregroundStyle(categoryColor)
             }
             .font(.caption2.weight(.bold))
             .labelStyle(.titleAndIcon)
         }
-        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
-        .padding(8)
-        .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 13))
+        .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
+        .padding(7)
+        .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
-            RoundedRectangle(cornerRadius: 13)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(.quaternary)
         }
         .sheet(isPresented: $isEditing) {

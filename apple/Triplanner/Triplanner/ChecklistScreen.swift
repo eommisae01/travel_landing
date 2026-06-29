@@ -149,12 +149,17 @@ private struct ChecklistSection: View {
                     iconName: "checklist"
                 )
             } else {
-                VStack(spacing: 3) {
-                    ForEach(items) { item in
-                        ChecklistItemRow(item: item, tint: tint) {
+                VStack(spacing: 0) {
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        ChecklistItemRow(item: item, tint: tint, showsDivider: index < items.count - 1) {
                             action(item)
                         }
                     }
+                }
+                .background(.background.opacity(0.50), in: RoundedRectangle(cornerRadius: 14))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(.quaternary)
                 }
             }
         }
@@ -166,16 +171,17 @@ private struct ChecklistItemRow: View {
     @EnvironmentObject private var store: TripStore
     var item: ChecklistItem
     var tint: Color = .teal
+    var showsDivider = false
     var action: () -> Void
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: 9) {
             Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.body.weight(.bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 26, height: 26)
+                    .frame(width: 28, height: 28)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -186,19 +192,19 @@ private struct ChecklistItemRow: View {
                     .strikethrough(item.isDone)
                     .foregroundStyle(item.isDone ? .secondary : .primary)
                     .lineLimit(1)
-                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            HStack(spacing: 4) {
+            HStack(alignment: .center, spacing: 6) {
                 Text(item.owner)
                     .font(.caption2.weight(.black))
                     .lineLimit(1)
-                    .frame(minWidth: 40)
+                    .frame(minWidth: 38)
                     .padding(.horizontal, 6)
-                    .frame(height: 24)
-                    .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                    .frame(height: 26)
+                    .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
                     .foregroundStyle(ownerTint)
 
                 Button {
@@ -207,20 +213,24 @@ private struct ChecklistItemRow: View {
                     Image(systemName: "pencil")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
-                        .frame(width: 26, height: 26)
-                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                        .frame(width: 28, height: 28)
+                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 7))
                 }
                 .buttonStyle(.plain)
             }
-            .frame(height: 28)
+            .frame(height: 30)
         }
-        .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 3)
-        .background(rowBackground, in: RoundedRectangle(cornerRadius: 10))
-        .overlay {
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(item.isDone ? Color.secondary.opacity(0.10) : tint.opacity(0.10))
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(rowBackground)
+        .overlay(alignment: .bottom) {
+            if showsDivider {
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.13))
+                    .frame(height: 0.5)
+                    .padding(.leading, 47)
+            }
         }
         .opacity(item.isDone ? 0.66 : 1)
         .sheet(isPresented: $isEditing) {
@@ -240,7 +250,7 @@ private struct ChecklistItemRow: View {
     }
 
     private var rowBackground: Color {
-        item.isDone ? Color.secondary.opacity(0.06) : Color.primary.opacity(0.035)
+        item.isDone ? Color.secondary.opacity(0.035) : Color.clear
     }
 }
 
