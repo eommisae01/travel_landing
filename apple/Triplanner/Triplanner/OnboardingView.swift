@@ -327,17 +327,7 @@ private struct OnboardingHero: View {
         .padding(.vertical, 17)
         .background {
             RoundedRectangle(cornerRadius: 22)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.accent.opacity(0.16),
-                            theme.secondaryAccent.opacity(0.07),
-                            Color.secondary.opacity(0.04)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(theme.accent.opacity(0.075))
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
         }
         .overlay(alignment: .leading) {

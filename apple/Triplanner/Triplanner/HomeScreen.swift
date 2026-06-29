@@ -78,12 +78,12 @@ struct HomeScreen: View {
             ScrollView {
                 if let trip = store.trip {
                     if isWideLayout {
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 18) {
                             cityHero(trip)
                             travelPanel(trip)
 
-                            HStack(alignment: .top, spacing: 14) {
-                                VStack(alignment: .leading, spacing: 14) {
+                            HStack(alignment: .top, spacing: 16) {
+                                VStack(alignment: .leading, spacing: 16) {
                                     statusStrip
                                     todayPanel
                                 }
@@ -94,9 +94,9 @@ struct HomeScreen: View {
                             }
                         }
                         .readableWidth(1160)
-                        .padding(22)
+                        .padding(24)
                     } else {
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 18) {
                             cityHero(trip)
                             travelPanel(trip)
                             statusStrip
@@ -129,12 +129,12 @@ struct HomeScreen: View {
     }
 
     private func cityHero(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: isWideLayout ? 16 : 14) {
-            HStack(alignment: .center, spacing: 14) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 7) {
+        VStack(alignment: .leading, spacing: isWideLayout ? 18 : 16) {
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 9) {
+                    HStack(spacing: 8) {
                         Text("TRIP")
-                            .font(.caption.weight(.black))
+                            .font(.subheadline.weight(.black))
                             .foregroundStyle(.secondary)
                             .tracking(1.3)
                         if let dateRange = dateRange(for: trip) {
@@ -169,28 +169,18 @@ struct HomeScreen: View {
             )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, isWideLayout ? 24 : 20)
-        .padding(.vertical, isWideLayout ? 20 : 18)
+        .padding(.horizontal, isWideLayout ? 26 : 20)
+        .padding(.vertical, isWideLayout ? 22 : 20)
         .background {
             RoundedRectangle(cornerRadius: 24)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.accent.opacity(0.18),
-                            theme.warmAccent.opacity(0.08),
-                            Color.secondary.opacity(0.04)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(theme.accent.opacity(0.075))
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
         }
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 24)
                 .fill(theme.accent)
                 .frame(width: 5)
-                .padding(.vertical, 18)
+                .padding(.vertical, 20)
         }
         .overlay {
             RoundedRectangle(cornerRadius: 24)
@@ -199,7 +189,7 @@ struct HomeScreen: View {
     }
 
     private func travelPanel(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Label("FLIGHTS & STAY", systemImage: "airplane")
                     .font(.caption.weight(.black))
@@ -214,7 +204,7 @@ struct HomeScreen: View {
             }
 
             ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 10) {
+                HStack(alignment: .top, spacing: 12) {
                     VStack(spacing: 8) {
                         FlightSummaryRow(
                             title: "가는 편",
@@ -235,7 +225,7 @@ struct HomeScreen: View {
                         .frame(maxWidth: 360)
                 }
 
-                VStack(spacing: 8) {
+                VStack(spacing: 10) {
                     FlightSummaryRow(
                         title: "가는 편",
                         flight: trip.outbound,
@@ -253,7 +243,7 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(11)
+        .padding(14)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
@@ -262,7 +252,7 @@ struct HomeScreen: View {
     }
 
     private var statusStrip: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 148), spacing: 9)], spacing: 9) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 12)], spacing: 12) {
             StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개", iconName: "checklist", tint: theme.accent) {
                 showingChecklistSummary = true
             }
@@ -271,7 +261,7 @@ struct HomeScreen: View {
     }
 
     private var todayPanel: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 sectionTitle("TODAY")
                 Spacer()
@@ -298,7 +288,7 @@ struct HomeScreen: View {
     }
 
     private var notesPanel: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 sectionTitle("TODAY NOTES")
                 Spacer()

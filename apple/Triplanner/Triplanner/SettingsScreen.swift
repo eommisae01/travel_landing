@@ -211,17 +211,7 @@ private struct ThemeActivePreview: View {
     private var themePreviewCard: some View {
         ZStack(alignment: .bottomLeading) {
             RoundedRectangle(cornerRadius: 15)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.accent.opacity(0.92),
-                            theme.secondaryAccent.opacity(0.70),
-                            theme.warmAccent.opacity(0.48)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(theme.accent.opacity(0.92))
 
             VStack(alignment: .leading, spacing: 7) {
                 HStack(spacing: 5) {
@@ -337,17 +327,7 @@ private struct ThemePreviewMock: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             RoundedRectangle(cornerRadius: 12)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.accent.opacity(0.92),
-                            theme.secondaryAccent.opacity(0.68),
-                            theme.warmAccent.opacity(0.48)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(theme.accent.opacity(0.92))
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 5) {
@@ -519,17 +499,7 @@ private struct SettingsTripHero: View {
         .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.accent.opacity(0.15),
-                            theme.secondaryAccent.opacity(0.06),
-                            Color.secondary.opacity(0.035)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(theme.accent.opacity(0.075))
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         }
         .overlay(alignment: .leading) {

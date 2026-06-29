@@ -167,14 +167,7 @@ private struct SidebarTripSummary: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.white)
                     .frame(width: 30, height: 30)
-                    .background(
-                        LinearGradient(
-                            colors: [theme.accent, theme.secondaryAccent.opacity(0.78)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        in: RoundedRectangle(cornerRadius: 10)
-                    )
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -347,14 +340,7 @@ private struct CompactMoreHeader: View {
                 .font(.title2.weight(.black))
                 .foregroundStyle(.white)
                 .frame(width: 44, height: 44)
-                .background(
-                    LinearGradient(
-                        colors: [theme.accent, theme.secondaryAccent.opacity(0.82)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 15)
-                )
+                .background(theme.accent, in: RoundedRectangle(cornerRadius: 15))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("More")
