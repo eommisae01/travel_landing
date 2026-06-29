@@ -7,6 +7,7 @@ import AppKit
 
 struct HomeScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showingAddCity = false
     @State private var newCity = ""
@@ -144,7 +145,7 @@ struct HomeScreen: View {
 
                 Spacer(minLength: 12)
 
-                CityCountBadge(count: store.trip?.cities.count ?? 0)
+                CityCountBadge(count: store.trip?.cities.count ?? 0, tint: theme.accent)
             }
 
             CityChipRail(
@@ -155,7 +156,9 @@ struct HomeScreen: View {
             HeroTodayLine(
                 title: todaySummary,
                 scheduleCount: focusItems.count,
-                noteCount: focusNotes.count
+                noteCount: focusNotes.count,
+                accent: theme.accent,
+                secondaryAccent: theme.secondaryAccent
             )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -166,8 +169,8 @@ struct HomeScreen: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.teal.opacity(0.18),
-                            Color.orange.opacity(0.08),
+                            theme.accent.opacity(0.18),
+                            theme.warmAccent.opacity(0.08),
                             Color.secondary.opacity(0.04)
                         ],
                         startPoint: .topLeading,
@@ -178,7 +181,7 @@ struct HomeScreen: View {
         }
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color.teal)
+                .fill(theme.accent)
                 .frame(width: 5)
                 .padding(.vertical, 18)
         }
@@ -207,13 +210,13 @@ struct HomeScreen: View {
                     title: "가는 편",
                     flight: trip.outbound,
                     iconName: "airplane.departure",
-                    tint: .teal
+                    tint: theme.accent
                 )
                 FlightSummaryRow(
                     title: "오는 편",
                     flight: trip.inbound,
                     iconName: "airplane.arrival",
-                    tint: .blue
+                    tint: theme.secondaryAccent
                 )
                 AccommodationSummaryRow(trip: trip)
             }
@@ -229,10 +232,10 @@ struct HomeScreen: View {
 
     private var statusStrip: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 154), spacing: 10)], spacing: 10) {
-            StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개") {
+            StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개", tint: theme.accent) {
                 showingChecklistSummary = true
             }
-            StatChip(title: "지출", value: "\(expenseTotal)", unit: store.trip?.budgetCurrency ?? "JPY")
+            StatChip(title: "지출", value: "\(expenseTotal)", unit: store.trip?.budgetCurrency ?? "JPY", tint: theme.secondaryAccent)
         }
     }
 
@@ -552,11 +555,12 @@ private struct StatButton: View {
     var title: String
     var value: String
     var unit: String
+    var tint: Color
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            StatChipContent(title: title, value: value, unit: unit, iconName: "checklist", tint: .teal)
+            StatChipContent(title: title, value: value, unit: unit, iconName: "checklist", tint: tint)
         }
         .buttonStyle(.plain)
     }
@@ -566,9 +570,10 @@ private struct StatChip: View {
     var title: String
     var value: String
     var unit: String
+    var tint: Color
 
     var body: some View {
-        StatChipContent(title: title, value: value, unit: unit, iconName: "creditcard", tint: .blue)
+        StatChipContent(title: title, value: value, unit: unit, iconName: "creditcard", tint: tint)
     }
 }
 
@@ -612,6 +617,7 @@ private struct StatChipContent: View {
 
 private struct CityCountBadge: View {
     var count: Int
+    var tint: Color
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 5) {
@@ -619,7 +625,7 @@ private struct CityCountBadge: View {
                 .font(.headline.weight(.black))
                 .foregroundStyle(.white)
                 .frame(width: 38, height: 38)
-                .background(.teal, in: RoundedRectangle(cornerRadius: 13))
+                .background(tint, in: RoundedRectangle(cornerRadius: 13))
             Text("\(count) cities")
                 .font(.caption2.weight(.black))
                 .foregroundStyle(.secondary)
@@ -628,6 +634,7 @@ private struct CityCountBadge: View {
 }
 
 private struct CityChipRail: View {
+    @Environment(\.appTheme) private var theme
     var cities: [String]
     var currentCity: String
 
@@ -646,7 +653,7 @@ private struct CityChipRail: View {
     private func scopeChip(title: String, isSelected: Bool) -> some View {
         HStack(spacing: 5) {
             Circle()
-                .fill(isSelected ? Color.teal : Color.secondary.opacity(0.34))
+                .fill(isSelected ? theme.accent : Color.secondary.opacity(0.34))
                 .frame(width: 6, height: 6)
             Text(title)
                 .font(.caption.weight(.black))
@@ -655,7 +662,7 @@ private struct CityChipRail: View {
         .foregroundStyle(isSelected ? .primary : .secondary)
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
-        .background((isSelected ? Color.teal : Color.secondary).opacity(isSelected ? 0.13 : 0.08), in: Capsule())
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.08), in: Capsule())
     }
 
     private func displayName(_ city: String) -> String {
@@ -677,14 +684,16 @@ private struct HeroTodayLine: View {
     var title: String
     var scheduleCount: Int
     var noteCount: Int
+    var accent: Color
+    var secondaryAccent: Color
 
     var body: some View {
         HStack(spacing: 9) {
             Image(systemName: "sun.max.fill")
                 .font(.subheadline.weight(.black))
-                .foregroundStyle(.orange)
+                .foregroundStyle(secondaryAccent)
                 .frame(width: 30, height: 30)
-                .background(.orange.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
+                .background(secondaryAccent.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 2) {
                 Text("TODAY")
                     .font(.caption2.weight(.black))
@@ -694,8 +703,8 @@ private struct HeroTodayLine: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
-            HeroCountPill(title: "일정", value: scheduleCount, tint: .teal)
-            HeroCountPill(title: "Notes", value: noteCount, tint: .purple)
+            HeroCountPill(title: "일정", value: scheduleCount, tint: accent)
+            HeroCountPill(title: "Notes", value: noteCount, tint: secondaryAccent)
         }
         .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
         .padding(.horizontal, 10)
@@ -788,6 +797,7 @@ private struct CompactScheduleRow: View {
 }
 
 private struct CompactNoteCard: View {
+    @Environment(\.appTheme) private var theme
     var note: NoteGroup
 
     var body: some View {
@@ -795,8 +805,8 @@ private struct CompactNoteCard: View {
             Image(systemName: "doc.text.image")
                 .font(.subheadline.weight(.bold))
                 .frame(width: 30, height: 30)
-                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
-                .foregroundStyle(.teal)
+                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+                .foregroundStyle(theme.accent)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 6) {
@@ -806,7 +816,7 @@ private struct CompactNoteCard: View {
                     if !note.imageNames.isEmpty {
                         Label("\(note.imageNames.count)", systemImage: "photo")
                             .font(.caption2.weight(.black))
-                            .foregroundStyle(.teal)
+                            .foregroundStyle(theme.accent)
                     }
                 }
                 Text(note.body)
@@ -836,11 +846,16 @@ private extension View {
         self
             .padding(14)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+            .overlay {
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(.quaternary)
+            }
     }
 }
 
 private struct ChecklistSummarySheet: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @Environment(\.dismiss) private var dismiss
 
     private var remaining: [ChecklistItem] {
@@ -901,7 +916,7 @@ private struct ChecklistSummarySheet: View {
 
     private func ownerTint(_ owner: String) -> Color {
         switch owner {
-        case "공통": return .teal
+        case "공통": return theme.accent
         case "예지": return .pink
         case "승환": return .blue
         case "민지": return .orange
