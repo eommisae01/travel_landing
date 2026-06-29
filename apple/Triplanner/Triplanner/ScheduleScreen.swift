@@ -200,40 +200,17 @@ struct ScheduleScreen: View {
 
     private var calendarGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    SectionLabel(title: "CALENDAR")
-                    Text(calendarTitle)
-                        .font(.headline.weight(.black))
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 12) {
+                    calendarHeaderCopy
+                    Spacer(minLength: 12)
+                    calendarHeaderActions
                 }
-                Spacer()
-                Button {
-                    selectedDate = nil
-                } label: {
-                    Label("전체", systemImage: "square.grid.2x2")
-                        .font(.caption.weight(.black))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(selectedDate == nil ? .secondary : theme.accent)
-                .disabled(selectedDate == nil)
 
-                Button {
-                    openScheduleEditor(for: selectedDate ?? dates.first ?? Date())
-                } label: {
-                    Label("추가", systemImage: "plus")
-                        .font(.caption.weight(.black))
+                VStack(alignment: .leading, spacing: 10) {
+                    calendarHeaderCopy
+                    calendarHeaderActions
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(theme.accent)
-                Button {
-                    selectedDate = nil
-                    viewMode = .timeline
-                } label: {
-                    Label("Timeline", systemImage: "list.bullet")
-                        .font(.caption.weight(.black))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(theme.accent)
             }
 
             HStack(spacing: 0) {
@@ -284,6 +261,45 @@ struct ScheduleScreen: View {
             calendarDetailPanels
         }
         .appPanel(cornerRadius: 18)
+    }
+
+    private var calendarHeaderCopy: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            SectionLabel(title: "CALENDAR")
+            Text(calendarTitle)
+                .font(.headline.weight(.black))
+            Text(selectedDate.map { "\(compactDayLabel($0)) 선택됨" } ?? "전체 날짜를 한 번에 보는 중")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+    }
+
+    private var calendarHeaderActions: some View {
+        HStack(spacing: 7) {
+            Button {
+                selectedDate = nil
+            } label: {
+                CalendarHeaderButtonLabel(title: "전체", iconName: "square.grid.2x2", tint: selectedDate == nil ? .secondary : theme.accent)
+            }
+            .buttonStyle(.plain)
+            .disabled(selectedDate == nil)
+
+            Button {
+                openScheduleEditor(for: selectedDate ?? dates.first ?? Date())
+            } label: {
+                CalendarHeaderButtonLabel(title: "추가", iconName: "plus", tint: theme.accent)
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                selectedDate = nil
+                viewMode = .timeline
+            } label: {
+                CalendarHeaderButtonLabel(title: "Timeline", iconName: "list.bullet", tint: theme.accent)
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private var calendarDetailPanels: some View {
@@ -622,6 +638,23 @@ private struct ScheduleModeSwitch: View {
                 }
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct CalendarHeaderButtonLabel: View {
+    var title: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        Label(title, systemImage: iconName)
+            .font(.caption.weight(.black))
+            .lineLimit(1)
+            .minimumScaleFactor(0.82)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(tint.opacity(0.11), in: Capsule())
+            .foregroundStyle(tint)
     }
 }
 
@@ -1048,7 +1081,7 @@ private struct CalendarDayCell: View {
         .background(cellBackground)
         .overlay {
             Rectangle()
-                .stroke(borderColor, lineWidth: 0.75)
+                .stroke(borderColor, lineWidth: isSelected ? 1.25 : 0.75)
         }
         .overlay(alignment: .top) {
             if isSelected {
@@ -1061,12 +1094,12 @@ private struct CalendarDayCell: View {
     }
 
     private var cellBackground: Color {
-        if isSelected { return theme.accent.opacity(0.075) }
+        if isSelected { return theme.accent.opacity(0.12) }
         return isTripDay ? Color.primary.opacity(0.018) : Color.clear
     }
 
     private var borderColor: Color {
-        if isSelected { return theme.accent.opacity(0.34) }
+        if isSelected { return theme.accent.opacity(0.62) }
         return isTripDay ? Color.primary.opacity(0.070) : Color.primary.opacity(0.040)
     }
 
@@ -1087,7 +1120,7 @@ private struct CalendarDayCell: View {
     }
 
     private var dayLabelForeground: Color {
-        isTripDay ? theme.accent : .secondary
+        isSelected ? theme.accent : (isTripDay ? theme.accent : .secondary)
     }
 
     private var counterBackground: Color {
