@@ -40,7 +40,7 @@ struct MapScreen: View {
                                 tint: sectionColor(for: category)
                             )
 
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 312, maximum: 374), spacing: 12)], spacing: 12) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 430, maximum: 560), spacing: 12)], spacing: 12) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -256,7 +256,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             cardHeader
 
             memoPreview
@@ -279,21 +279,20 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 178, maxHeight: 178, alignment: .topLeading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 11)
-        .background(.background.opacity(0.68), in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity, minHeight: 198, maxHeight: 198, alignment: .topLeading)
+        .padding(13)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 2)
+            RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
-                .frame(width: 3)
-                .padding(.vertical, 12)
+                .frame(width: 4)
+                .padding(.vertical, 13)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(categoryColor.opacity(place.isFavorite ? 0.22 : 0.07))
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(categoryColor.opacity(place.isFavorite ? 0.24 : 0.08))
         }
-        .shadow(color: categoryColor.opacity(0.035), radius: 5, x: 0, y: 3)
+        .shadow(color: Color.primary.opacity(0.018), radius: 7, x: 0, y: 3)
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
                 .environmentObject(store)
@@ -309,7 +308,7 @@ struct PlaceRow: View {
     }
 
     private var cardHeader: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: 9) {
             categoryBadge
 
             VStack(alignment: .leading, spacing: 4) {
@@ -327,9 +326,12 @@ struct PlaceRow: View {
                     }
                 }
 
-                Label(place.category, systemImage: categoryIcon)
+                Text(place.category)
                     .font(.caption2.weight(.black))
                     .foregroundStyle(categoryColor)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(categoryColor.opacity(0.10), in: Capsule())
             }
 
             Spacer(minLength: 8)
@@ -379,7 +381,7 @@ struct PlaceRow: View {
                 .font(.headline.weight(.black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 40, height: 40)
+        .frame(width: 36, height: 36)
     }
 
     private var actionBar: some View {
@@ -426,7 +428,7 @@ struct PlaceRow: View {
                 tint: theme.secondaryAccent
             )
         }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .topLeading)
     }
 
     private var placePills: some View {
@@ -494,7 +496,7 @@ private struct PlaceMemoLine: View {
             Text(value.isEmpty ? "메모 없음" : value)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .lineLimit(2)
                 .truncationMode(.tail)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
