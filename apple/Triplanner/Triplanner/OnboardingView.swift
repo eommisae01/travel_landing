@@ -54,21 +54,25 @@ struct OnboardingView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    OnboardingHero()
+                    OnboardingHero(destination: destination, country: country, canStart: canStart)
 
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 8)], spacing: 8) {
-                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "Required" : "\(country) · \(destination)", iconName: "mappin.and.ellipse", tint: theme.accent)
-                        OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar", tint: theme.secondaryAccent)
-                        OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane", tint: theme.warmAccent)
-                        OnboardingSummaryChip(title: "Map", value: mapSummary, iconName: "map", tint: theme.accent)
-                    }
+                    OnboardingSetupPreview(
+                        country: country,
+                        destination: destination,
+                        dateSummary: dateSummary,
+                        flightSummary: flightSummary,
+                        mapSummary: mapSummary
+                    )
 
                     OnboardingThemeStrip(selectedTheme: theme) { selectedTheme in
                         themeRawValue = selectedTheme.rawValue
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        OnboardingStepHeader(title: "01 DESTINATION", status: "필수", tint: theme.accent)
+                        OnboardingStepHeader(title: "DESTINATION", status: "필수", tint: theme.accent)
+                        Text("국가와 도시를 고르면 바로 여행 공간이 만들어집니다.")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
                         HStack(spacing: 10) {
                             Image(systemName: "globe.asia.australia")
                                 .font(.subheadline.weight(.bold))
@@ -86,18 +90,33 @@ struct OnboardingView: View {
                                 customCity = ""
                             }
                         }
+                        .padding(10)
+                        .background(theme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 8)], spacing: 8) {
                             ForEach(cities, id: \.self) { city in
                                 Button {
                                     cityPreset = city
                                 } label: {
-                                    Text(city)
-                                        .font(.caption.weight(.black))
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 9)
-                                        .background(cityPreset == city ? theme.accent : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-                                        .foregroundStyle(cityPreset == city ? .white : .primary)
+                                    HStack(spacing: 6) {
+                                        Text(city)
+                                            .font(.caption.weight(.black))
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.82)
+                                        Spacer(minLength: 0)
+                                        if cityPreset == city {
+                                            Image(systemName: "checkmark")
+                                                .font(.caption2.weight(.black))
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+                                    .padding(.horizontal, 10)
+                                    .background(cityPreset == city ? theme.accent : Color.secondary.opacity(0.085), in: RoundedRectangle(cornerRadius: 12))
+                                    .foregroundStyle(cityPreset == city ? .white : .primary)
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(cityPreset == city ? theme.accent.opacity(0.45) : Color.secondary.opacity(0.10))
+                                    }
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -111,7 +130,7 @@ struct OnboardingView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            OnboardingStepHeader(title: "02 DATES", status: "선택", tint: theme.secondaryAccent)
+                            OnboardingStepHeader(title: "DATES", status: "선택", tint: theme.secondaryAccent)
                             Toggle("", isOn: $useDates)
                                 .labelsHidden()
                         }
@@ -130,7 +149,7 @@ struct OnboardingView: View {
                     .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        OnboardingStepHeader(title: "03 FLIGHT", status: "선택", tint: theme.warmAccent)
+                        OnboardingStepHeader(title: "FLIGHT", status: "선택", tint: theme.warmAccent)
                         LabeledOnboardingField(title: "편명", iconName: "airplane", placeholder: "예: RS0741", text: $flightNumber)
                         Text("도착/출발 시간은 여행 생성 후 설정에서 정리합니다.")
                             .font(.caption.weight(.semibold))
@@ -139,7 +158,7 @@ struct OnboardingView: View {
                     .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        OnboardingStepHeader(title: "04 MAP", status: "선택", tint: theme.accent)
+                        OnboardingStepHeader(title: "MY MAPS", status: "선택", tint: theme.accent)
                         LabeledOnboardingField(title: "지도", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL)
                         Text("My Maps 링크를 넣어두면 나중에 지도 동기화 기능으로 연결할 수 있습니다.")
                             .font(.caption.weight(.semibold))
@@ -240,8 +259,45 @@ private struct OnboardingThemeStrip: View {
     }
 }
 
+private struct OnboardingSetupPreview: View {
+    @Environment(\.appTheme) private var theme
+    var country: String
+    var destination: String
+    var dateSummary: String
+    var flightSummary: String
+    var mapSummary: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(destination.isEmpty ? "Setup preview" : "\(destination) 여행")
+                    .font(.headline.weight(.black))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                Spacer()
+                Text(destination.isEmpty ? "대기" : country)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(theme.accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(theme.accent.opacity(0.12), in: Capsule())
+            }
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 138), spacing: 8)], spacing: 8) {
+                OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar", tint: theme.secondaryAccent)
+                OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane", tint: theme.warmAccent)
+                OnboardingSummaryChip(title: "Map", value: mapSummary, iconName: "map", tint: theme.accent)
+            }
+        }
+        .appPanel(cornerRadius: 18)
+    }
+}
+
 private struct OnboardingHero: View {
     @Environment(\.appTheme) private var theme
+    var destination: String
+    var country: String
+    var canStart: Bool
 
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
@@ -250,11 +306,11 @@ private struct OnboardingHero: View {
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                     .tracking(1.4)
-                Text("새 여행 만들기")
+                Text(canStart ? destination : "새 여행 만들기")
                     .font(.system(size: 30, weight: .black, design: .rounded))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
-                Text("여행지만 정하면 시작할 수 있고, 나머지는 나중에 채워도 됩니다.")
+                Text(canStart ? "\(country) 여행 준비를 시작합니다." : "여행지만 정하면 시작할 수 있고, 나머지는 나중에 채워도 됩니다.")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
