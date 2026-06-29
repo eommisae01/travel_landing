@@ -31,7 +31,7 @@ struct NotesScreen: View {
                                 iconName: "doc.text.image"
                             )
                         } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 166), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 156), spacing: 7)], spacing: 7) {
                                 ForEach(selectedCityNotes) { note in
                                     noteCard(note)
                                 }
@@ -43,7 +43,7 @@ struct NotesScreen: View {
                     if !otherNotes.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
                             sectionHeader(title: "ALL NOTES", count: otherNotes.count)
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 166), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 156), spacing: 7)], spacing: 7) {
                                 ForEach(otherNotes) { note in
                                     noteCard(note)
                                 }
@@ -98,16 +98,18 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 7) {
+            VStack(alignment: .leading, spacing: 8) {
                 notePreviewStrip(note)
 
-                Text(note.title)
-                    .font(.subheadline.weight(.black))
-                    .lineLimit(1)
-                Text(note.body)
-                    .lineLimit(2)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(note.title)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                    Text(note.body.isEmpty ? "메모 없음" : note.body)
+                        .lineLimit(2)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
 
                 Spacer(minLength: 0)
                 HStack {
@@ -122,11 +124,11 @@ struct NotesScreen: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 124, alignment: .topLeading)
-            .padding(9)
-            .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 13))
+            .frame(maxWidth: .infinity, minHeight: 118, alignment: .topLeading)
+            .padding(8)
+            .background(.background.opacity(0.72), in: RoundedRectangle(cornerRadius: 12))
             .overlay {
-                RoundedRectangle(cornerRadius: 13)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(.quaternary)
             }
         }
@@ -135,7 +137,7 @@ struct NotesScreen: View {
 
     private func notePreviewStrip(_ note: NoteGroup) -> some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 11)
                 .fill(
                     LinearGradient(
                         colors: note.imageNames.isEmpty
@@ -145,6 +147,17 @@ struct NotesScreen: View {
                         endPoint: .bottomTrailing
                     )
                 )
+
+            if !note.imageNames.isEmpty {
+                Label("\(note.imageNames.count)", systemImage: "photo.stack")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.teal)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 4)
+                    .background(.background.opacity(0.74), in: Capsule())
+                    .padding(7)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            }
 
             HStack(spacing: -8) {
                 if note.imageNames.isEmpty {
@@ -162,7 +175,7 @@ struct NotesScreen: View {
             }
             .padding(9)
         }
-        .frame(height: 46)
+        .frame(height: 52)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -478,7 +491,7 @@ private struct NoteImagePreview: View {
                         Text(currentImageName)
                             .font(.title2.weight(.black))
                             .multilineTextAlignment(.center)
-                        Text("실제 사진 파일 연결 전까지는 자료 이름을 기준으로 묶음을 확인합니다.")
+                        Text("자료 묶음 안에서 필요한 캡처를 빠르게 넘겨볼 수 있습니다.")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -492,11 +505,28 @@ private struct NoteImagePreview: View {
                 }
 
                 if note.imageNames.count > 1 {
-                    HStack(spacing: 6) {
-                        ForEach(note.imageNames.indices, id: \.self) { itemIndex in
-                            Circle()
-                                .fill(itemIndex == index ? Color.teal : Color.secondary.opacity(0.28))
-                                .frame(width: itemIndex == index ? 8 : 6, height: itemIndex == index ? 8 : 6)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(Array(note.imageNames.enumerated()), id: \.offset) { itemIndex, imageName in
+                                Button {
+                                    index = itemIndex
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Text("\(itemIndex + 1)")
+                                            .font(.caption2.weight(.black))
+                                            .foregroundStyle(itemIndex == index ? .white : .teal)
+                                            .frame(width: 20, height: 20)
+                                            .background(itemIndex == index ? Color.teal : Color.teal.opacity(0.12), in: Circle())
+                                        Text(imageName)
+                                            .font(.caption.weight(.black))
+                                            .lineLimit(1)
+                                    }
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 7)
+                                    .background(itemIndex == index ? Color.teal.opacity(0.12) : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
                 }
