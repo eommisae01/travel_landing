@@ -154,7 +154,7 @@ private struct ThemePickerCard: View {
                     .background(selectedTheme.accent.opacity(0.11), in: Capsule())
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 142), spacing: 9)], spacing: 9) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 156), spacing: 10)], spacing: 10) {
                 ForEach(AppTheme.allCases) { theme in
                     Button {
                         onSelect(theme)
@@ -174,42 +174,69 @@ private struct ThemeOptionTile: View {
     var isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
-            ZStack(alignment: .bottomTrailing) {
-                HStack(spacing: 0) {
-                    theme.accent
-                    theme.secondaryAccent
-                    theme.warmAccent
-                }
-                .frame(width: 42, height: 42)
-                .clipShape(RoundedRectangle(cornerRadius: 13))
+        VStack(alignment: .leading, spacing: 9) {
+            ZStack(alignment: .topTrailing) {
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                theme.accent.opacity(0.92),
+                                theme.secondaryAccent.opacity(0.70),
+                                theme.warmAccent.opacity(0.54)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(alignment: .bottomLeading) {
+                        HStack(spacing: 4) {
+                            paletteDot(theme.accent)
+                            paletteDot(theme.secondaryAccent)
+                            paletteDot(theme.warmAccent)
+                        }
+                        .padding(8)
+                    }
+                    .frame(height: 48)
 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.white, theme.accent)
-                        .background(.background, in: Circle())
-                        .offset(x: 4, y: 4)
+                    Label("선택", systemImage: "checkmark")
+                        .font(.caption2.weight(.black))
+                        .labelStyle(.titleAndIcon)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 4)
+                        .background(.black.opacity(0.22), in: Capsule())
+                        .padding(7)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(theme.title)
                     .font(.subheadline.weight(.black))
                 Text(theme.subtitle)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
         .padding(9)
-        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.11 : 0.055), in: RoundedRectangle(cornerRadius: 15))
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.10 : 0.052), in: RoundedRectangle(cornerRadius: 17))
         .overlay {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 17)
                 .stroke(isSelected ? theme.accent.opacity(0.45) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
         }
+        .shadow(color: isSelected ? theme.accent.opacity(0.14) : .clear, radius: 8, x: 0, y: 4)
+    }
+
+    private func paletteDot(_ color: Color) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: 9, height: 9)
+            .overlay {
+                Circle()
+                    .stroke(.white.opacity(0.76), lineWidth: 1)
+            }
     }
 }
 
@@ -234,8 +261,9 @@ private struct SettingsSaveBanner: View {
             }
             Spacer()
         }
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
         .padding(11)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 15))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 15)
                 .fill(theme.accent)
@@ -356,6 +384,7 @@ private struct FlightEditorCard: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.78)
                 }
                 Spacer()
             }
@@ -372,7 +401,7 @@ private struct FlightEditorCard: View {
                 CompactFlightField(title: "도착 시간", text: $flight.localArrival)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 250, alignment: .topLeading)
         .appPanel(cornerRadius: 18)
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 18)
@@ -415,7 +444,9 @@ private struct SettingsField: View {
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(axis == .vertical ? 2...5 : 1...1)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, minHeight: axis == .vertical ? 66 : 54, alignment: .center)
     }
 }
 
@@ -431,5 +462,6 @@ private struct CompactFlightField: View {
             TextField(title, text: $text)
                 .textFieldStyle(.roundedBorder)
         }
+        .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
     }
 }
