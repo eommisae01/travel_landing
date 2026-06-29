@@ -31,31 +31,22 @@ struct MapScreen: View {
                     }
 
                     ForEach(groupedPlaces, id: \.0) { category, places in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Label(category, systemImage: sectionIcon(for: category))
-                                    .font(.headline.weight(.black))
-                                    .foregroundStyle(sectionColor(for: category))
-                                Spacer()
-                                Text("\(places.count)")
-                                    .font(.caption.weight(.black))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(.secondary.opacity(0.10), in: Capsule())
-                                    .foregroundStyle(.secondary)
-                            }
-                            VStack(spacing: 8) {
+                        VStack(alignment: .leading, spacing: 9) {
+                            PlaceCategoryHeader(
+                                title: category,
+                                count: places.count,
+                                favoriteCount: places.filter(\.isFavorite).count,
+                                iconName: sectionIcon(for: category),
+                                tint: sectionColor(for: category)
+                            )
+
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 285), spacing: 10)], spacing: 10) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
                             }
                         }
-                        .padding(10)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(.quaternary)
-                        }
+                        .padding(.top, 4)
                     }
                     if groupedPlaces.isEmpty {
                         EmptyStateView(
@@ -221,6 +212,41 @@ private struct PlaceMetricPill: View {
     }
 }
 
+private struct PlaceCategoryHeader: View {
+    var title: String
+    var count: Int
+    var favoriteCount: Int
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconName)
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 32, height: 32)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline.weight(.black))
+                    .lineLimit(1)
+                Text(favoriteCount > 0 ? "별표 \(favoriteCount)개 포함" : "후보 \(count)개")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            Text("\(count)")
+                .font(.caption.weight(.black))
+                .foregroundStyle(tint)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 5)
+                .background(tint.opacity(0.10), in: Capsule())
+        }
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
+    }
+}
+
 struct PlaceRow: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.appTheme) private var theme
@@ -238,7 +264,7 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 92, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 126, alignment: .center)
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
         .background(.background.opacity(0.68), in: RoundedRectangle(cornerRadius: 14))
@@ -281,7 +307,10 @@ struct PlaceRow: View {
                 categoryBadge
                 placeTextBlock
             }
-            actionCluster
+            HStack {
+                Spacer(minLength: 0)
+                actionCluster
+            }
         }
     }
 
@@ -379,7 +408,7 @@ struct PlaceRow: View {
             .menuStyle(.button)
             .buttonStyle(.plain)
         }
-        .frame(minWidth: 135, alignment: .trailing)
+        .frame(minWidth: 135, minHeight: 34, alignment: .trailing)
     }
 
     private var placePills: some View {
