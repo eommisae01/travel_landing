@@ -71,7 +71,7 @@ struct OnboardingView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         OnboardingStepHeader(title: "DESTINATION", status: "필수", tint: theme.accent)
                         Text("국가와 도시를 고르면 바로 여행 공간이 만들어집니다.")
-                            .font(.caption.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(.secondary)
                         HStack(spacing: 10) {
                             Image(systemName: "globe.asia.australia")
@@ -100,13 +100,13 @@ struct OnboardingView: View {
                                 } label: {
                                     HStack(spacing: 6) {
                                         Text(city)
-                                            .font(.caption.weight(.black))
+                                            .font(.callout.weight(.black))
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.82)
                                         Spacer(minLength: 0)
                                         if cityPreset == city {
                                             Image(systemName: "checkmark")
-                                                .font(.caption2.weight(.black))
+                                                .font(.caption.weight(.black))
                                         }
                                     }
                                     .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
@@ -152,7 +152,7 @@ struct OnboardingView: View {
                         OnboardingStepHeader(title: "FLIGHT", status: "선택", tint: theme.warmAccent)
                         LabeledOnboardingField(title: "편명", iconName: "airplane", placeholder: "예: RS0741", text: $flightNumber)
                         Text("도착/출발 시간은 여행 생성 후 설정에서 정리합니다.")
-                            .font(.caption.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
                     .appPanel(cornerRadius: 18)
@@ -161,7 +161,7 @@ struct OnboardingView: View {
                         OnboardingStepHeader(title: "MY MAPS", status: "선택", tint: theme.accent)
                         LabeledOnboardingField(title: "지도", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL)
                         Text("My Maps 링크를 넣어두면 나중에 지도 동기화 기능으로 연결할 수 있습니다.")
-                            .font(.caption.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
                     .appPanel(cornerRadius: 18)
@@ -214,7 +214,7 @@ private struct OnboardingThemeStrip: View {
                 SectionLabel(title: "STYLE")
                 Spacer()
                 Text(selectedTheme.title)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(selectedTheme.accent)
             }
 
@@ -233,13 +233,13 @@ private struct OnboardingThemeStrip: View {
                             .clipShape(RoundedRectangle(cornerRadius: 9))
 
                             Text(theme.title)
-                                .font(.caption.weight(.black))
+                                .font(.callout.weight(.black))
                                 .lineLimit(1)
                             Spacer(minLength: 0)
 
                             if selectedTheme == theme {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.caption.weight(.black))
+                                    .font(.callout.weight(.black))
                                     .foregroundStyle(theme.accent)
                             }
                         }
@@ -271,12 +271,12 @@ private struct OnboardingSetupPreview: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 Text(destination.isEmpty ? "Setup preview" : "\(destination) 여행")
-                    .font(.headline.weight(.black))
+                    .font(.title3.weight(.black))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
                 Spacer()
                 Text(destination.isEmpty ? "대기" : country)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(theme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -303,11 +303,11 @@ private struct OnboardingHero: View {
         HStack(alignment: .center, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("TRIPLANNER")
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                     .tracking(1.4)
                 Text(canStart ? destination : "새 여행 만들기")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .font(.system(size: 34, weight: .black, design: .rounded))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
                 Text(canStart ? "\(country) 여행 준비를 시작합니다." : "여행지만 정하면 시작할 수 있고, 나머지는 나중에 채워도 됩니다.")
@@ -352,21 +352,21 @@ private struct OnboardingSummaryChip: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: iconName)
-                .font(.caption.weight(.black))
+                .font(.subheadline.weight(.black))
                 .foregroundStyle(tint)
-                .frame(width: 26, height: 26)
-                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-            VStack(alignment: .leading, spacing: 1) {
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 Text(value)
-                    .font(.caption.weight(.black))
+                    .font(.callout.weight(.black))
                     .lineLimit(1)
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
@@ -387,7 +387,7 @@ private struct OnboardingStepHeader: View {
             SectionLabel(title: title)
             Spacer()
             Text(status)
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(tint)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -412,7 +412,7 @@ private struct LabeledOnboardingField: View {
                 .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 TextField(placeholder, text: $text)
                     .textFieldStyle(.roundedBorder)

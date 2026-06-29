@@ -154,12 +154,12 @@ private struct ThemePickerCard: View {
                 VStack(alignment: .leading, spacing: 3) {
                     SectionLabel(title: "PERSONALIZE")
                     Text("여행마다 앱의 색감과 분위기를 바꿔요")
-                        .font(.caption.weight(.semibold))
+                        .font(.callout.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text(selectedTheme.title)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(selectedTheme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -247,14 +247,14 @@ private struct ThemeActivePreview: View {
     private var themeDescription: some View {
         VStack(alignment: .leading, spacing: 5) {
             Label("Active theme", systemImage: "checkmark.circle.fill")
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(theme.accent)
             Text(theme.moodLine)
-                .font(.subheadline.weight(.black))
+                .font(.headline.weight(.black))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
-                .font(.caption2.weight(.semibold))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
@@ -282,9 +282,9 @@ private struct ThemeOptionTile: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(theme.title)
-                    .font(.subheadline.weight(.black))
+                    .font(.headline.weight(.black))
                 Text(theme.subtitle)
-                    .font(.caption2.weight(.semibold))
+                    .font(.callout.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                 HStack(spacing: 4) {
@@ -300,8 +300,8 @@ private struct ThemeOptionTile: View {
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.42))
         }
-        .frame(maxWidth: .infinity, minHeight: 66, alignment: .center)
-        .padding(9)
+        .frame(maxWidth: .infinity, minHeight: 76, alignment: .center)
+        .padding(10)
         .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.085 : 0.035), in: RoundedRectangle(cornerRadius: 15))
         .overlay {
             RoundedRectangle(cornerRadius: 15)
@@ -417,16 +417,16 @@ private struct SettingsOverviewTile: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 Text(value)
-                    .font(.caption.weight(.black))
+                    .font(.callout.weight(.black))
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 68, alignment: .center)
         .padding(.horizontal, 11)
         .padding(.vertical, 8)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
@@ -529,7 +529,7 @@ private struct SettingsTripHero: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.82)
             Text("\(trip.country) · \(trip.cities.map(displayCity).joined(separator: " / "))")
-                .font(.caption.weight(.semibold))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
@@ -538,13 +538,13 @@ private struct SettingsTripHero: View {
     private var tripScopeBlock: some View {
         HStack(spacing: 7) {
             Text(currentCity.isEmpty ? "ALL TRIP" : "LOCAL")
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(theme.accent)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
                 .background(theme.accent.opacity(0.12), in: Capsule())
             Text("\(trip.cities.count) cities")
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(.secondary)
         }
     }
@@ -582,7 +582,7 @@ private struct FlightEditorCard: View {
                             .font(.headline.weight(.black))
                         if !flight.flightNumber.isEmpty {
                             Text(flight.flightNumber)
-                                .font(.caption2.weight(.black))
+                                .font(.caption.weight(.black))
                                 .foregroundStyle(tint)
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
@@ -590,7 +590,7 @@ private struct FlightEditorCard: View {
                         }
                     }
                     Text(routeText)
-                        .font(.caption.weight(.semibold))
+                        .font(.callout.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
@@ -647,7 +647,7 @@ private struct SettingsField: View {
                 .padding(.top, axis == .vertical ? 1 : 0)
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.caption2.weight(.black))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 TextField(placeholder, text: $text, axis: axis)
                     .textFieldStyle(.roundedBorder)
@@ -666,7 +666,7 @@ private struct CompactFlightField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title)
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(.secondary)
             TextField(title, text: $text)
                 .textFieldStyle(.roundedBorder)
