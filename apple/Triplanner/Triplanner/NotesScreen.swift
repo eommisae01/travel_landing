@@ -255,18 +255,18 @@ struct NotesScreen: View {
 
                 noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 166, maxHeight: 166, alignment: .topLeading)
-            .padding(12)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
+            .padding(13)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
                     .fill(noteAccent(note))
                     .frame(width: 3)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 13)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(noteAccent(note).opacity(0.12))
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(noteAccent(note).opacity(0.14))
             }
             .shadow(color: Color.primary.opacity(0.022), radius: 8, x: 0, y: 4)
         }
@@ -285,8 +285,8 @@ struct NotesScreen: View {
             } else {
                 NoteStackPreview(imageNames: note.imageNames, tint: noteAccent(note))
                 NoteAttachmentSummary(
-                    title: "\(note.imageNames.count)장 자료",
-                    detail: note.imageNames.prefix(2).joined(separator: ", "),
+                    title: note.imageNames.count == 1 ? "1장 자료" : "\(note.imageNames.count)장 묶음",
+                    detail: "탭해서 크게 보기",
                     iconName: "photo.stack",
                     tint: noteAccent(note)
                 )
@@ -301,7 +301,7 @@ struct NotesScreen: View {
                 .padding(.vertical, 6)
                 .background(.secondary.opacity(0.08), in: Capsule())
         }
-        .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -411,7 +411,7 @@ private struct NoteAttachmentSummary: View {
                     .lineLimit(1)
             }
         }
-        .frame(maxWidth: 210, alignment: .leading)
+        .frame(maxWidth: 220, alignment: .leading)
     }
 }
 
@@ -437,7 +437,13 @@ private struct NoteStackPreview: View {
                 .background(tint, in: Circle())
                 .offset(x: 7, y: -7)
         }
-        .frame(width: 72, height: 38, alignment: .leading)
+        .padding(.horizontal, 4)
+        .frame(width: 82, height: 44, alignment: .leading)
+        .background(tint.opacity(0.07), in: RoundedRectangle(cornerRadius: 13))
+        .overlay {
+            RoundedRectangle(cornerRadius: 13)
+                .stroke(tint.opacity(0.10))
+        }
         .accessibilityLabel("\(imageNames.count)장 자료")
     }
 }
