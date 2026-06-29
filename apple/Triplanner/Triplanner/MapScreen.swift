@@ -3,6 +3,7 @@ import SwiftUI
 struct MapScreen: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.appTheme) private var theme
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var addSheetOpen = false
 
     private var groupedPlaces: [(String, [PlaceCandidate])] {
@@ -40,7 +41,7 @@ struct MapScreen: View {
                                 tint: sectionColor(for: category)
                             )
 
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 320, maximum: 420), spacing: 12)], spacing: 12) {
+                            LazyVGrid(columns: placeGridColumns, spacing: 14) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -87,6 +88,13 @@ struct MapScreen: View {
 
     private var linkedPlaceCount: Int {
         store.placesForSelectedCity().filter { URL(string: $0.mapURL) != nil }.count
+    }
+
+    private var placeGridColumns: [GridItem] {
+        if horizontalSizeClass == .compact {
+            return [GridItem(.flexible(), spacing: 14)]
+        }
+        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 14)]
     }
 
     private var placesTitle: String {
@@ -256,7 +264,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             cardHeader
 
             memoPreview
@@ -272,9 +280,9 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 172, maxHeight: 172, alignment: .topLeading)
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 184, maxHeight: 184, alignment: .topLeading)
+        .padding(13)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
@@ -282,10 +290,10 @@ struct PlaceRow: View {
                 .padding(.vertical, 13)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(categoryColor.opacity(place.isFavorite ? 0.24 : 0.08))
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(categoryColor.opacity(place.isFavorite ? 0.26 : 0.09))
         }
-        .shadow(color: Color.primary.opacity(0.018), radius: 7, x: 0, y: 3)
+        .shadow(color: Color.primary.opacity(0.025), radius: 9, x: 0, y: 4)
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
                 .environmentObject(store)
@@ -301,68 +309,72 @@ struct PlaceRow: View {
     }
 
     private var cardHeader: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: 10) {
             categoryBadge
 
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(place.name)
-                        .font(.subheadline.weight(.black))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.82)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(place.name)
+                    .font(.headline.weight(.black))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.80)
+
+                HStack(spacing: 6) {
+                    Text(place.category)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(categoryColor)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(categoryColor.opacity(0.10), in: Capsule())
 
                     if place.isFavorite {
-                        Image(systemName: "star.fill")
-                            .font(.caption.weight(.black))
+                        Label("Favorite", systemImage: "star.fill")
+                            .font(.caption2.weight(.black))
+                            .labelStyle(.iconOnly)
                             .foregroundStyle(.yellow)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(.yellow.opacity(0.13), in: Capsule())
                             .accessibilityLabel("별표")
                     }
                 }
-
-                Text(place.category)
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(categoryColor)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(categoryColor.opacity(0.10), in: Capsule())
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer(minLength: 8)
+            HStack(spacing: 6) {
+                Button {
+                    store.toggleFavorite(place)
+                } label: {
+                    actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
 
-            Button {
-                store.toggleFavorite(place)
-            } label: {
-                actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
-
-            Menu {
-                Button {
-                    isShowingDetail = true
-                } label: {
-                    Label("전체 정보", systemImage: "info.circle")
-                }
-                Button {
-                    isEditing = true
-                } label: {
-                    Label("수정", systemImage: "pencil")
-                }
-                Button {
-                    isScheduling = true
-                } label: {
-                    Label("일정에 넣기", systemImage: "calendar.badge.plus")
-                }
-                if let url = URL(string: place.mapURL) {
-                    Link(destination: url) {
-                        Label("지도 열기", systemImage: "map")
+                Menu {
+                    Button {
+                        isShowingDetail = true
+                    } label: {
+                        Label("전체 정보", systemImage: "info.circle")
                     }
+                    Button {
+                        isEditing = true
+                    } label: {
+                        Label("수정", systemImage: "pencil")
+                    }
+                    Button {
+                        isScheduling = true
+                    } label: {
+                        Label("일정에 넣기", systemImage: "calendar.badge.plus")
+                    }
+                    if let url = URL(string: place.mapURL) {
+                        Link(destination: url) {
+                            Label("지도 열기", systemImage: "map")
+                        }
+                    }
+                } label: {
+                    actionIcon("ellipsis", tint: .secondary)
                 }
-            } label: {
-                actionIcon("ellipsis", tint: .secondary)
+                .buttonStyle(.plain)
             }
-            .menuStyle(.button)
-            .buttonStyle(.plain)
         }
     }
 
@@ -374,7 +386,7 @@ struct PlaceRow: View {
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 32, height: 32)
+        .frame(width: 38, height: 38)
     }
 
     private var actionBar: some View {
@@ -383,9 +395,11 @@ struct PlaceRow: View {
                 Link(destination: url) {
                     PlaceCardActionLabel(title: "지도", iconName: "map", tint: .blue)
                 }
+                .frame(maxWidth: .infinity)
                 .accessibilityLabel("지도 열기")
             } else {
                 PlaceCardActionLabel(title: "지도 없음", iconName: "map", tint: .secondary)
+                    .frame(maxWidth: .infinity)
                     .opacity(0.58)
             }
 
@@ -395,6 +409,7 @@ struct PlaceRow: View {
                 PlaceCardActionLabel(title: "일정", iconName: "calendar.badge.plus", tint: categoryColor)
             }
             .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
             .accessibilityLabel("일정에 추가")
 
             Button {
@@ -403,11 +418,12 @@ struct PlaceRow: View {
                 PlaceCardActionLabel(title: "수정", iconName: "pencil", tint: .secondary)
             }
             .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
         }
     }
 
     private var memoPreview: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             PlaceMemoLine(
                 title: "앱",
                 value: place.appNote,
@@ -421,7 +437,8 @@ struct PlaceRow: View {
                 tint: theme.secondaryAccent
             )
         }
-        .frame(maxWidth: .infinity, minHeight: 52, alignment: .topLeading)
+        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .topLeading)
     }
 
     private var categoryColor: Color {
@@ -449,8 +466,8 @@ struct PlaceRow: View {
     private func actionIcon(_ iconName: String, tint: Color) -> some View {
         Image(systemName: iconName)
             .font(.caption.weight(.black))
-            .frame(width: 29, height: 29)
-            .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+            .frame(width: 31, height: 31)
+            .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
             .foregroundStyle(tint)
     }
 }
