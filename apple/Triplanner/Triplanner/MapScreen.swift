@@ -43,13 +43,13 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 244), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 8)], spacing: 8) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
                             }
                         }
-                        .padding(8)
+                        .padding(7)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                         .overlay {
                             RoundedRectangle(cornerRadius: 16)
@@ -179,7 +179,7 @@ private struct PlaceOverviewStrip: View {
     var categoryCount: Int
 
     var body: some View {
-        HStack(spacing: 8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 8)], spacing: 8) {
             PlaceMetricPill(title: "전체", value: "\(totalCount)", iconName: "mappin.and.ellipse", tint: .teal)
             PlaceMetricPill(title: "별표", value: "\(favoriteCount)", iconName: "star.fill", tint: .yellow)
             PlaceMetricPill(title: "지도", value: "\(linkedCount)", iconName: "map", tint: .blue)
@@ -226,21 +226,42 @@ struct PlaceRow: View {
     @State private var isScheduling = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: categoryIcon)
-                        .font(.caption2.weight(.black))
-                    Text(place.category)
-                        .font(.caption2.weight(.black))
-                        .lineLimit(1)
-                }
-                .foregroundStyle(categoryColor)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 5)
-                .background(categoryColor.opacity(0.12), in: Capsule())
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .top, spacing: 9) {
+                Image(systemName: categoryIcon)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(categoryColor)
+                    .frame(width: 30, height: 30)
+                    .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
 
-                Spacer(minLength: 6)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        Text(place.name)
+                            .font(.subheadline.weight(.black))
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if place.isFavorite {
+                            Image(systemName: "star.fill")
+                                .font(.caption2.weight(.black))
+                                .foregroundStyle(.yellow)
+                        }
+                    }
+                    HStack(spacing: 5) {
+                        Image(systemName: categoryIcon)
+                            .font(.caption2.weight(.black))
+                        Text(place.category)
+                            .font(.caption2.weight(.black))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(categoryColor)
+
+                    Text(summaryText)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 4) {
                     Button {
@@ -275,26 +296,6 @@ struct PlaceRow: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(place.name)
-                        .font(.headline.weight(.black))
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if place.isFavorite {
-                        Image(systemName: "star.fill")
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(.yellow)
-                    }
-                }
-
-                Text(summaryText)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
             HStack(spacing: 7) {
                 if let url = URL(string: place.mapURL) {
                     Link(destination: url) {
@@ -321,14 +322,20 @@ struct PlaceRow: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
-        .padding(10)
-        .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
+        .padding(9)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(categoryColor)
+                .frame(width: 3)
+                .padding(.vertical, 10)
+        }
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .stroke(.quaternary)
+                .stroke(categoryColor.opacity(place.isFavorite ? 0.22 : 0.07))
         }
-        .shadow(color: categoryColor.opacity(0.06), radius: 6, x: 0, y: 3)
+        .shadow(color: categoryColor.opacity(0.035), radius: 5, x: 0, y: 3)
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
                 .environmentObject(store)
