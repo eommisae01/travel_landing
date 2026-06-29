@@ -58,8 +58,8 @@ struct MainTabView: View {
                             )
                         }
                         .buttonStyle(.plain)
-                        .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
-                        .listRowBackground(selectedSection == section ? theme.accent.opacity(0.10) : Color.clear)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 10, bottom: 2, trailing: 10))
+                        .listRowBackground(Color.clear)
                     }
                 }
             }
@@ -209,10 +209,11 @@ private struct SidebarMenuRow: View {
             Image(systemName: section.iconName)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
-                .frame(width: 24, height: 24)
-            VStack(alignment: .leading, spacing: 1) {
+                .frame(width: 22, height: 22)
+                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.12 : 0.06), in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 0) {
                 Text(section.title)
-                    .font(.subheadline.weight(isSelected ? .bold : .semibold))
+                    .font(.subheadline.weight(isSelected ? .black : .semibold))
                 Text(section.sidebarSubtitle)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
@@ -223,12 +224,25 @@ private struct SidebarMenuRow: View {
                 Text("\(count)")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(isSelected ? theme.accent : .secondary)
+                    .monospacedDigit()
+                    .frame(minWidth: 22)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(minHeight: 34, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+        .overlay(alignment: .leading) {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(theme.accent)
+                    .frame(width: 3)
+                    .padding(.vertical, 10)
+            }
+        }
     }
 }
 
