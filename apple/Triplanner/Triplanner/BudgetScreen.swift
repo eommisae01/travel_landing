@@ -100,21 +100,14 @@ struct BudgetScreen: View {
                     if !categoryTotals.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
                             SectionLabel(title: "CATEGORY")
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 136), spacing: 8)], spacing: 8) {
+                            VStack(spacing: 8) {
                                 ForEach(categoryTotals, id: \.0) { category, amount in
-                                    VStack(alignment: .leading, spacing: 3) {
-                                        Text(category)
-                                            .font(.caption.weight(.black))
-                                            .foregroundStyle(.secondary)
-                                        Text("\(Int(amount))")
-                                            .font(.headline.weight(.black))
-                                        Text(store.trip?.budgetCurrency ?? "JPY")
-                                            .font(.caption2.weight(.bold))
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(10)
-                                    .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+                                    CategoryBudgetRow(
+                                        category: category,
+                                        amount: amount,
+                                        total: total,
+                                        currency: store.trip?.budgetCurrency ?? "JPY"
+                                    )
                                 }
                             }
                         }
@@ -129,7 +122,7 @@ struct BudgetScreen: View {
                             iconName: "creditcard"
                         )
                     } else {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 8)], spacing: 8) {
+                        VStack(spacing: 0) {
                             ForEach(store.expenses) { expense in
                                 ExpenseRow(expense: expense)
                             }
@@ -189,70 +182,132 @@ private struct BudgetStat: View {
     }
 }
 
+private struct CategoryBudgetRow: View {
+    var category: String
+    var amount: Double
+    var total: Double
+    var currency: String
+
+    private var ratio: Double {
+        guard total > 0 else { return 0 }
+        return min(amount / total, 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .firstTextBaseline) {
+                Label(category, systemImage: iconName)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(tint)
+                Spacer()
+                Text("\(Int(amount)) \(currency)")
+                    .font(.caption.weight(.black))
+                    .monospacedDigit()
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.10))
+                    Capsule()
+                        .fill(tint.opacity(0.78))
+                        .frame(width: max(8, proxy.size.width * ratio))
+                }
+            }
+            .frame(height: 7)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var tint: Color {
+        switch category {
+        case "교통": return .blue
+        case "입장권": return .teal
+        case "식비": return .orange
+        case "숙소": return .purple
+        case "쇼핑": return .pink
+        default: return .secondary
+        }
+    }
+
+    private var iconName: String {
+        switch category {
+        case "교통": return "tram.fill"
+        case "입장권": return "ticket.fill"
+        case "식비": return "fork.knife"
+        case "숙소": return "bed.double"
+        case "쇼핑": return "bag.fill"
+        default: return "creditcard.fill"
+        }
+    }
+}
+
 private struct ExpenseRow: View {
     @EnvironmentObject private var store: TripStore
     var expense: ExpenseItem
     @State private var isEditing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 9) {
-                Image(systemName: iconName)
-                    .font(.subheadline.weight(.bold))
-                    .frame(width: 30, height: 30)
-                    .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
-                    .foregroundStyle(categoryColor)
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: iconName)
+                .font(.subheadline.weight(.bold))
+                .frame(width: 32, height: 32)
+                .background(categoryColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(categoryColor)
 
-                VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(expense.title)
                         .font(.subheadline.weight(.black))
-                        .lineLimit(2)
+                        .lineLimit(1)
                     Text(expense.category)
                         .font(.caption2.weight(.black))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
                         .background(categoryColor.opacity(0.12), in: Capsule())
                         .foregroundStyle(categoryColor)
                 }
 
-                Spacer(minLength: 6)
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(Int(expense.amount))")
-                        .font(.headline.weight(.black))
-                        .monospacedDigit()
-                    Text(expense.currency)
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary)
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 5)], alignment: .leading, spacing: 5) {
+                    ExpensePill(title: "결제", value: expense.paidBy, tint: .teal)
+                    ExpensePill(title: "부담", value: expense.intendedPayer, tint: .blue)
+                    ExpensePill(title: "사용", value: participantText, tint: .secondary)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(alignment: .leading, spacing: 5) {
-                ExpenseMetaLine(title: "결제", value: expense.paidBy, iconName: "creditcard", tint: .teal)
-                ExpenseMetaLine(title: "부담", value: expense.intendedPayer, iconName: "person.crop.circle.badge.checkmark", tint: .blue)
-                ExpenseMetaLine(title: "사용", value: participantText, iconName: "person.2", tint: .secondary)
+            VStack(alignment: .trailing, spacing: 3) {
+                Text("\(Int(expense.amount))")
+                    .font(.headline.weight(.black))
+                    .monospacedDigit()
+                Text(expense.currency)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
             }
+            .frame(minWidth: 72, alignment: .trailing)
 
-            HStack {
-                Spacer()
-                Button {
-                    isEditing = true
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 30, height: 30)
-                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
-                }
-                .buttonStyle(.plain)
+            Button {
+                isEditing = true
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
+                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
             }
+            .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 142, alignment: .topLeading)
-        .padding(10)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 13))
-        .overlay {
-            RoundedRectangle(cornerRadius: 13)
-                .stroke(categoryColor.opacity(0.12))
+        .frame(maxWidth: .infinity, minHeight: 54, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.background.opacity(0.42))
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.secondary.opacity(0.12))
+                .frame(height: 0.5)
+                .padding(.leading, 52)
         }
         .sheet(isPresented: $isEditing) {
             ExpenseEditorSheet(existingExpense: expense)
@@ -265,6 +320,8 @@ private struct ExpenseRow: View {
         case "교통": return "tram.fill"
         case "입장권": return "ticket.fill"
         case "식비": return "fork.knife"
+        case "숙소": return "bed.double"
+        case "쇼핑": return "bag.fill"
         default: return "creditcard.fill"
         }
     }
@@ -286,17 +343,13 @@ private struct ExpenseRow: View {
     }
 }
 
-private struct ExpenseMetaLine: View {
+private struct ExpensePill: View {
     var title: String
     var value: String
-    var iconName: String
     var tint: Color
 
     var body: some View {
-        HStack(spacing: 5) {
-            Image(systemName: iconName)
-                .font(.caption2.weight(.black))
-                .frame(width: 14)
+        HStack(spacing: 3) {
             Text(title)
                 .font(.caption2.weight(.black))
                 .foregroundStyle(.secondary)
@@ -305,7 +358,9 @@ private struct ExpenseMetaLine: View {
                 .foregroundStyle(tint == .secondary ? .secondary : tint)
                 .lineLimit(1)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background((tint == .secondary ? Color.secondary : tint).opacity(0.09), in: Capsule())
     }
 }
 
