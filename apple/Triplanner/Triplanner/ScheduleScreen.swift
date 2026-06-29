@@ -5,6 +5,7 @@ struct ScheduleScreen: View {
     @State private var selectedDate: Date?
     @State private var viewMode: ScheduleViewMode = .timeline
     @State private var isAddingSchedule = false
+    @State private var scheduleDraftDate = Date()
 
     private var dates: [Date] {
         let scheduleDates = store.scheduleItemsForSelectedCity().map { Calendar.current.startOfDay(for: $0.date) }
@@ -63,14 +64,14 @@ struct ScheduleScreen: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        isAddingSchedule = true
+                        openScheduleEditor(for: selectedDate ?? dates.first ?? Date())
                     } label: {
                         Label("일정 추가", systemImage: "plus")
                     }
                 }
             }
             .sheet(isPresented: $isAddingSchedule) {
-                ScheduleEditorSheet(defaultDate: selectedDate ?? dates.first ?? Date())
+                ScheduleEditorSheet(defaultDate: scheduleDraftDate)
                     .environmentObject(store)
             }
         }
@@ -194,7 +195,7 @@ struct ScheduleScreen: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.secondary)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 9)], spacing: 9) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 8)], spacing: 8) {
                 ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                     let dayItems = items(on: date)
                     let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
@@ -202,7 +203,7 @@ struct ScheduleScreen: View {
                         selectedDate = date
                         viewMode = .timeline
                     } label: {
-                        VStack(alignment: .leading, spacing: 9) {
+                        VStack(alignment: .leading, spacing: 7) {
                             HStack(alignment: .firstTextBaseline) {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("Day \(index + 1)")
@@ -219,7 +220,7 @@ struct ScheduleScreen: View {
                                     .background(isSelected ? .white.opacity(0.20) : .secondary.opacity(0.12), in: Capsule())
                             }
 
-                            VStack(alignment: .leading, spacing: 5) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 ForEach(dayItems.prefix(3)) { item in
                                     HStack(spacing: 6) {
                                         Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
@@ -232,19 +233,19 @@ struct ScheduleScreen: View {
                                     }
                                 }
                             }
-                            .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
+                            .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
 
                             Text(isSelected ? "선택됨" : "탭해서 타임라인 보기")
                                 .font(.caption2.weight(.bold))
                                 .foregroundStyle(isSelected ? .white.opacity(0.75) : .secondary)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 118, alignment: .topLeading)
-                        .padding(11)
-                        .background(isSelected ? Color.blue : Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 14))
+                        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+                        .padding(10)
+                        .background(isSelected ? Color.teal : Color.secondary.opacity(0.065), in: RoundedRectangle(cornerRadius: 13))
                         .foregroundStyle(isSelected ? .white : .primary)
                         .overlay {
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(isSelected ? Color.blue.opacity(0.3) : Color.secondary.opacity(0.12))
+                            RoundedRectangle(cornerRadius: 13)
+                                .stroke(isSelected ? Color.teal.opacity(0.3) : Color.secondary.opacity(0.12))
                         }
                     }
                     .buttonStyle(.plain)
@@ -278,12 +279,14 @@ struct ScheduleScreen: View {
 
     private func timelineSection(date: Date, items: [ScheduleItem]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(dayTitle(for: date))
-                    .font(.subheadline.weight(.black))
-                Text(compactDayLabel(date))
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(dayTitle(for: date))
+                        .font(.headline.weight(.black))
+                    Text(compactDayLabel(date))
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Text("\(items.count)")
                     .font(.caption2.weight(.black))
@@ -291,8 +294,27 @@ struct ScheduleScreen: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(.secondary.opacity(0.10), in: Capsule())
+                Button {
+                    openScheduleEditor(for: date)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.caption.weight(.black))
+                        .frame(width: 28, height: 28)
+                        .background(.teal.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
+                        .foregroundStyle(.teal)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(dayTitle(for: date)) 일정 추가")
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(.teal)
+                    .frame(width: 3)
+                    .padding(.vertical, 10)
+            }
 
             VStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
@@ -304,6 +326,11 @@ struct ScheduleScreen: View {
 
     private func items(on date: Date) -> [ScheduleItem] {
         store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+    }
+
+    private func openScheduleEditor(for date: Date) {
+        scheduleDraftDate = date
+        isAddingSchedule = true
     }
 
     private var tripDateRange: [Date] {
