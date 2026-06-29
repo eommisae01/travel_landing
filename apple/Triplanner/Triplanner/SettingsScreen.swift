@@ -240,11 +240,11 @@ private struct ThemeActivePreview: View {
 
     private var themeDescription: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("Active Theme")
+            Label("Active theme", systemImage: "checkmark.circle.fill")
                 .font(.caption2.weight(.black))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.accent)
             Text(theme.moodLine)
-                .font(.caption.weight(.black))
+                .font(.subheadline.weight(.black))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
@@ -284,15 +284,18 @@ private struct ThemeOptionTile: View {
             }
 
             Spacer(minLength: 0)
+
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.42))
         }
-        .frame(maxWidth: .infinity, minHeight: 62, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 66, alignment: .center)
         .padding(9)
-        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.095 : 0.045), in: RoundedRectangle(cornerRadius: 15))
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.085 : 0.035), in: RoundedRectangle(cornerRadius: 15))
         .overlay {
             RoundedRectangle(cornerRadius: 15)
-                .stroke(isSelected ? theme.accent.opacity(0.45) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
+                .stroke(isSelected ? theme.accent.opacity(0.52) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
         }
-        .shadow(color: isSelected ? theme.accent.opacity(0.10) : .clear, radius: 6, x: 0, y: 3)
     }
 }
 
@@ -338,14 +341,10 @@ private struct ThemePreviewMock: View {
             }
             .padding(7)
 
-            if isSelected {
-                Image(systemName: "checkmark")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(theme.accent)
-                    .frame(width: 18, height: 18)
-                    .background(.white.opacity(0.90), in: Circle())
-                    .padding(5)
-            }
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .font(.caption.weight(.black))
+                .foregroundStyle(isSelected ? .white : .white.opacity(0.72))
+                .padding(5)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
