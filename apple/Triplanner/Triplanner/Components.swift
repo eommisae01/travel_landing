@@ -26,6 +26,15 @@ enum AppTheme: String, CaseIterable, Identifiable {
         }
     }
 
+    var moodLine: String {
+        switch self {
+        case .setouchi: return "청량하고 여행 앱다운 기본 테마"
+        case .sunrise: return "밥집, 산책, 쇼핑이 많은 여행에 어울려요"
+        case .forest: return "자연, 숙소, 느린 일정 중심일 때 차분해요"
+        case .graphite: return "정보 밀도가 높은 도시 이동형 여행에 좋아요"
+        }
+    }
+
     var accent: Color {
         switch self {
         case .setouchi: return .teal

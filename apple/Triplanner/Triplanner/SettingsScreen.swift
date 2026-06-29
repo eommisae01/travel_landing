@@ -149,9 +149,14 @@ private struct ThemePickerCard: View {
     var onSelect: (AppTheme) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 13) {
             HStack {
-                SectionLabel(title: "THEME")
+                VStack(alignment: .leading, spacing: 3) {
+                    SectionLabel(title: "PERSONALIZE")
+                    Text("여행마다 앱의 색감과 분위기를 바꿔요")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Text(selectedTheme.title)
                     .font(.caption2.weight(.black))
@@ -161,7 +166,9 @@ private struct ThemePickerCard: View {
                     .background(selectedTheme.accent.opacity(0.11), in: Capsule())
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 156), spacing: 10)], spacing: 10) {
+            ThemeActivePreview(theme: selectedTheme)
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 168), spacing: 10)], spacing: 10) {
                 ForEach(AppTheme.allCases) { theme in
                     Button {
                         onSelect(theme)
@@ -176,12 +183,84 @@ private struct ThemePickerCard: View {
     }
 }
 
+private struct ThemeActivePreview: View {
+    var theme: AppTheme
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            ZStack(alignment: .bottomLeading) {
+                RoundedRectangle(cornerRadius: 17)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                theme.accent.opacity(0.92),
+                                theme.secondaryAccent.opacity(0.70),
+                                theme.warmAccent.opacity(0.48)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack(spacing: 5) {
+                        paletteDot(theme.accent)
+                        paletteDot(theme.secondaryAccent)
+                        paletteDot(theme.warmAccent)
+                    }
+                    Text(theme.title)
+                        .font(.headline.weight(.black))
+                        .foregroundStyle(.white)
+                    Text(theme.subtitle)
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.white.opacity(0.82))
+                }
+                .padding(12)
+            }
+            .frame(width: 148, height: 102)
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text("Active Theme")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                Text(theme.moodLine)
+                    .font(.subheadline.weight(.black))
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 116, alignment: .center)
+        .padding(10)
+        .background(theme.accent.opacity(0.075), in: RoundedRectangle(cornerRadius: 18))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(theme.accent.opacity(0.20))
+        }
+    }
+
+    private func paletteDot(_ color: Color) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: 10, height: 10)
+            .overlay {
+                Circle()
+                    .stroke(.white.opacity(0.80), lineWidth: 1)
+            }
+    }
+}
+
 private struct ThemeOptionTile: View {
     var theme: AppTheme
     var isSelected: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             ThemePreviewMock(theme: theme, isSelected: isSelected)
 
             VStack(alignment: .leading, spacing: 3) {
@@ -193,7 +272,7 @@ private struct ThemeOptionTile: View {
                     .lineLimit(2)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
         .padding(9)
         .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.10 : 0.052), in: RoundedRectangle(cornerRadius: 17))
         .overlay {
