@@ -752,14 +752,15 @@ private struct HeroTodayLine: View {
     var secondaryAccent: Color
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: 11) {
             Image(systemName: "sun.max.fill")
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(secondaryAccent)
-                .frame(width: 34, height: 34)
-                .background(secondaryAccent.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
+                .frame(width: 36, height: 36)
+                .background(secondaryAccent.opacity(0.13), in: RoundedRectangle(cornerRadius: 11))
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 7) {
                     Text("TODAY")
                         .font(.caption2.weight(.black))
                         .foregroundStyle(.secondary)
@@ -767,10 +768,28 @@ private struct HeroTodayLine: View {
                         .font(.caption2.weight(.black))
                         .foregroundStyle(accent)
                 }
-                Text(nextLine)
-                    .font(.subheadline.weight(.black))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
+
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 7) {
+                        if let nextItem {
+                            Text(nextTime(nextItem))
+                                .font(.caption.weight(.black).monospacedDigit())
+                                .foregroundStyle(accent)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(accent.opacity(0.11), in: Capsule())
+                        }
+                        Text(nextTitle)
+                            .font(.subheadline.weight(.black))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.82)
+                    }
+
+                    Text(nextLine)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.82)
+                }
             }
             Spacer(minLength: 8)
             HeroCountPill(title: "일정", value: scheduleCount, tint: accent)
@@ -787,8 +806,15 @@ private struct HeroTodayLine: View {
 
     private var nextLine: String {
         guard let nextItem else { return "다음 일정 없음" }
-        let time = nextItem.startTime.isEmpty ? nextItem.kind.rawValue : nextItem.startTime
-        return "\(time) · \(nextItem.title)"
+        return "\(nextTime(nextItem)) · \(nextItem.title)"
+    }
+
+    private var nextTitle: String {
+        nextItem?.title ?? "다음 일정 없음"
+    }
+
+    private func nextTime(_ item: ScheduleItem) -> String {
+        item.startTime.isEmpty ? item.kind.rawValue : item.startTime
     }
 }
 
@@ -817,10 +843,10 @@ private struct CompactScheduleRow: View {
     var item: ScheduleItem
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .trailing, spacing: 2) {
+        HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .center, spacing: 2) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
-                    .font(.caption.weight(.black))
+                    .font(.caption.weight(.black).monospacedDigit())
                     .foregroundStyle(kindColor)
                     .lineLimit(1)
                 if !item.endTime.isEmpty {
@@ -829,38 +855,42 @@ private struct CompactScheduleRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 52)
+            .frame(width: 54)
+            .frame(minHeight: 44)
+            .background(kindColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
 
-            Circle()
+            RoundedRectangle(cornerRadius: 2)
                 .fill(kindColor)
-                .frame(width: 8, height: 8)
-                .padding(.top, 5)
+                .frame(width: 3, height: 42)
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(item.title)
                         .font(.subheadline.weight(.black))
                         .lineLimit(1)
                     Text(item.kind.rawValue)
                         .font(.caption2.weight(.black))
                         .foregroundStyle(kindColor)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(kindColor.opacity(0.10), in: Capsule())
                 }
                 if !item.note.isEmpty {
                     Text(item.note)
-                        .font(.caption)
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                 }
             }
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity, minHeight: 52, alignment: .center)
-        .background(kindColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .center)
+        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(kindColor.opacity(0.10))
+            RoundedRectangle(cornerRadius: 13)
+                .stroke(kindColor.opacity(0.12))
         }
     }
 
