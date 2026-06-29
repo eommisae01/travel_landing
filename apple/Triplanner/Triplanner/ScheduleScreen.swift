@@ -242,11 +242,12 @@ struct ScheduleScreen: View {
                         .font(.caption2.weight(.black))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
+                        .frame(height: 28)
                 }
             }
-            .padding(.horizontal, 6)
+            .background(.secondary.opacity(0.055), in: RoundedRectangle(cornerRadius: 12))
 
-            LazyVGrid(columns: calendarColumns, spacing: 7) {
+            LazyVGrid(columns: calendarColumns, spacing: 0) {
                 ForEach(calendarDisplayDates, id: \.self) { date in
                     let dayItems = items(on: date)
                     let index = dayIndex(for: date)
@@ -268,6 +269,12 @@ struct ScheduleScreen: View {
                     .buttonStyle(.plain)
                     .disabled(!isTripDay)
                 }
+            }
+            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.primary.opacity(0.065), lineWidth: 0.75)
             }
 
             calendarDetailPanels
@@ -415,7 +422,7 @@ struct ScheduleScreen: View {
     }
 
     private var calendarColumns: [GridItem] {
-        Array(repeating: GridItem(.flexible(minimum: 38), spacing: 7), count: 7)
+        Array(repeating: GridItem(.flexible(minimum: 38), spacing: 0), count: 7)
     }
 
     private var calendarDisplayDates: [Date] {
@@ -1001,7 +1008,7 @@ private struct CalendarDayCell: View {
                 Text(dayNumber)
                     .font(.subheadline.weight(.black).monospacedDigit())
                     .foregroundStyle(dayNumberForeground)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 26, height: 26)
                     .background(dayNumberBackground, in: Circle())
                 Spacer(minLength: 4)
                 if itemCount > 0 {
@@ -1041,12 +1048,19 @@ private struct CalendarDayCell: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 78, maxHeight: 78, alignment: .topLeading)
-        .padding(7)
-        .background(cellBackground, in: RoundedRectangle(cornerRadius: 10))
+        .frame(maxWidth: .infinity, minHeight: 82, maxHeight: 82, alignment: .topLeading)
+        .padding(8)
+        .background(cellBackground)
         .overlay {
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(borderColor, lineWidth: isSelected ? 1.25 : 0.75)
+            Rectangle()
+                .stroke(borderColor, lineWidth: 0.75)
+        }
+        .overlay(alignment: .top) {
+            if isSelected {
+                Rectangle()
+                    .fill(theme.accent)
+                    .frame(height: 3)
+            }
         }
         .opacity(isTripDay ? 1 : 0.36)
     }
@@ -1057,8 +1071,8 @@ private struct CalendarDayCell: View {
     }
 
     private var borderColor: Color {
-        if isSelected { return theme.accent.opacity(0.50) }
-        return isTripDay ? Color.primary.opacity(0.065) : Color.primary.opacity(0.035)
+        if isSelected { return theme.accent.opacity(0.34) }
+        return isTripDay ? Color.primary.opacity(0.070) : Color.primary.opacity(0.040)
     }
 
     private var primaryForeground: Color {
