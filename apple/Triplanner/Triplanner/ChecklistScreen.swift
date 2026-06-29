@@ -88,8 +88,8 @@ struct ChecklistScreen: View {
                         }
                     }
                 }
-                .readableWidth(1240)
-                .padding(44)
+                .readableWidth(1320)
+                .padding(48)
             }
             .navigationTitle("")
             .toolbar {
@@ -166,13 +166,13 @@ private struct ChecklistSection: View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
                 Text(title)
-                    .font(.system(size: 44, weight: .black, design: .rounded))
+                    .font(.system(size: 48, weight: .black, design: .rounded))
                     .foregroundStyle(.primary)
                 Spacer()
                 Text(subtitle)
-                    .font(.system(size: 30, weight: .black, design: .rounded).monospacedDigit())
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .font(.system(size: 33, weight: .black, design: .rounded).monospacedDigit())
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 11)
                     .background(tint.opacity(0.12), in: Capsule())
                     .foregroundStyle(tint)
             }
@@ -247,7 +247,7 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { 128 }
+    private var rowHeight: CGFloat { 144 }
 
     private var checkmarkIcon: some View {
         ZStack {
@@ -261,13 +261,13 @@ private struct ChecklistItemRow: View {
                     .foregroundStyle(tint)
             }
         }
-        .frame(width: 66, height: 66)
+        .frame(width: 72, height: 72)
         .contentShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var titleLabel: some View {
         Text(item.title)
-            .font(.system(size: 52, weight: .semibold, design: .rounded))
+            .font(.system(size: 58, weight: .semibold, design: .rounded))
             .strikethrough(item.isDone)
             .foregroundStyle(item.isDone ? .secondary : .primary)
             .lineLimit(1)
@@ -278,10 +278,10 @@ private struct ChecklistItemRow: View {
 
     private var ownerPill: some View {
         Text(item.owner)
-            .font(.system(size: 31, weight: .black, design: .rounded))
+            .font(.system(size: 34, weight: .black, design: .rounded))
             .lineLimit(1)
             .minimumScaleFactor(0.78)
-            .frame(width: 168, height: 64)
+            .frame(width: 180, height: 70)
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
     }
@@ -303,9 +303,9 @@ private struct ChecklistItemRow: View {
 
     private var editIcon: some View {
         Image(systemName: "pencil")
-            .font(.system(size: 27, weight: .black))
+            .font(.system(size: 29, weight: .black))
             .foregroundStyle(.secondary)
-            .frame(width: 64, height: 64)
+            .frame(width: 70, height: 70)
             .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 14))
     }
 

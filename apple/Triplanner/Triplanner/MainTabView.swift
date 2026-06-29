@@ -65,7 +65,7 @@ struct MainTabView: View {
             }
             .navigationTitle("Triplanner")
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 286, ideal: 312, max: 336)
+            .navigationSplitViewColumnWidth(min: 310, ideal: 340, max: 368)
             .alert("지역 추가", isPresented: $showingAddCity) {
                 TextField("예: Osaka", text: $newCity)
                 Button("추가") {
@@ -164,18 +164,18 @@ private struct SidebarTripSummary: View {
         } label: {
             HStack(spacing: 11) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.system(size: 23, weight: .black))
+                    .font(.system(size: 25, weight: .black))
                     .foregroundStyle(.white)
-                    .frame(width: 50, height: 50)
-                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 15))
+                    .frame(width: 56, height: 56)
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 16))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(.system(size: 25, weight: .black, design: .rounded))
+                        .font(.system(size: 28, weight: .black, design: .rounded))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .font(.system(size: 17, weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -201,34 +201,34 @@ private struct SidebarMenuRow: View {
     var body: some View {
         HStack(spacing: 11) {
             Image(systemName: section.iconName)
-                .font(.system(size: 21, weight: .black))
+                .font(.system(size: 23, weight: .black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
-                .frame(width: 42, height: 42)
-                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 13))
+                .frame(width: 48, height: 48)
+                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 14))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(section.title)
-                    .font(.system(size: 21, weight: isSelected ? .black : .semibold, design: .rounded))
+                    .font(.system(size: 24, weight: isSelected ? .black : .semibold, design: .rounded))
                 Text(section.sidebarSubtitle)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer()
             if let count {
                 Text("\(count)")
-                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .font(.system(size: 19, weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? theme.accent : .secondary)
                     .monospacedDigit()
-                    .frame(minWidth: 24)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 4)
+                    .frame(minWidth: 28)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 72, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 82, alignment: .center)
         .padding(.horizontal, 9)
-        .padding(.vertical, 3)
+        .padding(.vertical, 4)
         .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 15))
         .overlay(alignment: .leading) {
             if isSelected {
