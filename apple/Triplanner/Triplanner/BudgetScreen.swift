@@ -72,7 +72,7 @@ struct BudgetScreen: View {
                                             .minimumScaleFactor(0.82)
                                     }
                                 }
-                                Text(budget > 0 ? "설정한 한도 기준으로 사용률과 남은 금액을 계산해요" : "예산 설정 버튼으로 이번 여행 한도를 정할 수 있어요")
+                                Text(budget > 0 ? "설정한 한도 기준으로 사용률과 남은 금액을 계산해요" : "한도 설정 버튼으로 이번 여행 기준 금액을 정할 수 있어요")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
@@ -83,7 +83,7 @@ struct BudgetScreen: View {
                             Button {
                                 isEditingBudget = true
                             } label: {
-                                Label(budget > 0 ? "수정" : "예산 설정", systemImage: "slider.horizontal.3")
+                                Label(budget > 0 ? "한도 수정" : "한도 설정", systemImage: "slider.horizontal.3")
                                     .font(.caption.weight(.black))
                                     .padding(.horizontal, 11)
                                     .padding(.vertical, 8)
@@ -169,7 +169,7 @@ struct BudgetScreen: View {
                     Button {
                         isEditingBudget = true
                     } label: {
-                        Label("예산 설정", systemImage: "slider.horizontal.3")
+                        Label("한도 설정", systemImage: "slider.horizontal.3")
                     }
                     Button {
                         isAddingExpense = true
@@ -211,10 +211,10 @@ private struct BudgetLimitSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "예산 설정", subtitle: "이번 여행에서 함께 확인할 총 한도")
+                    ScreenHeader(title: "한도 설정", subtitle: "이번 여행에서 함께 확인할 총 금액")
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel(title: "TRIP LIMIT")
+                        SectionLabel(title: "LIMIT")
                         HStack(spacing: 10) {
                             TextField("예: 150000", text: $amount)
                                 .textFieldStyle(.roundedBorder)
