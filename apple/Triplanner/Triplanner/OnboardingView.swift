@@ -2,6 +2,8 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
+    @AppStorage(AppTheme.storageKey) private var themeRawValue = AppTheme.setouchi.rawValue
     @State private var country = "일본"
     @State private var cityPreset = "도쿄"
     @State private var customCity = ""
@@ -55,20 +57,24 @@ struct OnboardingView: View {
                     OnboardingHero()
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 8)], spacing: 8) {
-                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "Required" : "\(country) · \(destination)", iconName: "mappin.and.ellipse", tint: .teal)
-                        OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar", tint: .blue)
-                        OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane", tint: .purple)
-                        OnboardingSummaryChip(title: "Map", value: mapSummary, iconName: "map", tint: .orange)
+                        OnboardingSummaryChip(title: "Destination", value: destination.isEmpty ? "Required" : "\(country) · \(destination)", iconName: "mappin.and.ellipse", tint: theme.accent)
+                        OnboardingSummaryChip(title: "Dates", value: dateSummary, iconName: "calendar", tint: theme.secondaryAccent)
+                        OnboardingSummaryChip(title: "Flight", value: flightSummary, iconName: "airplane", tint: theme.warmAccent)
+                        OnboardingSummaryChip(title: "Map", value: mapSummary, iconName: "map", tint: theme.accent)
+                    }
+
+                    OnboardingThemeStrip(selectedTheme: theme) { selectedTheme in
+                        themeRawValue = selectedTheme.rawValue
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        OnboardingStepHeader(title: "01 DESTINATION", status: "필수", tint: .teal)
+                        OnboardingStepHeader(title: "01 DESTINATION", status: "필수", tint: theme.accent)
                         HStack(spacing: 10) {
                             Image(systemName: "globe.asia.australia")
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(theme.accent)
                                 .frame(width: 32, height: 32)
-                                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
                             Picker("국가", selection: $country) {
                                 ForEach(countries, id: \.self) { Text($0) }
                             }
@@ -90,7 +96,7 @@ struct OnboardingView: View {
                                         .font(.caption.weight(.black))
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 9)
-                                        .background(cityPreset == city ? Color.teal : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                                        .background(cityPreset == city ? theme.accent : Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                                         .foregroundStyle(cityPreset == city ? .white : .primary)
                                 }
                                 .buttonStyle(.plain)
@@ -105,7 +111,7 @@ struct OnboardingView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            OnboardingStepHeader(title: "02 DATES", status: "선택", tint: .blue)
+                            OnboardingStepHeader(title: "02 DATES", status: "선택", tint: theme.secondaryAccent)
                             Toggle("", isOn: $useDates)
                                 .labelsHidden()
                         }
@@ -124,7 +130,7 @@ struct OnboardingView: View {
                     .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        OnboardingStepHeader(title: "03 FLIGHT", status: "선택", tint: .purple)
+                        OnboardingStepHeader(title: "03 FLIGHT", status: "선택", tint: theme.warmAccent)
                         LabeledOnboardingField(title: "편명", iconName: "airplane", placeholder: "예: RS0741", text: $flightNumber)
                         Text("도착/출발 시간은 여행 생성 후 설정에서 정리합니다.")
                             .font(.caption.weight(.semibold))
@@ -133,7 +139,7 @@ struct OnboardingView: View {
                     .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        OnboardingStepHeader(title: "04 MAP", status: "선택", tint: .teal)
+                        OnboardingStepHeader(title: "04 MAP", status: "선택", tint: theme.accent)
                         LabeledOnboardingField(title: "지도", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL)
                         Text("My Maps 링크를 넣어두면 나중에 지도 동기화 기능으로 연결할 수 있습니다.")
                             .font(.caption.weight(.semibold))
@@ -179,7 +185,64 @@ struct OnboardingView: View {
     }
 }
 
+private struct OnboardingThemeStrip: View {
+    var selectedTheme: AppTheme
+    var onSelect: (AppTheme) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                SectionLabel(title: "STYLE")
+                Spacer()
+                Text(selectedTheme.title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(selectedTheme.accent)
+            }
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 8)], spacing: 8) {
+                ForEach(AppTheme.allCases) { theme in
+                    Button {
+                        onSelect(theme)
+                    } label: {
+                        HStack(spacing: 8) {
+                            HStack(spacing: 0) {
+                                theme.accent
+                                theme.secondaryAccent
+                                theme.warmAccent
+                            }
+                            .frame(width: 30, height: 30)
+                            .clipShape(RoundedRectangle(cornerRadius: 9))
+
+                            Text(theme.title)
+                                .font(.caption.weight(.black))
+                                .lineLimit(1)
+                            Spacer(minLength: 0)
+
+                            if selectedTheme == theme {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.caption.weight(.black))
+                                    .foregroundStyle(theme.accent)
+                            }
+                        }
+                        .padding(9)
+                        .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
+                        .background((selectedTheme == theme ? theme.accent : Color.secondary).opacity(selectedTheme == theme ? 0.11 : 0.055), in: RoundedRectangle(cornerRadius: 14))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(selectedTheme == theme ? theme.accent.opacity(0.45) : Color.secondary.opacity(0.10), lineWidth: selectedTheme == theme ? 1.4 : 1)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .appPanel(cornerRadius: 18)
+    }
+}
+
 private struct OnboardingHero: View {
+    @Environment(\.appTheme) private var theme
+
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
@@ -202,7 +265,7 @@ private struct OnboardingHero: View {
                 .font(.title2.weight(.black))
                 .foregroundStyle(.white)
                 .frame(width: 48, height: 48)
-                .background(.teal, in: RoundedRectangle(cornerRadius: 16))
+                .background(theme.accent, in: RoundedRectangle(cornerRadius: 16))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 17)
@@ -211,8 +274,8 @@ private struct OnboardingHero: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.teal.opacity(0.16),
-                            Color.blue.opacity(0.07),
+                            theme.accent.opacity(0.16),
+                            theme.secondaryAccent.opacity(0.07),
                             Color.secondary.opacity(0.04)
                         ],
                         startPoint: .topLeading,
@@ -223,7 +286,7 @@ private struct OnboardingHero: View {
         }
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 22)
-                .fill(.teal)
+                .fill(theme.accent)
                 .frame(width: 5)
                 .padding(.vertical, 16)
         }
@@ -288,6 +351,7 @@ private struct OnboardingStepHeader: View {
 }
 
 private struct LabeledOnboardingField: View {
+    @Environment(\.appTheme) private var theme
     var title: String
     var iconName: String
     var placeholder: String
@@ -297,9 +361,9 @@ private struct LabeledOnboardingField: View {
         HStack(alignment: .center, spacing: 10) {
             Image(systemName: iconName)
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(.teal)
+                .foregroundStyle(theme.accent)
                 .frame(width: 32, height: 32)
-                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
                     .font(.caption2.weight(.black))

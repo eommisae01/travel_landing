@@ -91,7 +91,7 @@ struct SettingsScreen: View {
                 .readableWidth(820)
                 .padding()
             }
-            .navigationTitle("설정")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -323,11 +323,12 @@ private struct SettingsTripHero: View {
 }
 
 private struct FlightEditorCard: View {
+    @Environment(\.appTheme) private var theme
     var title: String
     @Binding var flight: FlightInfo
 
     private var tint: Color {
-        title.contains("오는") ? .blue : .teal
+        title.contains("오는") ? theme.secondaryAccent : theme.accent
     }
 
     var body: some View {
