@@ -109,38 +109,44 @@ struct ScheduleScreen: View {
                     }
                 }
             }
-            .padding(3)
-            .background(.secondary.opacity(0.055), in: RoundedRectangle(cornerRadius: 15))
+            .padding(4)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.primary.opacity(0.055))
+            }
         }
     }
 
     private func dayFilterButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 6) {
+            HStack(spacing: 7) {
+                if isSelected {
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 6, height: 6)
+                }
+
+                VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.caption.weight(.black))
-                    Spacer(minLength: 0)
-                    if isSelected {
-                        Image(systemName: "checkmark")
-                            .font(.caption2.weight(.black))
-                    }
+                    Text(subtitle)
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(isSelected ? .white.opacity(0.84) : .secondary)
+                        .lineLimit(1)
                 }
-                Text(subtitle)
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
             }
-            .frame(width: title == "전체" ? 86 : 104, alignment: .leading)
-            .frame(minHeight: 46, alignment: .leading)
+            .frame(width: title == "전체" ? 84 : 100, alignment: .leading)
+            .frame(minHeight: 38, alignment: .leading)
             .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.vertical, 7)
+            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 12))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? theme.accent.opacity(0.44) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.5 : 1)
+                    .stroke(isSelected ? theme.accent.opacity(0.42) : Color.secondary.opacity(0.13), lineWidth: 1)
             }
-            .shadow(color: isSelected ? theme.accent.opacity(0.16) : .clear, radius: 7, x: 0, y: 4)
+            .shadow(color: isSelected ? theme.accent.opacity(0.13) : .clear, radius: 6, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -185,10 +191,10 @@ struct ScheduleScreen: View {
             }
         }
         .padding(10)
-        .background(.background.opacity(0.50), in: RoundedRectangle(cornerRadius: 14))
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 15))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(.quaternary)
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(Color.primary.opacity(0.055))
         }
     }
 
