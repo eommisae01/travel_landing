@@ -249,9 +249,41 @@ struct ScheduleScreen: View {
                 }
             }
 
+            calendarTimeGridPanel
             calendarAgendaPanel
         }
         .appPanel(cornerRadius: 18)
+    }
+
+    private var calendarTimeGridPanel: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                SectionLabel(title: "TIME GRID")
+                Spacer()
+                Text(calendarFocusDate.map(compactDayLabel) ?? "날짜 선택")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
+
+            if let focusDate = calendarFocusDate {
+                CalendarTimeGrid(date: focusDate, items: items(on: focusDate), dayLabel: dayTitle(for: focusDate))
+            } else {
+                EmptyStateView(
+                    title: "표시할 날짜가 없어요",
+                    message: "여행 기간이나 일정을 추가하면 시간표가 나타납니다.",
+                    iconName: "calendar"
+                )
+            }
+        }
+        .padding(10)
+        .background(.background.opacity(0.46), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
     }
 
     private var calendarAgendaPanel: some View {
@@ -300,6 +332,10 @@ struct ScheduleScreen: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
         }
+    }
+
+    private var calendarFocusDate: Date? {
+        selectedDate ?? timelineDates.first ?? dates.first
     }
 
     private var timelineList: some View {
@@ -464,6 +500,194 @@ struct ScheduleScreen: View {
 private enum ScheduleViewMode: Hashable {
     case timeline
     case calendar
+}
+
+private struct CalendarTimeGrid: View {
+    var date: Date
+    var items: [ScheduleItem]
+    var dayLabel: String
+
+    private var displayHours: [Int] {
+        let itemHours = items.compactMap { startHour(from: $0.startTime) }
+        guard let first = itemHours.min(), let last = itemHours.max() else {
+            return Array(8...20)
+        }
+        return Array(max(6, first - 1)...min(23, last + 2))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(dayLabel)
+                        .font(.caption.weight(.black))
+                    Text(compactDate)
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text("\(items.count)개")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.teal)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.teal.opacity(0.10), in: Capsule())
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 9)
+
+            Divider().opacity(0.45)
+
+            VStack(spacing: 0) {
+                ForEach(displayHours, id: \.self) { hour in
+                    CalendarHourRow(
+                        hour: hour,
+                        items: itemsForHour(hour),
+                        isLast: hour == displayHours.last
+                    )
+                }
+            }
+        }
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
+    }
+
+    private var compactDate: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M.d E"
+        return formatter.string(from: date)
+    }
+
+    private func itemsForHour(_ hour: Int) -> [ScheduleItem] {
+        items.filter { item in
+            guard let start = startHour(from: item.startTime) else { return hour == displayHours.first }
+            return start == hour
+        }
+    }
+
+    private func startHour(from value: String) -> Int? {
+        let pieces = value.split(separator: ":")
+        guard let first = pieces.first, let hour = Int(first) else { return nil }
+        return hour
+    }
+}
+
+private struct CalendarHourRow: View {
+    var hour: Int
+    var items: [ScheduleItem]
+    var isLast: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(hourLabel)
+                .font(.caption2.weight(.black).monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(width: 48, alignment: .trailing)
+                .padding(.top, 10)
+
+            ZStack(alignment: .top) {
+                Rectangle()
+                    .fill(Color.secondary.opacity(isLast ? 0 : 0.18))
+                    .frame(width: 1)
+                Circle()
+                    .fill(items.isEmpty ? Color.secondary.opacity(0.28) : Color.teal)
+                    .frame(width: items.isEmpty ? 5 : 8, height: items.isEmpty ? 5 : 8)
+                    .padding(.top, 14)
+            }
+            .frame(width: 10)
+            .frame(minHeight: rowHeight)
+
+            VStack(alignment: .leading, spacing: 6) {
+                if items.isEmpty {
+                    Rectangle()
+                        .fill(Color.secondary.opacity(0.09))
+                        .frame(height: 1)
+                        .padding(.top, 17)
+                } else {
+                    ForEach(items) { item in
+                        CalendarTimeBlock(item: item)
+                    }
+                    .padding(.vertical, 5)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .topLeading)
+        }
+        .padding(.horizontal, 6)
+    }
+
+    private var rowHeight: CGFloat {
+        items.isEmpty ? 42 : CGFloat(max(1, items.count)) * 48 + 8
+    }
+
+    private var hourLabel: String {
+        "\(hour):00"
+    }
+}
+
+private struct CalendarTimeBlock: View {
+    var item: ScheduleItem
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
+                    Text(timeText)
+                        .font(.caption2.weight(.black).monospacedDigit())
+                    Text(item.kind.rawValue)
+                        .font(.caption2.weight(.black))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(tint.opacity(0.12), in: Capsule())
+                }
+                .foregroundStyle(tint)
+
+                Text(item.title)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                if !item.placeName.isEmpty {
+                    Text(item.placeName)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(tint.opacity(0.075), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(tint)
+                .frame(width: 3)
+                .padding(.vertical, 8)
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(tint.opacity(0.12))
+        }
+    }
+
+    private var timeText: String {
+        if item.startTime.isEmpty { return "--:--" }
+        if item.endTime.isEmpty { return item.startTime }
+        return "\(item.startTime)-\(item.endTime)"
+    }
+
+    private var tint: Color {
+        switch item.kind {
+        case .food: return .orange
+        case .move: return .blue
+        case .flight: return .purple
+        case .place: return .teal
+        }
+    }
 }
 
 private struct CalendarAgendaRow: View {
