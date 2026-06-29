@@ -56,7 +56,7 @@ struct NotesScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 14)]
         }
-        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 14)]
+        return [GridItem(.adaptive(minimum: 320, maximum: 440), spacing: 14)]
     }
 
     private var featuredNotes: [NoteGroup] {
@@ -227,11 +227,11 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 11) {
+            VStack(alignment: .leading, spacing: 9) {
                 HStack(alignment: .top, spacing: 10) {
                     NoteKindIconBadge(iconName: noteKindIcon(note), tint: noteAccent(note))
 
-                    VStack(alignment: .leading, spacing: 5) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(note.title)
                             .font(.headline.weight(.black))
                             .lineLimit(2)
@@ -248,24 +248,24 @@ struct NotesScreen: View {
                     .lineLimit(2)
                     .font(.caption.weight(.semibold))
                     .lineSpacing(2)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 40, alignment: .topLeading)
+                    .foregroundStyle(note.body.isEmpty ? .tertiary : .secondary)
+                    .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
 
                 Spacer(minLength: 0)
 
                 noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
-            .padding(13)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+            .frame(maxWidth: .infinity, minHeight: 166, maxHeight: 166, alignment: .topLeading)
+            .padding(12)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
                     .fill(noteAccent(note))
                     .frame(width: 3)
-                    .padding(.vertical, 13)
+                    .padding(.vertical, 12)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(noteAccent(note).opacity(0.12))
             }
             .shadow(color: Color.primary.opacity(0.022), radius: 8, x: 0, y: 4)
@@ -300,14 +300,14 @@ struct NotesScreen: View {
 
             Spacer(minLength: 0)
 
-            Label("열기", systemImage: "chevron.right")
+            Label("보기", systemImage: "chevron.right")
                 .font(.caption2.weight(.black))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 6)
                 .background(.secondary.opacity(0.08), in: Capsule())
         }
-        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -371,7 +371,7 @@ private struct NoteKindIconBadge: View {
     var body: some View {
         Image(systemName: iconName)
             .font(.subheadline.weight(.black))
-            .frame(width: 34, height: 34)
+            .frame(width: 32, height: 32)
             .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
             .foregroundStyle(tint)
     }
@@ -417,7 +417,7 @@ private struct NoteAttachmentSummary: View {
                     .lineLimit(1)
             }
         }
-        .frame(maxWidth: 190, alignment: .leading)
+        .frame(maxWidth: 210, alignment: .leading)
     }
 }
 
@@ -503,7 +503,7 @@ private struct FeaturedNoteTile: View {
                 }
                 .padding(10)
             }
-            .frame(height: 88)
+            .frame(height: 82)
             .overlay(alignment: .topTrailing) {
                 Label(note.imageNames.isEmpty ? "Text" : "\(note.imageNames.count)", systemImage: note.imageNames.isEmpty ? "text.alignleft" : "photo.stack")
                     .font(.caption2.weight(.black))
@@ -534,11 +534,11 @@ private struct FeaturedNoteTile: View {
                     .lineLimit(2)
             }
         }
-        .frame(width: 210, height: 174, alignment: .topLeading)
+        .frame(width: 198, height: 164, alignment: .topLeading)
         .padding(9)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 17)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(accent.opacity(0.10))
         }
     }
