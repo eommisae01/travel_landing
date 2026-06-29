@@ -33,7 +33,7 @@ struct BudgetScreen: View {
 
     private var balanceValue: String {
         guard budget > 0 else { return "-" }
-        return "\(Int(total > budget ? overBudget : remainingBudget))"
+        return formattedAmount(total > budget ? overBudget : remainingBudget)
     }
 
     private var categoryTotals: [(String, Double)] {
@@ -47,10 +47,10 @@ struct BudgetScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    ScreenHeader(title: "Budget", subtitle: "여행 한도, 사용률, 지출 정산")
+                VStack(alignment: .leading, spacing: 30) {
+                    ScreenHeader(title: "Budget", subtitle: "여행 지출과 함께 낼 금액 확인")
 
-                    VStack(alignment: .leading, spacing: 28) {
+                    VStack(alignment: .leading, spacing: 30) {
                         budgetHeroHeader
                         ViewThatFits(in: .horizontal) {
                             HStack(alignment: .lastTextBaseline, spacing: 30) {
@@ -66,11 +66,11 @@ struct BudgetScreen: View {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack(alignment: .firstTextBaseline) {
                                 Text("사용률")
-                                    .font(.system(size: 18, weight: .black, design: .rounded))
+                                    .font(.system(size: 20, weight: .black, design: .rounded))
                                     .foregroundStyle(.secondary)
                                 Spacer()
                                 Text(budget > 0 ? "\(Int(progress * 100))%" : "한도 미정")
-                                    .font(.system(size: 22, weight: .black, design: .rounded))
+                                    .font(.system(size: 26, weight: .black, design: .rounded))
                                     .foregroundStyle(spendingTint)
                                     .monospacedDigit()
                             }
@@ -78,19 +78,19 @@ struct BudgetScreen: View {
                             HStack {
                                 Text("0")
                                 Spacer()
-                                Text(budget > 0 ? "\(Int(budget)) \(currency)" : "예산 설정에서 한도를 정해요")
+                                Text(budget > 0 ? "\(formattedAmount(budget)) \(currency)" : "한도 설정에서 기준 금액을 정해요")
                             }
-                            .font(.system(size: 16, weight: .black, design: .rounded))
+                            .font(.system(size: 17, weight: .black, design: .rounded))
                             .foregroundStyle(.secondary)
                         }
 
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 14)], spacing: 14) {
-                            BudgetStat(title: "한도", value: budget > 0 ? "\(Int(budget))" : "미정", unit: currency, tint: theme.accent)
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 14)], spacing: 14) {
                             BudgetStat(title: budget > 0 && total > budget ? "초과" : "남음", value: balanceValue, unit: currency, tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent)
                             BudgetStat(title: "지출", value: "\(store.expenses.count)", unit: "개", tint: theme.warmAccent)
+                            BudgetStat(title: "카테고리", value: "\(categoryTotals.count)", unit: "개", tint: theme.accent)
                         }
                     }
-                    .appPanel(cornerRadius: 24)
+                    .appPanel(cornerRadius: 26)
 
                     if !categoryTotals.isEmpty {
                         VStack(alignment: .leading, spacing: 16) {
@@ -141,8 +141,8 @@ struct BudgetScreen: View {
                         .appPanel(cornerRadius: 18)
                     }
                 }
-                .readableWidth(1080)
-                .padding(32)
+                .readableWidth(1180)
+                .padding(38)
             }
             .navigationTitle("")
             .toolbar {
@@ -220,13 +220,13 @@ struct BudgetScreen: View {
                 Text("여행 한도")
                     .font(.system(size: 19, weight: .black, design: .rounded))
                     .foregroundStyle(.secondary)
-                Text(budget > 0 ? "\(Int(budget)) \(currency)" : "미설정")
-                    .font(.system(size: 44, weight: .black, design: .rounded))
+                Text(budget > 0 ? "\(formattedAmount(budget)) \(currency)" : "미설정")
+                    .font(.system(size: 48, weight: .black, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
                 Text(budget > 0 ? "이 금액을 기준으로 사용률과 남은 금액을 계산해요" : "이번 여행 기준 금액을 정해두면 사용률이 보여요")
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .font(.system(size: 19, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
@@ -367,21 +367,21 @@ private struct BudgetStat: View {
                     .foregroundStyle(.secondary)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(value)
-                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .font(.system(size: 28, weight: .black, design: .rounded))
                         .monospacedDigit()
                     Text(unit)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 76, alignment: .leading)
-        .padding(.horizontal, 15)
-        .padding(.vertical, 13)
-        .background(tint.opacity(0.065), in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
+        .padding(.horizontal, 17)
+        .padding(.vertical, 15)
+        .background(tint.opacity(0.065), in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(tint.opacity(0.11))
         }
     }
@@ -422,7 +422,7 @@ private struct BudgetAmountBlock: View {
                 .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(.secondary)
             HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text("\(Int(amount))")
+                Text(formattedAmount(amount))
                     .font(.system(size: isPrimary ? 50 : 34, weight: .black, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(isPrimary ? .primary : tint)
@@ -454,7 +454,7 @@ private struct CategoryBudgetRow: View {
                     .font(.system(size: 20, weight: .black, design: .rounded))
                     .foregroundStyle(tint)
                 Spacer()
-                Text("\(Int(amount)) \(currency)")
+                Text("\(formattedAmount(amount)) \(currency)")
                     .font(.system(size: 20, weight: .black, design: .rounded))
                     .monospacedDigit()
             }
@@ -568,8 +568,8 @@ private struct ExpenseRow: View {
     private var amountControl: some View {
         HStack(spacing: 8) {
             VStack(alignment: .trailing, spacing: 1) {
-                Text("\(Int(expense.amount))")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
+                Text(formattedAmount(expense.amount))
+                    .font(.system(size: 32, weight: .black, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
@@ -577,7 +577,7 @@ private struct ExpenseRow: View {
                     .font(.system(size: 15, weight: .black, design: .rounded))
                     .foregroundStyle(.secondary)
             }
-            .frame(width: 112, alignment: .trailing)
+            .frame(width: 132, alignment: .trailing)
 
             Button {
                 isEditing = true
@@ -591,7 +591,7 @@ private struct ExpenseRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("지출 수정")
         }
-        .frame(width: 174, alignment: .center)
+        .frame(width: 196, alignment: .center)
         .frame(minHeight: 78, alignment: .center)
     }
 
@@ -900,4 +900,11 @@ private struct FlowChips: View {
             }
         }
     }
+}
+
+private func formattedAmount(_ amount: Double) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.maximumFractionDigits = 0
+    return formatter.string(from: NSNumber(value: amount)) ?? "\(Int(amount))"
 }
