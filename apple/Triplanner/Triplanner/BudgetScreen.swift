@@ -123,8 +123,8 @@ struct BudgetScreen: View {
                         )
                     } else {
                         VStack(spacing: 0) {
-                            ForEach(store.expenses) { expense in
-                                ExpenseRow(expense: expense)
+                            ForEach(Array(store.expenses.enumerated()), id: \.element.id) { index, expense in
+                                ExpenseRow(expense: expense, showsDivider: index < store.expenses.count - 1)
                             }
                         }
                         .appPanel(cornerRadius: 18)
@@ -247,31 +247,36 @@ private struct CategoryBudgetRow: View {
 private struct ExpenseRow: View {
     @EnvironmentObject private var store: TripStore
     var expense: ExpenseItem
+    var showsDivider = false
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 9) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(categoryColor)
-                .frame(width: 3, height: 38)
+        HStack(alignment: .top, spacing: 10) {
+            categoryIcon
 
-            Image(systemName: iconName)
-                .font(.caption.weight(.black))
-                .frame(width: 28, height: 28)
-                .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
-                .foregroundStyle(categoryColor)
-
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(expense.title)
-                        .font(.subheadline.weight(.black))
-                        .lineLimit(1)
-                    Text(expense.category)
-                        .font(.caption2.weight(.black))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(categoryColor.opacity(0.12), in: Capsule())
-                        .foregroundStyle(categoryColor)
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text(expense.title)
+                            .font(.subheadline.weight(.black))
+                            .lineLimit(1)
+                        Text(expense.category)
+                            .font(.caption2.weight(.black))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(categoryColor.opacity(0.12), in: Capsule())
+                            .foregroundStyle(categoryColor)
+                    }
+                    Spacer(minLength: 8)
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text("\(Int(expense.amount))")
+                            .font(.headline.weight(.black))
+                            .monospacedDigit()
+                        Text(expense.currency)
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(minWidth: 70, alignment: .trailing)
                 }
 
                 HStack(spacing: 6) {
@@ -282,41 +287,47 @@ private struct ExpenseRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(alignment: .trailing, spacing: 1) {
-                Text("\(Int(expense.amount))")
-                    .font(.headline.weight(.black))
-                    .monospacedDigit()
-                Text(expense.currency)
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(minWidth: 72, alignment: .trailing)
-
             Button {
                 isEditing = true
             } label: {
                 Image(systemName: "pencil")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
-                    .frame(width: 24, height: 24)
-                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 7))
+                    .frame(width: 28, height: 28)
+                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 48, alignment: .center)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, minHeight: 62, alignment: .top)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
         .background(.background.opacity(0.50))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(categoryColor)
+                .frame(width: 3)
+                .padding(.vertical, 10)
+        }
         .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Color.secondary.opacity(0.10))
-                .frame(height: 0.5)
-                .padding(.leading, 48)
+            if showsDivider {
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.10))
+                    .frame(height: 0.5)
+                    .padding(.leading, 48)
+            }
         }
         .sheet(isPresented: $isEditing) {
             ExpenseEditorSheet(existingExpense: expense)
                 .environmentObject(store)
         }
+    }
+
+    private var categoryIcon: some View {
+        Image(systemName: iconName)
+            .font(.caption.weight(.black))
+            .frame(width: 30, height: 30)
+            .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
+            .foregroundStyle(categoryColor)
     }
 
     private var iconName: String {
@@ -361,6 +372,9 @@ private struct ExpenseMetaText: View {
                 .lineLimit(1)
         }
         .font(.caption2.weight(.black))
+        .padding(.horizontal, 7)
+        .padding(.vertical, 4)
+        .background(tint.opacity(0.09), in: Capsule())
     }
 }
 
