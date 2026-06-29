@@ -209,7 +209,7 @@ struct ScheduleScreen: View {
                     selectedDate = nil
                     viewMode = .timeline
                 } label: {
-                    Label("전체", systemImage: "list.bullet")
+                    Label("Timeline", systemImage: "list.bullet")
                         .font(.caption.weight(.black))
                 }
                 .buttonStyle(.plain)
@@ -250,10 +250,54 @@ struct ScheduleScreen: View {
                 }
             }
 
+            calendarDaySummaryStrip
             calendarTimeGridPanel
             calendarAgendaPanel
         }
         .appPanel(cornerRadius: 18)
+    }
+
+    private var calendarDaySummaryStrip: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                SectionLabel(title: "DAY SUMMARY")
+                Spacer()
+                Text(selectedDate.map(compactDayLabel) ?? "전체 날짜")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
+                        let dayItems = items(on: date)
+                        let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+                        Button {
+                            selectedDate = date
+                        } label: {
+                            CalendarSummaryCard(
+                                dayTitle: "Day \(index + 1)",
+                                dateTitle: compactDayLabel(date),
+                                itemCount: dayItems.count,
+                                firstTitle: dayItems.first?.title,
+                                isSelected: isSelected
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 1)
+            }
+        }
+        .padding(10)
+        .background(.background.opacity(0.46), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
     }
 
     private var calendarTimeGridPanel: some View {
@@ -306,7 +350,7 @@ struct ScheduleScreen: View {
                 }
             }
 
-            let agendaItems = selectedDate.map { items(on: $0) } ?? visibleItems
+            let agendaItems = selectedDate.map { items(on: $0) } ?? allVisibleItemsSorted
             if agendaItems.isEmpty {
                 Text("이 날짜에는 일정이 없습니다.")
                     .font(.caption.weight(.semibold))
@@ -361,6 +405,10 @@ struct ScheduleScreen: View {
 
     private var timelineDates: [Date] {
         dates.filter { !items(on: $0).isEmpty }
+    }
+
+    private var allVisibleItemsSorted: [ScheduleItem] {
+        store.scheduleItemsForSelectedCity().sorted(by: scheduleSort)
     }
 
     private var calendarColumns: [GridItem] {
@@ -450,7 +498,19 @@ struct ScheduleScreen: View {
     }
 
     private func items(on date: Date) -> [ScheduleItem] {
-        store.scheduleItemsForSelectedCity().filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+        store.scheduleItemsForSelectedCity()
+            .filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+            .sorted(by: scheduleSort)
+    }
+
+    private func scheduleSort(_ lhs: ScheduleItem, _ rhs: ScheduleItem) -> Bool {
+        if !Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date) {
+            return lhs.date < rhs.date
+        }
+        if lhs.startTime != rhs.startTime {
+            return lhs.startTime < rhs.startTime
+        }
+        return lhs.title < rhs.title
     }
 
     private func dayIndex(for date: Date) -> Int? {
@@ -866,6 +926,54 @@ private struct CalendarAgendaRow: View {
     }
 }
 
+private struct CalendarSummaryCard: View {
+    @Environment(\.appTheme) private var theme
+    var dayTitle: String
+    var dateTitle: String
+    var itemCount: Int
+    var firstTitle: String?
+    var isSelected: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(dayTitle)
+                        .font(.caption.weight(.black))
+                    Text(dateTitle)
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(isSelected ? .white.opacity(0.78) : .secondary)
+                }
+                Spacer(minLength: 8)
+                Text("\(itemCount)")
+                    .font(.caption2.weight(.black))
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 4)
+                    .background(isSelected ? .white.opacity(0.18) : Color.secondary.opacity(0.10), in: Capsule())
+                    .foregroundStyle(isSelected ? .white : .secondary)
+            }
+
+            Text(firstTitle ?? "일정 없음")
+                .font(.caption.weight(.black))
+                .foregroundStyle(isSelected ? .white : .primary)
+                .lineLimit(1)
+
+            Rectangle()
+                .fill(isSelected ? .white.opacity(0.46) : theme.accent.opacity(itemCount > 0 ? 0.28 : 0.10))
+                .frame(height: 3)
+                .clipShape(Capsule())
+        }
+        .frame(width: 150, height: 82, alignment: .topLeading)
+        .padding(10)
+        .background(isSelected ? theme.accent : Color.secondary.opacity(0.065), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(isSelected ? theme.accent.opacity(0.36) : Color.secondary.opacity(0.12), lineWidth: isSelected ? 1.5 : 1)
+        }
+        .shadow(color: isSelected ? theme.accent.opacity(0.16) : .clear, radius: 8, x: 0, y: 4)
+    }
+}
+
 private struct CalendarDayCell: View {
     @Environment(\.appTheme) private var theme
     var dayNumber: String
@@ -907,7 +1015,6 @@ private struct CalendarDayCell: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(secondaryForeground)
                     .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
             } else if isTripDay {
                 Text("일정 없음")
                     .font(.caption2.weight(.bold))
@@ -917,7 +1024,7 @@ private struct CalendarDayCell: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 88, maxHeight: 88, alignment: .topLeading)
         .padding(8)
         .background(cellBackground, in: RoundedRectangle(cornerRadius: 13))
         .overlay {
