@@ -46,7 +46,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: noteGridColumns, spacing: 14) {
+        LazyVGrid(columns: noteGridColumns, spacing: 16) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -57,7 +57,7 @@ struct NotesScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 14)]
         }
-        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 14)]
+        return [GridItem(.adaptive(minimum: 430, maximum: 560), spacing: 16)]
     }
 
     private var featuredNotes: [NoteGroup] {
@@ -222,33 +222,33 @@ struct NotesScreen: View {
     }
 
     private func sectionHeader(title: String, count: Int) -> some View {
-        HStack(spacing: 9) {
+        HStack(spacing: 11) {
             Image(systemName: sectionIcon(title))
-                .font(.caption.weight(.black))
+                .font(.subheadline.weight(.black))
                 .foregroundStyle(sectionTint(title))
-                .frame(width: 26, height: 26)
-                .background(sectionTint(title).opacity(0.11), in: RoundedRectangle(cornerRadius: 8))
+                .frame(width: 32, height: 32)
+                .background(sectionTint(title).opacity(0.11), in: RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.caption.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text(sectionSubtitle(title))
-                    .font(.caption2.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
 
             Spacer()
             Text("\(count)")
-                .font(.caption2.weight(.black))
+                .font(.caption.weight(.black))
                 .foregroundStyle(sectionTint(title))
                 .padding(.horizontal, 7)
                 .padding(.vertical, 3)
                 .background(sectionTint(title).opacity(0.10), in: Capsule())
         }
-        .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
     }
 
     private func sectionTint(_ title: String) -> Color {
@@ -278,42 +278,60 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .top, spacing: 10) {
-                    NoteKindIconBadge(iconName: noteKindIcon(note), tint: noteAccent(note))
+            HStack(alignment: .top, spacing: 14) {
+                RepresentativeNoteThumbnail(
+                    imageName: note.imageNames.first,
+                    iconName: note.imageNames.isEmpty ? noteKindIcon(note) : "photo",
+                    tint: noteAccent(note),
+                    compact: false
+                )
+                .overlay(alignment: .topTrailing) {
+                    NoteCountBadge(count: note.imageNames.count, tint: noteAccent(note))
+                        .padding(7)
+                }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(note.title)
-                            .font(.headline.weight(.black))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.82)
+                VStack(alignment: .leading, spacing: 9) {
+                    HStack(alignment: .top, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(note.title)
+                                .font(.title3.weight(.black))
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.84)
 
-                        ViewThatFits(in: .horizontal) {
-                            HStack(spacing: 5) {
+                            HStack(spacing: 6) {
                                 NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
                                 NoteKindPill(title: noteScopeTitle(note), iconName: noteScopeIcon(note), tint: noteScopeTint(note))
                             }
-                            NoteKindPill(title: noteScopeTitle(note), iconName: noteScopeIcon(note), tint: noteScopeTint(note))
                         }
+                        Spacer(minLength: 0)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    NoteCountBadge(count: note.imageNames.count, tint: noteAccent(note))
+                    Text(note.body.isEmpty ? "메모 없음" : note.body)
+                        .lineLimit(3)
+                        .font(.subheadline.weight(.semibold))
+                        .lineSpacing(3)
+                        .foregroundStyle(note.body.isEmpty ? .tertiary : .secondary)
+                        .frame(maxWidth: .infinity, minHeight: 56, alignment: .topLeading)
+
+                    Spacer(minLength: 0)
+
+                    HStack(spacing: 8) {
+                        Label(note.imageNames.isEmpty ? "텍스트 메모" : "\(note.imageNames.count)장 자료", systemImage: note.imageNames.isEmpty ? "text.alignleft" : "photo.stack")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(noteAccent(note))
+                        Spacer(minLength: 0)
+                        Label("보기", systemImage: "chevron.right")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 6)
+                            .background(.secondary.opacity(0.08), in: Capsule())
+                    }
                 }
-
-                Text(note.body.isEmpty ? "메모 없음" : note.body)
-                    .lineLimit(2)
-                    .font(.subheadline.weight(.semibold))
-                    .lineSpacing(3)
-                    .foregroundStyle(note.body.isEmpty ? .tertiary : .secondary)
-                    .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
-
-                Spacer(minLength: 0)
-
-                noteAttachmentStrip(note)
+                .frame(maxWidth: .infinity, minHeight: 126, alignment: .topLeading)
             }
-            .frame(maxWidth: .infinity, minHeight: 198, maxHeight: 198, alignment: .topLeading)
-            .padding(14)
+            .frame(maxWidth: .infinity, minHeight: 158, maxHeight: 158, alignment: .topLeading)
+            .padding(15)
             .background(.background.opacity(0.84), in: RoundedRectangle(cornerRadius: 18))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
@@ -493,11 +511,11 @@ private struct NoteCountBadge: View {
     var tint: Color
 
     var body: some View {
-        Label(count == 0 ? "Text" : "\(count)", systemImage: count == 0 ? "doc.text" : "photo.stack")
-            .font(.caption2.weight(.black))
+        Label(count == 0 ? "메모" : "\(count)", systemImage: count == 0 ? "doc.text" : "photo.stack")
+            .font(.caption.weight(.black))
             .labelStyle(.titleAndIcon)
             .foregroundStyle(count == 0 ? .secondary : tint)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 9)
             .padding(.vertical, 5)
             .background((count == 0 ? Color.secondary : tint).opacity(0.10), in: Capsule())
     }
