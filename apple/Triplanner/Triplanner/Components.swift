@@ -141,8 +141,8 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.caption2.weight(.black))
-            .tracking(0.7)
+            .font(.caption.weight(.black))
+            .tracking(0.45)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
