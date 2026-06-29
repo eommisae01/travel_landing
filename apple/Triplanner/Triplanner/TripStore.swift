@@ -315,6 +315,14 @@ final class TripStore: ObservableObject {
         save()
     }
 
+    func updateBudget(amount: Double, currency: String) {
+        guard var current = trip else { return }
+        current.budgetAmount = max(amount, 0)
+        current.budgetCurrency = currency.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "JPY" : currency
+        trip = current
+        save()
+    }
+
     func resetDemo() {
         loadDemo()
         save()

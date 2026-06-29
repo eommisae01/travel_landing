@@ -2,7 +2,9 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @AppStorage(AppTheme.storageKey) private var themeRawValue = AppTheme.setouchi.rawValue
     @State private var accommodation = ""
     @State private var accommodationAddress = ""
     @State private var myMapsURL = ""
@@ -21,6 +23,10 @@ struct SettingsScreen: View {
                     }
 
                     SettingsSaveBanner(status: saveStatusText)
+
+                    ThemePickerCard(selectedTheme: selectedTheme) { theme in
+                        themeRawValue = theme.rawValue
+                    }
 
                     if horizontalSizeClass == .compact {
                         VStack(spacing: 12) {
@@ -125,18 +131,99 @@ struct SettingsScreen: View {
         if seconds < 60 { return "방금 저장됨" }
         return "\(seconds / 60)분 전 저장"
     }
+
+    private var selectedTheme: AppTheme {
+        AppTheme(rawValue: themeRawValue) ?? theme
+    }
+}
+
+private struct ThemePickerCard: View {
+    var selectedTheme: AppTheme
+    var onSelect: (AppTheme) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionLabel(title: "THEME")
+                Spacer()
+                Text(selectedTheme.title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(selectedTheme.accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(selectedTheme.accent.opacity(0.11), in: Capsule())
+            }
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 142), spacing: 9)], spacing: 9) {
+                ForEach(AppTheme.allCases) { theme in
+                    Button {
+                        onSelect(theme)
+                    } label: {
+                        ThemeOptionTile(theme: theme, isSelected: theme == selectedTheme)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .appPanel(cornerRadius: 18)
+    }
+}
+
+private struct ThemeOptionTile: View {
+    var theme: AppTheme
+    var isSelected: Bool
+
+    var body: some View {
+        HStack(spacing: 10) {
+            ZStack(alignment: .bottomTrailing) {
+                HStack(spacing: 0) {
+                    theme.accent
+                    theme.secondaryAccent
+                    theme.warmAccent
+                }
+                .frame(width: 42, height: 42)
+                .clipShape(RoundedRectangle(cornerRadius: 13))
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.white, theme.accent)
+                        .background(.background, in: Circle())
+                        .offset(x: 4, y: 4)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(theme.title)
+                    .font(.subheadline.weight(.black))
+                Text(theme.subtitle)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
+        .padding(9)
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.11 : 0.055), in: RoundedRectangle(cornerRadius: 15))
+        .overlay {
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(isSelected ? theme.accent.opacity(0.45) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
+        }
+    }
 }
 
 private struct SettingsSaveBanner: View {
+    @Environment(\.appTheme) private var theme
     var status: String
 
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.subheadline.weight(.black))
-                .foregroundStyle(.teal)
+                .foregroundStyle(theme.accent)
                 .frame(width: 30, height: 30)
-                .background(Color.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 2) {
                 Text(status)
                     .font(.subheadline.weight(.black))
@@ -151,7 +238,7 @@ private struct SettingsSaveBanner: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 15))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 15)
-                .fill(.teal)
+                .fill(theme.accent)
                 .frame(width: 4)
                 .padding(.vertical, 9)
         }
@@ -163,6 +250,7 @@ private struct SettingsSaveBanner: View {
 }
 
 private struct SettingsTripHero: View {
+    @Environment(\.appTheme) private var theme
     var trip: Trip
     var currentCity: String
 
@@ -172,7 +260,7 @@ private struct SettingsTripHero: View {
                 .font(.title3.weight(.black))
                 .foregroundStyle(.white)
                 .frame(width: 48, height: 48)
-                .background(.teal, in: RoundedRectangle(cornerRadius: 16))
+                .background(theme.accent, in: RoundedRectangle(cornerRadius: 16))
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(currentCity.isEmpty ? trip.name : displayCity(currentCity))
@@ -187,10 +275,10 @@ private struct SettingsTripHero: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(currentCity.isEmpty ? "ALL TRIP" : "LOCAL")
                     .font(.caption2.weight(.black))
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(theme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 5)
-                    .background(.teal.opacity(0.12), in: Capsule())
+                    .background(theme.accent.opacity(0.12), in: Capsule())
                 Text("\(trip.cities.count) cities")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
@@ -202,8 +290,8 @@ private struct SettingsTripHero: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.teal.opacity(0.15),
-                            Color.blue.opacity(0.06),
+                            theme.accent.opacity(0.15),
+                            theme.secondaryAccent.opacity(0.06),
                             Color.secondary.opacity(0.035)
                         ],
                         startPoint: .topLeading,
@@ -214,7 +302,7 @@ private struct SettingsTripHero: View {
         }
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 20)
-                .fill(.teal)
+                .fill(theme.accent)
                 .frame(width: 5)
                 .padding(.vertical, 15)
         }
@@ -303,6 +391,7 @@ private struct FlightEditorCard: View {
 }
 
 private struct SettingsField: View {
+    @Environment(\.appTheme) private var theme
     var title: String
     var iconName: String
     var placeholder: String
@@ -313,9 +402,9 @@ private struct SettingsField: View {
         HStack(alignment: axis == .vertical ? .top : .center, spacing: 10) {
             Image(systemName: iconName)
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(.teal)
+                .foregroundStyle(theme.accent)
                 .frame(width: 32, height: 32)
-                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
                 .padding(.top, axis == .vertical ? 1 : 0)
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)

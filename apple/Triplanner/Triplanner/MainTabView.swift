@@ -265,7 +265,7 @@ private struct CompactMoreScreen: View {
                             BudgetScreen()
                         } label: {
                             MoreRow(
-                                title: "예산",
+                                title: "Budget",
                                 subtitle: "현재 지출 \(totalExpense) \(store.trip?.budgetCurrency ?? "JPY")",
                                 iconName: "creditcard",
                                 tint: .blue

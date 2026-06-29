@@ -3,6 +3,7 @@ import SwiftUI
 struct BudgetScreen: View {
     @EnvironmentObject private var store: TripStore
     @State private var isAddingExpense = false
+    @State private var isEditingBudget = false
 
     private var total: Double {
         store.expenses.reduce(0) { $0 + $1.amount }
@@ -46,8 +47,6 @@ struct BudgetScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Budget", subtitle: "지출, 한도, 부담 대상을 한 화면에서 확인")
-
                     VStack(alignment: .leading, spacing: 14) {
                         HStack(alignment: .center, spacing: 12) {
                             Image(systemName: "creditcard.fill")
@@ -57,7 +56,23 @@ struct BudgetScreen: View {
                                 .background(spendingTint, in: RoundedRectangle(cornerRadius: 15))
 
                             VStack(alignment: .leading, spacing: 4) {
-                                SectionLabel(title: "SPENT")
+                                HStack(spacing: 7) {
+                                    Text("Budget")
+                                        .font(.system(size: 30, weight: .black, design: .rounded))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.78)
+                                    Text("SPENT")
+                                        .font(.caption2.weight(.black))
+                                        .foregroundStyle(spendingTint)
+                                        .padding(.horizontal, 7)
+                                        .padding(.vertical, 4)
+                                        .background(spendingTint.opacity(0.11), in: Capsule())
+                                }
+                                Text("지출, 한도, 부담 대상을 한 화면에서 확인")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.78)
                                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                                     Text("\(Int(total))")
                                         .font(.system(size: 40, weight: .black, design: .rounded))
@@ -94,6 +109,18 @@ struct BudgetScreen: View {
                             BudgetStat(title: balanceTitle, value: balanceValue, unit: store.trip?.budgetCurrency ?? "JPY")
                             BudgetStat(title: "사용률", value: budget > 0 ? "\(Int(progress * 100))" : "-", unit: "%")
                         }
+
+                        Button {
+                            isEditingBudget = true
+                        } label: {
+                            Label(budget > 0 ? "예산 한도 수정" : "예산 한도 설정", systemImage: "slider.horizontal.3")
+                                .font(.caption.weight(.black))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 9)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(spendingTint)
+                        .background(spendingTint.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
                     }
                     .appPanel(cornerRadius: 18)
 
@@ -135,7 +162,12 @@ struct BudgetScreen: View {
             }
             .navigationTitle("")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        isEditingBudget = true
+                    } label: {
+                        Label("예산 설정", systemImage: "slider.horizontal.3")
+                    }
                     Button {
                         isAddingExpense = true
                     } label: {
@@ -147,6 +179,10 @@ struct BudgetScreen: View {
                 ExpenseEditorSheet()
                     .environmentObject(store)
             }
+            .sheet(isPresented: $isEditingBudget) {
+                BudgetLimitSheet()
+                    .environmentObject(store)
+            }
         }
         .appScreenBackground()
     }
@@ -155,6 +191,64 @@ struct BudgetScreen: View {
         if budget <= 0 { return .teal }
         if progress >= 0.9 { return .orange }
         return .teal
+    }
+}
+
+private struct BudgetLimitSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var store: TripStore
+    @State private var amount = ""
+    @State private var currency = "JPY"
+
+    private var parsedAmount: Double {
+        Double(amount.replacingOccurrences(of: ",", with: "")) ?? 0
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ScreenHeader(title: "Budget Limit", subtitle: "이번 여행에서 함께 확인할 총 예산")
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionLabel(title: "LIMIT")
+                        HStack(spacing: 10) {
+                            TextField("예: 150000", text: $amount)
+                                .textFieldStyle(.roundedBorder)
+                            TextField("JPY", text: $currency)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(maxWidth: 92)
+                        }
+                        Text("0으로 저장하면 Budget 화면에는 예산 미정으로 표시됩니다.")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .appPanel(cornerRadius: 18)
+                }
+                .readableWidth(520)
+                .padding()
+            }
+            .navigationTitle("")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("취소") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("저장") {
+                        store.updateBudget(amount: parsedAmount, currency: currency)
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                let currentAmount = store.trip?.budgetAmount ?? 0
+                amount = currentAmount > 0 ? "\(Int(currentAmount))" : ""
+                currency = store.trip?.budgetCurrency ?? "JPY"
+            }
+        }
+        .appScreenBackground()
     }
 }
 
