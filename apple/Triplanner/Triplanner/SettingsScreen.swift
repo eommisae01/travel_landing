@@ -174,41 +174,8 @@ private struct ThemeOptionTile: View {
     var isSelected: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                theme.accent.opacity(0.92),
-                                theme.secondaryAccent.opacity(0.70),
-                                theme.warmAccent.opacity(0.54)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(alignment: .bottomLeading) {
-                        HStack(spacing: 4) {
-                            paletteDot(theme.accent)
-                            paletteDot(theme.secondaryAccent)
-                            paletteDot(theme.warmAccent)
-                        }
-                        .padding(8)
-                    }
-                    .frame(height: 48)
-
-                if isSelected {
-                    Label("선택", systemImage: "checkmark")
-                        .font(.caption2.weight(.black))
-                        .labelStyle(.titleAndIcon)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 4)
-                        .background(.black.opacity(0.22), in: Capsule())
-                        .padding(7)
-                }
-            }
+        VStack(alignment: .leading, spacing: 10) {
+            ThemePreviewMock(theme: theme, isSelected: isSelected)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(theme.title)
@@ -227,6 +194,61 @@ private struct ThemeOptionTile: View {
                 .stroke(isSelected ? theme.accent.opacity(0.45) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
         }
         .shadow(color: isSelected ? theme.accent.opacity(0.14) : .clear, radius: 8, x: 0, y: 4)
+    }
+}
+
+private struct ThemePreviewMock: View {
+    var theme: AppTheme
+    var isSelected: Bool
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 15)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            theme.accent.opacity(0.92),
+                            theme.secondaryAccent.opacity(0.68),
+                            theme.warmAccent.opacity(0.48)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 5) {
+                    paletteDot(theme.accent)
+                    paletteDot(theme.secondaryAccent)
+                    paletteDot(theme.warmAccent)
+                    Spacer()
+                }
+
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(.white.opacity(0.82))
+                    .frame(width: 58, height: 6)
+
+                HStack(spacing: 5) {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(.white.opacity(0.76))
+                        .frame(width: 38, height: 18)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(.white.opacity(0.44))
+                        .frame(width: 26, height: 18)
+                }
+            }
+            .padding(9)
+
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(theme.accent)
+                    .frame(width: 22, height: 22)
+                    .background(.white.opacity(0.90), in: Circle())
+                    .padding(8)
+            }
+        }
+        .frame(height: 58)
     }
 
     private func paletteDot(_ color: Color) -> some View {
