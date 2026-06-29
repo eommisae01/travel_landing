@@ -110,7 +110,7 @@ struct NotesScreen: View {
                 .readableWidth()
                 .padding()
             }
-            .navigationTitle("Notes")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -132,8 +132,8 @@ struct NotesScreen: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 136), spacing: 8)], spacing: 8) {
             NotesMetricCard(title: "공통", value: "\(commonNotes.count)", unit: "개", iconName: "tray.full", tint: theme.accent)
             NotesMetricCard(title: store.currentCity.isEmpty ? "지역" : displayCity(store.currentCity), value: "\(cityOnlyNotes.count)", unit: "개", iconName: "mappin.and.ellipse", tint: theme.secondaryAccent)
-            NotesMetricCard(title: "전체", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: .blue)
-            NotesMetricCard(title: "이미지", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: .purple)
+            NotesMetricCard(title: "전체", value: "\(store.notes.count)", unit: "개", iconName: "doc.text.image", tint: theme.warmAccent)
+            NotesMetricCard(title: "이미지", value: "\(store.notes.reduce(0) { $0 + $1.imageNames.count })", unit: "장", iconName: "photo.stack", tint: theme.secondaryAccent)
         }
     }
 
@@ -201,7 +201,6 @@ struct NotesScreen: View {
                         .lineLimit(2)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
 
                     HStack(spacing: 6) {
                         NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
@@ -214,7 +213,7 @@ struct NotesScreen: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 104, maxHeight: 104, alignment: .topLeading)
             .padding(10)
             .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
             .overlay(alignment: .leading) {
@@ -238,7 +237,7 @@ struct NotesScreen: View {
                     LinearGradient(
                         colors: note.imageNames.isEmpty
                             ? [Color.secondary.opacity(0.10), Color.secondary.opacity(0.05)]
-                            : [noteAccent(note).opacity(0.24), Color.blue.opacity(0.12), Color.secondary.opacity(0.06)],
+                            : [noteAccent(note).opacity(0.22), theme.secondaryAccent.opacity(0.12), Color.secondary.opacity(0.06)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -284,11 +283,11 @@ struct NotesScreen: View {
 
     private func noteAccent(_ note: NoteGroup) -> Color {
         let value = (note.title + " " + note.body).lowercased()
-        if value.contains("페리") || value.contains("버스") || value.contains("교통") { return .blue }
-        if value.contains("예약") || value.contains("미술관") || value.contains("ticket") { return .purple }
+        if value.contains("페리") || value.contains("버스") || value.contains("교통") { return theme.secondaryAccent }
+        if value.contains("예약") || value.contains("미술관") || value.contains("ticket") { return theme.warmAccent }
         if value.contains("공항") || value.contains("atm") || value.contains("환전") { return .orange }
         if value.contains("식당") || value.contains("카페") { return .pink }
-        return .teal
+        return theme.accent
     }
 
     private func noteKindTitle(_ note: NoteGroup) -> String {
@@ -328,6 +327,7 @@ private struct NoteKindPill: View {
 }
 
 private struct FeaturedNoteTile: View {
+    @Environment(\.appTheme) private var theme
     var note: NoteGroup
     var accent: Color
     var kindTitle: String
@@ -340,8 +340,8 @@ private struct FeaturedNoteTile: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                accent.opacity(0.24),
-                                Color.blue.opacity(0.12),
+                                accent.opacity(0.22),
+                                theme.secondaryAccent.opacity(0.12),
                                 Color.secondary.opacity(0.07)
                             ],
                             startPoint: .topLeading,
@@ -397,8 +397,7 @@ private struct FeaturedNoteTile: View {
                     .lineLimit(2)
             }
         }
-        .frame(width: 210, alignment: .topLeading)
-        .frame(minHeight: 174, alignment: .topLeading)
+        .frame(width: 210, height: 174, alignment: .topLeading)
         .padding(9)
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 17))
         .overlay {
@@ -653,19 +652,19 @@ private struct NoteImageTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 13)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.accent.opacity(0.22),
-                            theme.secondaryAccent.opacity(0.14),
-                            Color.secondary.opacity(0.10)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            ZStack {
+                RoundedRectangle(cornerRadius: 13)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                theme.accent.opacity(0.22),
+                                theme.secondaryAccent.opacity(0.14),
+                                Color.secondary.opacity(0.10)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
 
                 Image(systemName: "photo")
                     .font(.title.weight(.bold))
@@ -691,7 +690,7 @@ private struct NoteImageTile: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 142, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 142, maxHeight: 142, alignment: .topLeading)
         .padding(9)
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 15))
         .overlay {

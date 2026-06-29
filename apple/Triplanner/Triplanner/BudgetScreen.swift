@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BudgetScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @State private var isAddingExpense = false
     @State private var isEditingBudget = false
 
@@ -113,7 +114,7 @@ struct BudgetScreen: View {
                         Button {
                             isEditingBudget = true
                         } label: {
-                            Label(budget > 0 ? "Budget 수정" : "Budget 설정", systemImage: "slider.horizontal.3")
+                            Label(budget > 0 ? "Limit 수정" : "Limit 설정", systemImage: "slider.horizontal.3")
                                 .font(.caption.weight(.black))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 9)
@@ -166,7 +167,7 @@ struct BudgetScreen: View {
                     Button {
                         isEditingBudget = true
                     } label: {
-                        Label("Budget 설정", systemImage: "slider.horizontal.3")
+                        Label("Limit 설정", systemImage: "slider.horizontal.3")
                     }
                     Button {
                         isAddingExpense = true
@@ -188,9 +189,9 @@ struct BudgetScreen: View {
     }
 
     private var spendingTint: Color {
-        if budget <= 0 { return .teal }
+        if budget <= 0 { return theme.accent }
         if progress >= 0.9 { return .orange }
-        return .teal
+        return theme.accent
     }
 }
 
