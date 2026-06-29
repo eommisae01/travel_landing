@@ -81,7 +81,7 @@ struct NotesScreen: View {
                     .appPanel(cornerRadius: 18)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(title: store.currentCity.isEmpty ? "CURRENT CITY" : "\(displayCity(store.currentCity))", count: cityOnlyNotes.count)
+                        sectionHeader(title: store.currentCity.isEmpty ? "CITY NOTES" : "\(displayCity(store.currentCity))", count: cityOnlyNotes.count)
                         if cityOnlyNotes.isEmpty {
                             EmptyStateView(
                                 title: "자료가 비어있어요",
@@ -140,7 +140,7 @@ struct NotesScreen: View {
             HStack {
                 SectionLabel(title: "QUICK BOARD")
                 Spacer()
-                Text(store.currentCity.isEmpty ? "현재 도시" : displayCity(store.currentCity))
+                Text(store.currentCity.isEmpty ? "All Trip" : displayCity(store.currentCity))
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
@@ -276,7 +276,7 @@ struct NotesScreen: View {
         case "타카마쓰": return "Takamatsu"
         case "나오시마": return "Naoshima"
         case "도쿄": return "Tokyo"
-        default: return city
+        default: return city.isEmpty ? "All Trip" : city
         }
     }
 

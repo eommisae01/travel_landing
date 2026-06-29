@@ -88,14 +88,14 @@ struct ScheduleScreen: View {
     }
 
     private var scheduleTitle: String {
-        store.currentCity.isEmpty ? "Schedule" : "\(displayCity(store.currentCity)) Schedule"
+        store.currentCity.isEmpty ? "\(store.trip?.name ?? "Trip") Schedule" : "\(displayCity(store.currentCity)) Schedule"
     }
 
     private var scheduleSubtitle: String {
         if let selectedDate {
             return "\(compactDayLabel(selectedDate)) · \(visibleItems.count)개 일정"
         }
-        return "전체 \(dates.count)일 · \(visibleItems.count)개 일정"
+        return "\(store.currentCity.isEmpty ? "전체 여행" : "현재 도시") \(dates.count)일 · \(visibleItems.count)개 일정"
     }
 
     private var filterBar: some View {
@@ -234,7 +234,6 @@ struct ScheduleScreen: View {
                     Button {
                         guard isTripDay else { return }
                         selectedDate = date
-                        viewMode = .timeline
                     } label: {
                         CalendarDayCell(
                             dayNumber: dayNumber(date),
@@ -249,8 +248,58 @@ struct ScheduleScreen: View {
                     .disabled(!isTripDay)
                 }
             }
+
+            calendarAgendaPanel
         }
         .appPanel(cornerRadius: 18)
+    }
+
+    private var calendarAgendaPanel: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                SectionLabel(title: selectedDate.map { compactDayLabel($0) } ?? "ALL SCHEDULE")
+                Spacer()
+                if selectedDate != nil {
+                    Button {
+                        selectedDate = nil
+                    } label: {
+                        Label("전체", systemImage: "xmark")
+                            .font(.caption2.weight(.black))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                }
+            }
+
+            let agendaItems = selectedDate.map { items(on: $0) } ?? visibleItems
+            if agendaItems.isEmpty {
+                Text("이 날짜에는 일정이 없습니다.")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
+                    .padding(.horizontal, 10)
+                    .background(.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            } else {
+                VStack(spacing: 6) {
+                    ForEach(agendaItems.prefix(5)) { item in
+                        CalendarAgendaRow(item: item)
+                    }
+                    if agendaItems.count > 5 {
+                        Text("+ \(agendaItems.count - 5)개 더 있음")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 2)
+                    }
+                }
+            }
+        }
+        .padding(10)
+        .background(.background.opacity(0.46), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(.quaternary)
+        }
     }
 
     private var timelineList: some View {
@@ -415,6 +464,48 @@ struct ScheduleScreen: View {
 private enum ScheduleViewMode: Hashable {
     case timeline
     case calendar
+}
+
+private struct CalendarAgendaRow: View {
+    var item: ScheduleItem
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
+                .font(.caption.weight(.black).monospacedDigit())
+                .foregroundStyle(kindColor)
+                .frame(width: 48, alignment: .trailing)
+
+            Circle()
+                .fill(kindColor)
+                .frame(width: 7, height: 7)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title)
+                    .font(.caption.weight(.black))
+                    .lineLimit(1)
+                if !item.note.isEmpty {
+                    Text(item.note)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+        .padding(.horizontal, 9)
+        .background(kindColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 11))
+    }
+
+    private var kindColor: Color {
+        switch item.kind {
+        case .food: return .orange
+        case .move: return .blue
+        case .flight: return .purple
+        case .place: return .teal
+        }
+    }
 }
 
 private struct CalendarDayCell: View {

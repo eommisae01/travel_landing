@@ -73,14 +73,12 @@ final class TripStore: ObservableObject {
     }
 
     func selectCity(_ city: String) {
-        guard !city.isEmpty else { return }
         selectedCity = city
         save()
     }
 
     func scheduleItemsForSelectedCity() -> [ScheduleItem] {
-        scheduleItems
-            .filter { isRelevant($0.title + " " + $0.placeName + " " + $0.note + " " + $0.sourceMapNote, to: currentCity) }
+        scheduleItemsForCurrentScope
             .sorted { lhs, rhs in
                 if lhs.date != rhs.date { return lhs.date < rhs.date }
                 return lhs.startTime < rhs.startTime
@@ -88,16 +86,22 @@ final class TripStore: ObservableObject {
     }
 
     func placesForSelectedCity() -> [PlaceCandidate] {
-        places.filter { isRelevant($0.name + " " + $0.category + " " + $0.mapNote + " " + $0.appNote, to: currentCity) }
+        guard !currentCity.isEmpty else { return places }
+        return places.filter { isRelevant($0.name + " " + $0.category + " " + $0.mapNote + " " + $0.appNote, to: currentCity) }
     }
 
     func notesForSelectedCity() -> [NoteGroup] {
-        notes.filter { isRelevant($0.title + " " + $0.body, to: currentCity) }
+        guard !currentCity.isEmpty else { return notes }
+        return notes.filter { isRelevant($0.title + " " + $0.body, to: currentCity) }
     }
 
     var currentCity: String {
-        if !selectedCity.isEmpty { return selectedCity }
-        return trip?.cities.first ?? ""
+        selectedCity
+    }
+
+    private var scheduleItemsForCurrentScope: [ScheduleItem] {
+        guard !currentCity.isEmpty else { return scheduleItems }
+        return scheduleItems.filter { isRelevant($0.title + " " + $0.placeName + " " + $0.note + " " + $0.sourceMapNote, to: currentCity) }
     }
 
     func toggleChecklist(_ item: ChecklistItem) {
@@ -321,7 +325,7 @@ final class TripStore: ObservableObject {
         do {
             let snapshot = try JSONDecoder().decode(Snapshot.self, from: data)
             trip = snapshot.trip
-            selectedCity = snapshot.selectedCity ?? snapshot.trip?.cities.first ?? ""
+            selectedCity = snapshot.selectedCity ?? ""
             members = snapshot.members
             scheduleItems = snapshot.scheduleItems
             places = snapshot.places
@@ -340,7 +344,7 @@ final class TripStore: ObservableObject {
     private func save() {
         let snapshot = Snapshot(
             trip: trip,
-            selectedCity: selectedCity.isEmpty ? trip?.cities.first : selectedCity,
+            selectedCity: selectedCity,
             members: members,
             scheduleItems: scheduleItems,
             places: places,
@@ -375,12 +379,21 @@ final class TripStore: ObservableObject {
         var didChange = false
 
         if var currentTrip = trip {
+            let normalizedCities = currentTrip.cities.filter { $0 != "나오시마" }
+            if normalizedCities != currentTrip.cities {
+                currentTrip.cities = normalizedCities.isEmpty ? ["타카마쓰"] : normalizedCities
+                didChange = true
+            }
+            if selectedCity == "나오시마" {
+                selectedCity = ""
+                didChange = true
+            }
             if !currentTrip.cities.contains("도쿄") {
                 currentTrip.cities.append("도쿄")
                 didChange = true
             }
-            if currentTrip.name.contains("가족여행") {
-                currentTrip.name = "Takamatsu"
+            if currentTrip.name.contains("가족여행") || currentTrip.name == "Takamatsu" {
+                currentTrip.name = "Setouchi Art Trip"
                 didChange = true
             }
             if currentTrip.outbound.origin.isEmpty {
@@ -507,9 +520,9 @@ final class TripStore: ObservableObject {
 
     private func loadDemo() {
         let demoTrip = Trip(
-            name: "Takamatsu",
+            name: "Setouchi Art Trip",
             country: "일본",
-            cities: ["타카마쓰", "나오시마", "도쿄"],
+            cities: ["타카마쓰", "도쿄"],
             startDate: Date.from("2026-06-22"),
             endDate: Date.from("2026-06-24"),
             accommodation: "리쓰린코엔 기타구치역 근처 숙소",
@@ -521,7 +534,7 @@ final class TripStore: ObservableObject {
             budgetCurrency: "JPY"
         )
         trip = demoTrip
-        selectedCity = demoTrip.cities.first ?? ""
+        selectedCity = ""
         members = [
             TripMember(name: "예지", tintName: "teal"),
             TripMember(name: "승환", tintName: "coral"),
@@ -575,6 +588,7 @@ final class TripStore: ObservableObject {
     }
 
     private func isRelevant(_ text: String, to city: String) -> Bool {
+        if city.isEmpty { return true }
         if city == "도쿄" {
             return text.contains("도쿄") || text.contains("긴자") || text.contains("시부야")
         }

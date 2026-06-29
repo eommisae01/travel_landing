@@ -175,7 +175,7 @@ private struct SettingsTripHero: View {
                 .background(.teal, in: RoundedRectangle(cornerRadius: 16))
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(displayCity(currentCity))
+                Text(currentCity.isEmpty ? trip.name : displayCity(currentCity))
                     .font(.title2.weight(.black))
                     .lineLimit(1)
                 Text("\(trip.country) · \(trip.cities.map(displayCity).joined(separator: " / "))")
@@ -185,7 +185,7 @@ private struct SettingsTripHero: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
-                Text("LOCAL")
+                Text(currentCity.isEmpty ? "ALL TRIP" : "LOCAL")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.teal)
                     .padding(.horizontal, 8)
@@ -229,7 +229,7 @@ private struct SettingsTripHero: View {
         case "타카마쓰": return "Takamatsu"
         case "나오시마": return "Naoshima"
         case "도쿄": return "Tokyo"
-        default: return city.isEmpty ? "Trip" : city
+        default: return city.isEmpty ? "All Trip" : city
         }
     }
 }

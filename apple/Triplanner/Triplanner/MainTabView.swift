@@ -35,9 +35,9 @@ struct MainTabView: View {
             List {
                 Section("TRIP") {
                     SidebarTripSummary(
-                        city: displayCity(store.currentCity),
+                        city: store.trip?.name ?? "Trip",
                         subtitle: tripSubtitle,
-                        cityOptions: store.trip?.cities.map { SidebarCityOption(rawValue: $0, label: displayCity($0)) } ?? [],
+                        cityOptions: cityOptions,
                         currentCity: store.currentCity,
                         onSelectCity: { store.selectCity($0) },
                         onAddCity: { showingAddCity = true }
@@ -83,10 +83,17 @@ struct MainTabView: View {
 
     private var tripSubtitle: String {
         guard let trip = store.trip else { return "" }
+        let scope = store.currentCity.isEmpty ? "All Trip" : displayCity(store.currentCity)
         if let start = trip.startDate, let end = trip.endDate {
-            return "\(start.dayLabel) - \(end.dayLabel)"
+            return "\(scope) · \(start.dayLabel) - \(end.dayLabel)"
         }
-        return trip.country
+        return "\(scope) · \(trip.country)"
+    }
+
+    private var cityOptions: [SidebarCityOption] {
+        guard let trip = store.trip else { return [] }
+        return [SidebarCityOption(rawValue: "", label: "All Trip")]
+            + trip.cities.map { SidebarCityOption(rawValue: $0, label: displayCity($0)) }
     }
 
     private func badgeCount(for section: AppSection) -> Int? {
@@ -111,7 +118,7 @@ struct MainTabView: View {
         case "타카마쓰": return "Takamatsu"
         case "나오시마": return "Naoshima"
         case "도쿄": return "Tokyo"
-        default: return city.isEmpty ? "Trip" : city
+        default: return city.isEmpty ? "All Trip" : city
         }
     }
 }
@@ -137,7 +144,7 @@ private struct SidebarTripSummary: View {
                 Button {
                     onSelectCity(option.rawValue)
                 } label: {
-                    Label(option.label, systemImage: option.rawValue == currentCity ? "checkmark" : "mappin")
+                    Label(option.label, systemImage: option.rawValue == currentCity ? "checkmark" : (option.rawValue.isEmpty ? "square.grid.2x2" : "mappin"))
                 }
             }
             Divider()

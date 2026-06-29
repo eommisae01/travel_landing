@@ -301,6 +301,11 @@ struct HomeScreen: View {
     private var cityMenu: some View {
         Menu {
             if let trip = store.trip {
+                Button {
+                    store.selectCity("")
+                } label: {
+                    Label("All Trip", systemImage: store.currentCity.isEmpty ? "checkmark" : "square.grid.2x2")
+                }
                 ForEach(trip.cities, id: \.self) { city in
                     Button {
                         store.selectCity(city)
@@ -317,7 +322,7 @@ struct HomeScreen: View {
             }
         } label: {
             HStack(alignment: .center, spacing: 8) {
-                Text(cityDisplayName(store.currentCity))
+                Text(currentScopeTitle)
                     .font(.system(size: isWideLayout ? 64 : 44, weight: .black, design: .rounded))
                     .minimumScaleFactor(0.70)
                     .lineLimit(1)
@@ -326,6 +331,13 @@ struct HomeScreen: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private var currentScopeTitle: String {
+        if store.currentCity.isEmpty {
+            return store.trip?.name ?? "All Trip"
+        }
+        return cityDisplayName(store.currentCity)
     }
 
     private func dateRange(for trip: Trip) -> String? {
@@ -355,7 +367,7 @@ struct HomeScreen: View {
         case "삿포로": return "Sapporo"
         case "교토": return "Kyoto"
         case "서울": return "Seoul"
-        default: return city.isEmpty ? "Trip" : city
+        default: return city.isEmpty ? "All Trip" : city
         }
     }
 
@@ -622,23 +634,28 @@ private struct CityChipRail: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 7) {
+                scopeChip(title: "All Trip", isSelected: currentCity.isEmpty)
                 ForEach(cities, id: \.self) { city in
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(city == currentCity ? Color.teal : Color.secondary.opacity(0.34))
-                            .frame(width: 6, height: 6)
-                        Text(displayName(city))
-                            .font(.caption.weight(.black))
-                            .lineLimit(1)
-                    }
-                    .foregroundStyle(city == currentCity ? .primary : .secondary)
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 6)
-                    .background((city == currentCity ? Color.teal : Color.secondary).opacity(city == currentCity ? 0.13 : 0.08), in: Capsule())
+                    scopeChip(title: displayName(city), isSelected: city == currentCity)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    private func scopeChip(title: String, isSelected: Bool) -> some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(isSelected ? Color.teal : Color.secondary.opacity(0.34))
+                .frame(width: 6, height: 6)
+            Text(title)
+                .font(.caption.weight(.black))
+                .lineLimit(1)
+        }
+        .foregroundStyle(isSelected ? .primary : .secondary)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .background((isSelected ? Color.teal : Color.secondary).opacity(isSelected ? 0.13 : 0.08), in: Capsule())
     }
 
     private func displayName(_ city: String) -> String {
