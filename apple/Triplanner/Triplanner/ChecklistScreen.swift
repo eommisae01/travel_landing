@@ -55,7 +55,7 @@ struct ChecklistScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Checklist", subtitle: "남은 준비 \(remainingCount)개 · 완료 \(doneCount)개")
+                    ScreenHeader(title: "체크리스트", subtitle: "남은 준비 \(remainingCount)개 · 완료 \(doneCount)개")
 
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(alignment: .firstTextBaseline) {
@@ -176,13 +176,14 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 9) {
+        HStack(alignment: .center, spacing: 10) {
             Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 28, height: 28)
-                    .contentShape(Rectangle())
+                    .frame(width: 32, height: 32)
+                    .background((item.isDone ? tint : Color.secondary).opacity(item.isDone ? 0.10 : 0.06), in: RoundedRectangle(cornerRadius: 9))
+                    .contentShape(RoundedRectangle(cornerRadius: 9))
             }
             .buttonStyle(.plain)
 
@@ -192,7 +193,7 @@ private struct ChecklistItemRow: View {
                     .strikethrough(item.isDone)
                     .foregroundStyle(item.isDone ? .secondary : .primary)
                     .lineLimit(1)
-                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -201,10 +202,10 @@ private struct ChecklistItemRow: View {
                 Text(item.owner)
                     .font(.caption2.weight(.black))
                     .lineLimit(1)
-                    .frame(minWidth: 38)
+                    .frame(minWidth: 36)
                     .padding(.horizontal, 6)
-                    .frame(height: 26)
-                    .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
+                    .frame(height: 28)
+                    .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
                     .foregroundStyle(ownerTint)
 
                 Button {
@@ -214,15 +215,15 @@ private struct ChecklistItemRow: View {
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
                         .frame(width: 28, height: 28)
-                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 7))
+                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
             }
-            .frame(height: 30)
+            .frame(height: 32)
         }
-        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
         .padding(.horizontal, 10)
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
