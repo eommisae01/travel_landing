@@ -37,7 +37,7 @@ struct MapScreen: View {
                                     .background(.secondary.opacity(0.10), in: Capsule())
                                     .foregroundStyle(.secondary)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 116), spacing: 6)], spacing: 6) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 8)], spacing: 8) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -169,102 +169,88 @@ struct PlaceRow: View {
     @State private var isScheduling = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            HStack(alignment: .top, spacing: 7) {
-                Image(systemName: categoryIcon)
-                    .font(.caption.weight(.black))
-                    .frame(width: 24, height: 24)
-                    .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 7))
-                    .foregroundStyle(categoryColor)
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: categoryIcon)
+                .font(.subheadline.weight(.black))
+                .frame(width: 34, height: 34)
+                .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(categoryColor)
 
-                VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(place.name)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                    if place.isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.yellow)
+                    }
+                }
+
+                HStack(spacing: 5) {
                     Text(place.category)
                         .font(.caption2.weight(.black))
                         .foregroundStyle(categoryColor)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(categoryColor.opacity(0.10), in: Capsule())
+                    Text(summaryText)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
-                    Text(place.name)
-                        .font(.footnote.weight(.black))
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 4)
-                HStack(spacing: 4) {
-                    Button {
-                        isEditing = true
-                    } label: {
-                        Image(systemName: "pencil")
-                            .font(.caption.weight(.black))
-                            .frame(width: 24, height: 24)
-                            .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-
-                    Button {
-                        store.toggleFavorite(place)
-                    } label: {
-                        Image(systemName: place.isFavorite ? "star.fill" : "star")
-                            .font(.caption.weight(.black))
-                            .frame(width: 24, height: 24)
-                            .background((place.isFavorite ? Color.yellow : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
-                            .foregroundStyle(place.isFavorite ? .yellow : .secondary)
-                    }
-                    .buttonStyle(.plain)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            if hasNotes {
-                VStack(alignment: .leading, spacing: 3) {
-                    if !place.mapNote.isEmpty {
-                        Label(place.mapNote, systemImage: "map")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(categoryColor)
-                            .lineLimit(1)
-                    }
-                    if !place.appNote.isEmpty {
-                        Text(place.appNote)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-                    }
+            HStack(spacing: 5) {
+                Button {
+                    store.toggleFavorite(place)
+                } label: {
+                    Image(systemName: place.isFavorite ? "star.fill" : "star")
+                        .frame(width: 28, height: 28)
+                        .background((place.isFavorite ? Color.yellow : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                        .foregroundStyle(place.isFavorite ? .yellow : .secondary)
                 }
-                .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
-            } else {
-                Text("메모 없음")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-                    .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
-            }
+                .buttonStyle(.plain)
 
-            Spacer(minLength: 0)
-            HStack(spacing: 6) {
+                Button {
+                    isEditing = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .frame(width: 28, height: 28)
+                        .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+
                 if let url = URL(string: place.mapURL) {
                     Link(destination: url) {
-                        Label("지도", systemImage: "map")
-                            .frame(maxWidth: .infinity)
+                        Image(systemName: "map")
+                            .frame(width: 28, height: 28)
                     }
-                    .padding(.vertical, 4)
-                    .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
+                    .background(.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
                     .foregroundStyle(.primary)
                 }
+
                 Button {
                     isScheduling = true
                 } label: {
-                    Label("일정", systemImage: "calendar.badge.plus")
-                        .frame(maxWidth: .infinity)
+                    Image(systemName: "calendar.badge.plus")
+                        .frame(width: 28, height: 28)
+                        .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                        .foregroundStyle(categoryColor)
                 }
-                .padding(.vertical, 4)
-                .background(categoryColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
-                .foregroundStyle(categoryColor)
+                .buttonStyle(.plain)
             }
-            .font(.caption2.weight(.bold))
-            .labelStyle(.titleAndIcon)
+            .font(.caption.weight(.black))
         }
-        .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
-        .padding(7)
-        .background(.background.opacity(0.74), in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 8)
+        .background(.background.opacity(0.68), in: RoundedRectangle(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(.quaternary)
         }
         .sheet(isPresented: $isEditing) {
@@ -299,8 +285,10 @@ struct PlaceRow: View {
         }
     }
 
-    private var hasNotes: Bool {
-        !place.mapNote.isEmpty || !place.appNote.isEmpty
+    private var summaryText: String {
+        if !place.appNote.isEmpty { return place.appNote }
+        if !place.mapNote.isEmpty { return place.mapNote }
+        return "메모 없음"
     }
 }
 
