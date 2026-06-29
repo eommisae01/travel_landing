@@ -25,8 +25,17 @@ struct ScheduleScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ScreenHeader(title: scheduleTitle, subtitle: scheduleSubtitle)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel(title: "DAYS")
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            SectionLabel(title: "DATE")
+                            Spacer()
+                            Text(viewMode == .timeline ? "Timeline" : "Calendar")
+                                .font(.caption2.weight(.black))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(.secondary.opacity(0.10), in: Capsule())
+                        }
                         filterBar
 
                         Picker("보기 방식", selection: $viewMode) {
@@ -126,15 +135,15 @@ struct ScheduleScreen: View {
                 }
             }
             .frame(width: title == "전체" ? 92 : 112, alignment: .leading)
-            .padding(.horizontal, 11)
-            .padding(.vertical, 9)
-            .background(isSelected ? Color.teal : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 13))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(isSelected ? Color.blue : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
-                RoundedRectangle(cornerRadius: 13)
-                    .stroke(isSelected ? Color.teal.opacity(0.45) : Color.secondary.opacity(0.14), lineWidth: isSelected ? 1.5 : 1)
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Color.blue.opacity(0.44) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.5 : 1)
             }
-            .shadow(color: isSelected ? Color.teal.opacity(0.18) : .clear, radius: 8, x: 0, y: 4)
+            .shadow(color: isSelected ? Color.blue.opacity(0.16) : .clear, radius: 7, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -254,7 +263,7 @@ struct ScheduleScreen: View {
                 timelineSection(date: selectedDate ?? Date(), items: visibleItems)
             }
         }
-        .padding(10)
+        .padding(8)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
             RoundedRectangle(cornerRadius: 20)
@@ -305,13 +314,13 @@ struct ScheduleScreen: View {
     }
 
     private func timelineSection(date: Date, items: [ScheduleItem]) -> some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .center, spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(dayTitle(for: date))
                         .font(.headline.weight(.black))
                     Text(compactDayLabel(date))
-                        .font(.caption.weight(.bold))
+                        .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -334,11 +343,11 @@ struct ScheduleScreen: View {
                 .accessibilityLabel("\(dayTitle(for: date)) 일정 추가")
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: 14))
+            .padding(.vertical, 7)
+            .background(.background.opacity(0.38), in: RoundedRectangle(cornerRadius: 13))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(.teal)
+                    .fill(.blue)
                     .frame(width: 3)
                     .padding(.vertical, 10)
             }
@@ -506,7 +515,7 @@ struct ScheduleRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
                     .font(.caption.weight(.black).monospacedDigit())
@@ -518,27 +527,27 @@ struct ScheduleRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 58)
-            .padding(.top, 7)
+            .frame(width: 52)
+            .padding(.top, 6)
 
             ZStack(alignment: .top) {
                 if !isLast {
                     Rectangle()
-                        .fill(kindColor.opacity(0.24))
-                        .frame(width: 2, height: 88)
-                        .padding(.top, 26)
+                        .fill(kindColor.opacity(0.20))
+                        .frame(width: 2, height: 76)
+                        .padding(.top, 23)
                 }
                 Image(systemName: kindIcon)
                     .font(.caption2.weight(.black))
                     .foregroundStyle(.white)
-                    .frame(width: 24, height: 24)
+                    .frame(width: 22, height: 22)
                     .background(kindColor, in: Circle())
                     .shadow(color: kindColor.opacity(0.22), radius: 6, x: 0, y: 3)
             }
-            .frame(width: 24)
-            .frame(minHeight: 86, alignment: .top)
+            .frame(width: 22)
+            .frame(minHeight: 76, alignment: .top)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 7) {
                 HStack(alignment: .top, spacing: 8) {
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(spacing: 6) {
@@ -566,7 +575,7 @@ struct ScheduleRow: View {
                     } label: {
                         Image(systemName: "pencil")
                             .font(.caption.weight(.black))
-                            .frame(width: 26, height: 26)
+                            .frame(width: 25, height: 25)
                             .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
                             .foregroundStyle(.secondary)
                     }
@@ -588,7 +597,7 @@ struct ScheduleRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 10)
-            .padding(.vertical, 9)
+            .padding(.vertical, 8)
             .background {
                 RoundedRectangle(cornerRadius: 14)
                     .fill(rowBackground)
@@ -603,10 +612,10 @@ struct ScheduleRow: View {
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(kindColor.opacity(item.kind == .move || item.kind == .flight ? 0.16 : 0.08))
+                    .stroke(kindColor.opacity(item.kind == .move || item.kind == .flight ? 0.16 : 0.04))
             }
         }
-        .padding(.vertical, 5)
+        .padding(.vertical, 4)
         .sheet(isPresented: $isEditing) {
             ScheduleEditorSheet(existingItem: item, defaultDate: item.date)
                 .environmentObject(store)
@@ -636,7 +645,7 @@ struct ScheduleRow: View {
         case .move, .flight:
             return kindColor.opacity(0.08)
         case .food, .place:
-            return Color.secondary.opacity(0.035)
+            return Color.secondary.opacity(0.018)
         }
     }
 }
