@@ -65,6 +65,7 @@ struct MainTabView: View {
             }
             .navigationTitle("Triplanner")
             .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 218, ideal: 238, max: 268)
             .alert("지역 추가", isPresented: $showingAddCity) {
                 TextField("예: Osaka", text: $newCity)
                 Button("추가") {
@@ -161,23 +162,23 @@ private struct SidebarTripSummary: View {
                 Label("지역 추가", systemImage: "plus")
             }
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: 9) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.subheadline.weight(.bold))
+                    .font(.caption.weight(.black))
                     .foregroundStyle(.white)
-                    .frame(width: 34, height: 34)
+                    .frame(width: 30, height: 30)
                     .background(
                         LinearGradient(
                             colors: [theme.accent, theme.secondaryAccent.opacity(0.78)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        in: RoundedRectangle(cornerRadius: 12)
+                        in: RoundedRectangle(cornerRadius: 10)
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.headline.weight(.black))
+                        .font(.subheadline.weight(.black))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
@@ -192,7 +193,7 @@ private struct SidebarTripSummary: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
+            .padding(.vertical, 5)
         }
         .buttonStyle(.plain)
     }
@@ -205,15 +206,16 @@ private struct SidebarMenuRow: View {
     var isSelected = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 9) {
             Image(systemName: section.iconName)
-                .font(.subheadline.weight(.semibold))
+                .font(.caption.weight(.black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
-                .frame(width: 22, height: 22)
-                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.12 : 0.06), in: RoundedRectangle(cornerRadius: 8))
-            VStack(alignment: .leading, spacing: 0) {
+                .frame(width: 24, height: 24)
+                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.12 : 0.055), in: RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 1) {
                 Text(section.title)
-                    .font(.subheadline.weight(isSelected ? .black : .semibold))
+                    .font(.caption.weight(isSelected ? .black : .semibold))
                 Text(section.sidebarSubtitle)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
@@ -225,22 +227,22 @@ private struct SidebarMenuRow: View {
                     .font(.caption2.weight(.black))
                     .foregroundStyle(isSelected ? theme.accent : .secondary)
                     .monospacedDigit()
-                    .frame(minWidth: 22)
-                    .padding(.horizontal, 7)
+                    .frame(minWidth: 19)
+                    .padding(.horizontal, 6)
                     .padding(.vertical, 3)
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
         .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+        .padding(.vertical, 3)
+        .background(isSelected ? theme.accent.opacity(0.075) : Color.clear, in: RoundedRectangle(cornerRadius: 11))
         .overlay(alignment: .leading) {
             if isSelected {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(theme.accent)
                     .frame(width: 3)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 9)
             }
         }
     }
