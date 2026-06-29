@@ -40,7 +40,7 @@ struct MapScreen: View {
                                 tint: sectionColor(for: category)
                             )
 
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 285), spacing: 10)], spacing: 10) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 340), spacing: 12)], spacing: 12) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -256,15 +256,35 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            horizontalRow
-            stackedRow
+        VStack(alignment: .leading, spacing: 10) {
+            cardHeader
+
+            Text(summaryText)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
+
+            ViewThatFits(in: .horizontal) {
+                placePills
+                VStack(alignment: .leading, spacing: 5) {
+                    placePills
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            Divider()
+                .opacity(0.55)
+
+            actionBar
         }
         .contentShape(Rectangle())
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 126, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 164, alignment: .topLeading)
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
         .background(.background.opacity(0.68), in: RoundedRectangle(cornerRadius: 14))
@@ -293,24 +313,66 @@ struct PlaceRow: View {
         }
     }
 
-    private var horizontalRow: some View {
-        HStack(alignment: .center, spacing: 11) {
+    private var cardHeader: some View {
+        HStack(alignment: .top, spacing: 10) {
             categoryBadge
-            placeTextBlock
-            actionCluster
-        }
-    }
 
-    private var stackedRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                categoryBadge
-                placeTextBlock
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(place.name)
+                        .font(.headline.weight(.black))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.82)
+
+                    if place.isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(.yellow)
+                            .accessibilityLabel("별표")
+                    }
+                }
+
+                Label(place.category, systemImage: categoryIcon)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(categoryColor)
             }
-            HStack {
-                Spacer(minLength: 0)
-                actionCluster
+
+            Spacer(minLength: 8)
+
+            Button {
+                store.toggleFavorite(place)
+            } label: {
+                actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
+
+            Menu {
+                Button {
+                    isShowingDetail = true
+                } label: {
+                    Label("전체 정보", systemImage: "info.circle")
+                }
+                Button {
+                    isEditing = true
+                } label: {
+                    Label("수정", systemImage: "pencil")
+                }
+                Button {
+                    isScheduling = true
+                } label: {
+                    Label("일정에 넣기", systemImage: "calendar.badge.plus")
+                }
+                if let url = URL(string: place.mapURL) {
+                    Link(destination: url) {
+                        Label("지도 열기", systemImage: "map")
+                    }
+                }
+            } label: {
+                actionIcon("ellipsis", tint: .secondary)
+            }
+            .menuStyle(.button)
+            .buttonStyle(.plain)
         }
     }
 
@@ -325,90 +387,33 @@ struct PlaceRow: View {
         .frame(width: 40, height: 40)
     }
 
-    private var placeTextBlock: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(place.name)
-                    .font(.headline.weight(.black))
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.82)
-                if place.isFavorite {
-                    Image(systemName: "star.fill")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.yellow)
-                        .accessibilityLabel("별표")
-                }
-            }
-
-            Text(summaryText)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-
-            ViewThatFits(in: .horizontal) {
-                placePills
-                VStack(alignment: .leading, spacing: 5) {
-                    placePills
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var actionCluster: some View {
-        HStack(spacing: 5) {
-            Button {
-                store.toggleFavorite(place)
-            } label: {
-                actionIcon(place.isFavorite ? "star.fill" : "star", tint: place.isFavorite ? .yellow : .secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(place.isFavorite ? "별표 해제" : "별표")
-
+    private var actionBar: some View {
+        HStack(spacing: 7) {
             if let url = URL(string: place.mapURL) {
                 Link(destination: url) {
-                    actionIcon("map", tint: .blue)
+                    PlaceCardActionLabel(title: "지도", iconName: "map", tint: .blue)
                 }
                 .accessibilityLabel("지도 열기")
+            } else {
+                PlaceCardActionLabel(title: "지도 없음", iconName: "map", tint: .secondary)
+                    .opacity(0.58)
             }
 
             Button {
                 isScheduling = true
             } label: {
-                actionIcon("calendar.badge.plus", tint: categoryColor)
+                PlaceCardActionLabel(title: "일정", iconName: "calendar.badge.plus", tint: categoryColor)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("일정에 추가")
 
-            Menu {
-                Button {
-                    isShowingDetail = true
-                } label: {
-                    Label("전체 정보", systemImage: "info.circle")
-                }
-                Button {
-                    isEditing = true
-                } label: {
-                    Label("수정", systemImage: "pencil")
-                }
-                Button {
-                    store.toggleFavorite(place)
-                } label: {
-                    Label(place.isFavorite ? "별표 해제" : "별표", systemImage: place.isFavorite ? "star.slash" : "star")
-                }
-                if let url = URL(string: place.mapURL) {
-                    Link(destination: url) {
-                        Label("지도 열기", systemImage: "map")
-                    }
-                }
+            Button {
+                isEditing = true
             } label: {
-                actionIcon("ellipsis", tint: .secondary)
+                PlaceCardActionLabel(title: "수정", iconName: "pencil", tint: .secondary)
             }
-            .menuStyle(.button)
             .buttonStyle(.plain)
         }
-        .frame(minWidth: 135, minHeight: 34, alignment: .trailing)
     }
 
     private var placePills: some View {
@@ -477,6 +482,23 @@ private struct PlaceMiniPill: View {
             .padding(.horizontal, 7)
             .padding(.vertical, 4)
             .background(tint.opacity(0.09), in: Capsule())
+            .foregroundStyle(tint)
+    }
+}
+
+private struct PlaceCardActionLabel: View {
+    var title: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        Label(title, systemImage: iconName)
+            .font(.caption2.weight(.black))
+            .lineLimit(1)
+            .minimumScaleFactor(0.86)
+            .frame(maxWidth: .infinity, minHeight: 30)
+            .padding(.horizontal, 7)
+            .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
             .foregroundStyle(tint)
     }
 }
