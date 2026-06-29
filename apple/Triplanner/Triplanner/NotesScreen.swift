@@ -44,7 +44,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 11)], spacing: 11) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 12)], spacing: 12) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -184,13 +184,14 @@ struct NotesScreen: View {
             NoteDetailView(note: note)
         } label: {
             VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 9) {
+                HStack(alignment: .top, spacing: 10) {
                     NoteKindIconBadge(iconName: noteKindIcon(note), tint: noteAccent(note))
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text(note.title)
                             .font(.subheadline.weight(.black))
-                            .lineLimit(1)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.86)
                         Text(noteKindTitle(note))
                             .font(.caption2.weight(.black))
                             .foregroundStyle(noteAccent(note))
@@ -198,11 +199,7 @@ struct NotesScreen: View {
 
                     Spacer(minLength: 0)
 
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary.opacity(0.72))
-                        .frame(width: 24, height: 24)
-                        .background(.secondary.opacity(0.08), in: Circle())
+                    NoteCountBadge(count: note.imageNames.count, tint: noteAccent(note))
                 }
 
                 Text(note.body.isEmpty ? "메모 없음" : note.body)
@@ -210,14 +207,14 @@ struct NotesScreen: View {
                     .font(.caption.weight(.semibold))
                     .lineSpacing(2)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, minHeight: 36, alignment: .topLeading)
 
                 Spacer(minLength: 0)
 
                 noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 142, maxHeight: 142, alignment: .topLeading)
-            .padding(11)
+            .frame(maxWidth: .infinity, minHeight: 164, maxHeight: 164, alignment: .topLeading)
+            .padding(12)
             .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 15))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 15)
@@ -238,22 +235,26 @@ struct NotesScreen: View {
             if note.imageNames.isEmpty {
                 NoteKindPill(title: "텍스트 메모", iconName: "text.alignleft", tint: .secondary)
             } else {
-                ForEach(Array(note.imageNames.prefix(2).enumerated()), id: \.offset) { index, imageName in
-                    NoteAttachmentChip(title: imageName, index: index, tint: noteAccent(note))
+                ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
+                    NoteSmallImageTile(title: imageName, index: index, tint: noteAccent(note))
                 }
-                if note.imageNames.count > 2 {
-                    Text("+\(note.imageNames.count - 2)")
+                if note.imageNames.count > 3 {
+                    Text("+\(note.imageNames.count - 3)")
                         .font(.caption2.weight(.black))
                         .foregroundStyle(.white)
-                        .frame(width: 28, height: 28)
+                        .frame(width: 30, height: 30)
                         .background(noteAccent(note), in: Circle())
                 }
             }
             Spacer(minLength: 0)
-            Label(note.imageNames.isEmpty ? "Text" : "\(note.imageNames.count)장", systemImage: note.imageNames.isEmpty ? "doc.text" : "photo.stack")
+            Label("열기", systemImage: "chevron.right")
                 .font(.caption2.weight(.black))
                 .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(.secondary.opacity(0.08), in: Capsule())
         }
+        .frame(maxWidth: .infinity, minHeight: 34, alignment: .center)
     }
 
     private func displayCity(_ city: String) -> String {
@@ -323,26 +324,60 @@ private struct NoteKindIconBadge: View {
     }
 }
 
-private struct NoteAttachmentChip: View {
+private struct NoteCountBadge: View {
+    var count: Int
+    var tint: Color
+
+    var body: some View {
+        Label(count == 0 ? "Text" : "\(count)", systemImage: count == 0 ? "doc.text" : "photo.stack")
+            .font(.caption2.weight(.black))
+            .labelStyle(.titleAndIcon)
+            .foregroundStyle(count == 0 ? .secondary : tint)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .background((count == 0 ? Color.secondary : tint).opacity(0.10), in: Capsule())
+    }
+}
+
+private struct NoteSmallImageTile: View {
     var title: String
     var index: Int
     var tint: Color
 
     var body: some View {
         HStack(spacing: 5) {
-            Text("\(index + 1)")
-                .font(.system(size: 9, weight: .black, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(width: 16, height: 16)
-                .background(tint, in: Circle())
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [tint.opacity(0.22), Color.secondary.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                Image(systemName: "photo")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(tint)
+            }
+            .frame(width: 25, height: 25)
+            .overlay(alignment: .topTrailing) {
+                Text("\(index + 1)")
+                    .font(.system(size: 7, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(width: 13, height: 13)
+                    .background(tint, in: Circle())
+                    .offset(x: 4, y: -4)
+            }
+
             Text(title)
                 .font(.caption2.weight(.black))
                 .lineLimit(1)
+                .minimumScaleFactor(0.82)
         }
         .foregroundStyle(tint)
+        .frame(maxWidth: 88, minHeight: 30, alignment: .leading)
         .padding(.horizontal, 7)
-        .padding(.vertical, 6)
-        .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
+        .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 11))
     }
 }
 
