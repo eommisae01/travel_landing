@@ -150,7 +150,8 @@ struct HomeScreen: View {
 
             CityChipRail(
                 cities: trip.cities,
-                currentCity: store.currentCity
+                currentCity: store.currentCity,
+                onSelect: store.selectCity
             )
 
             HeroTodayLine(
@@ -198,12 +199,12 @@ struct HomeScreen: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("편명/주소 탭하면 복사")
+                Label("Copy ready", systemImage: "doc.on.doc")
                     .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(.secondary.opacity(0.10), in: Capsule())
+                    .background(theme.accent.opacity(0.10), in: Capsule())
             }
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {
@@ -298,9 +299,6 @@ struct HomeScreen: View {
                     .padding(.vertical, 4)
                     .background(.secondary.opacity(0.10), in: Capsule())
             }
-            Text("선택한 도시와 오늘 일정에 맞는 자료를 우선 보여줍니다.")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
             if focusNotes.isEmpty {
                 EmptyStateView(
                     title: "오늘 볼 자료가 없어요",
@@ -346,7 +344,7 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .center, spacing: 8) {
                 Text(currentScopeTitle)
-                    .font(.system(size: isWideLayout ? 64 : 44, weight: .black, design: .rounded))
+                    .font(.system(size: isWideLayout ? 58 : 40, weight: .black, design: .rounded))
                     .minimumScaleFactor(0.70)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
@@ -423,7 +421,7 @@ private struct FlightSummaryRow: View {
             HStack(alignment: .center, spacing: 10) {
                 Image(systemName: iconName)
                     .font(.subheadline.weight(.black))
-                    .frame(width: 32, height: 32)
+                    .frame(width: 34, height: 34)
                     .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(tint)
 
@@ -443,9 +441,15 @@ private struct FlightSummaryRow: View {
                         .font(.subheadline.weight(.black))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
-                    HStack(spacing: 8) {
-                        RouteTimeBadge(title: "출발", city: flight.origin, time: flight.localDeparture, tint: tint)
-                        RouteTimeBadge(title: "도착", city: flight.destination, time: flight.localArrival, tint: tint)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 7) {
+                            RouteTimeBadge(title: "출발", city: flight.origin, time: flight.localDeparture, tint: tint)
+                            RouteTimeBadge(title: "도착", city: flight.destination, time: flight.localArrival, tint: tint)
+                        }
+                        VStack(alignment: .leading, spacing: 5) {
+                            RouteTimeBadge(title: "출발", city: flight.origin, time: flight.localDeparture, tint: tint)
+                            RouteTimeBadge(title: "도착", city: flight.destination, time: flight.localArrival, tint: tint)
+                        }
                     }
                 }
                 Spacer(minLength: 6)
@@ -453,7 +457,7 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 108 : 74, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 112 : 82, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
@@ -514,7 +518,7 @@ private struct AccommodationSummaryRow: View {
             HStack(alignment: .center, spacing: 10) {
                 Image(systemName: "bed.double")
                     .font(.subheadline.weight(.black))
-                    .frame(width: 32, height: 32)
+                    .frame(width: 34, height: 34)
                     .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(.purple)
 
@@ -538,7 +542,7 @@ private struct AccommodationSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 108 : 74, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 112 : 82, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
@@ -666,32 +670,41 @@ private struct CityChipRail: View {
     @Environment(\.appTheme) private var theme
     var cities: [String]
     var currentCity: String
+    var onSelect: (String) -> Void
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 7) {
-                scopeChip(title: "All Trip", isSelected: currentCity.isEmpty)
+                scopeChip(title: "All Trip", value: "", isSelected: currentCity.isEmpty)
                 ForEach(cities, id: \.self) { city in
-                    scopeChip(title: displayName(city), isSelected: city == currentCity)
+                    scopeChip(title: displayName(city), value: city, isSelected: city == currentCity)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    private func scopeChip(title: String, isSelected: Bool) -> some View {
-        HStack(spacing: 5) {
-            Circle()
-                .fill(isSelected ? theme.accent : Color.secondary.opacity(0.34))
-                .frame(width: 6, height: 6)
-            Text(title)
-                .font(.caption.weight(.black))
-                .lineLimit(1)
+    private func scopeChip(title: String, value: String, isSelected: Bool) -> some View {
+        Button {
+            onSelect(value)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "mappin.circle")
+                    .font(.caption2.weight(.black))
+                Text(title)
+                    .font(.caption.weight(.black))
+                    .lineLimit(1)
+            }
+            .foregroundStyle(isSelected ? theme.accent : .secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.08), in: Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(isSelected ? theme.accent.opacity(0.22) : Color.secondary.opacity(0.08))
+            }
         }
-        .foregroundStyle(isSelected ? .primary : .secondary)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 6)
-        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.08), in: Capsule())
+        .buttonStyle(.plain)
     }
 
     private func displayName(_ city: String) -> String {
