@@ -15,7 +15,7 @@ struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 24) {
                     ScreenHeader(title: "Settings", subtitle: "공유 전 꼭 확인할 여행 기본 정보")
 
                     if let trip = store.trip {
@@ -34,51 +34,52 @@ struct SettingsScreen: View {
                     }
 
                     if horizontalSizeClass == .compact {
-                        VStack(spacing: 12) {
+                        VStack(spacing: 14) {
                             FlightEditorCard(title: "가는 편", flight: $outboundFlight)
                             FlightEditorCard(title: "오는 편", flight: $inboundFlight)
                         }
                     } else {
-                        HStack(alignment: .top, spacing: 12) {
+                        HStack(alignment: .top, spacing: 16) {
                             FlightEditorCard(title: "가는 편", flight: $outboundFlight)
                             FlightEditorCard(title: "오는 편", flight: $inboundFlight)
                         }
                     }
 
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 270), spacing: 12)], spacing: 12) {
-                        VStack(alignment: .leading, spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: 16)], spacing: 16) {
+                        VStack(alignment: .leading, spacing: 16) {
                             SectionLabel(title: "STAY")
                             SettingsField(title: "이름", iconName: "bed.double", placeholder: "숙소 이름", text: $accommodation)
                             SettingsField(title: "주소", iconName: "mappin", placeholder: "숙소 주소", text: $accommodationAddress, axis: .vertical)
                         }
-                        .appPanel(cornerRadius: 18)
+                        .appPanel(cornerRadius: 22)
 
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 16) {
                             SectionLabel(title: "MY MAPS")
                             SettingsField(title: "링크", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL, axis: .vertical)
                         }
-                        .appPanel(cornerRadius: 18)
+                        .appPanel(cornerRadius: 22)
                     }
 
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 14) {
                         SectionLabel(title: "INVITE")
                         ShareLink(item: "Triplanner 초대 링크는 Supabase 연결 후 생성됩니다.") {
                             Label("초대 메시지 공유", systemImage: "square.and.arrow.up")
-                                .font(.headline.weight(.bold))
+                                .font(.title3.weight(.bold))
                         }
                         Text("지금은 로컬 프로토타입입니다. 다음 단계에서 Supabase 가족코드/초대 링크를 붙이면 여러 기기에서 함께 볼 수 있습니다.")
-                            .font(.caption)
+                            .font(.body.weight(.medium))
                             .foregroundStyle(.secondary)
                     }
-                    .appPanel(cornerRadius: 18)
+                    .appPanel(cornerRadius: 22)
 
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 10)], spacing: 10) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
                         Button {
                             saveChanges()
                         } label: {
                             Label("저장", systemImage: "checkmark")
                                 .frame(maxWidth: .infinity)
-                                .font(.headline.weight(.black))
+                                .font(.title3.weight(.black))
+                                .padding(.vertical, 8)
                         }
                         .buttonStyle(.borderedProminent)
 
@@ -89,14 +90,15 @@ struct SettingsScreen: View {
                         } label: {
                             Label("데모 리셋", systemImage: "arrow.counterclockwise")
                                 .frame(maxWidth: .infinity)
-                                .font(.headline.weight(.black))
+                                .font(.title3.weight(.black))
+                                .padding(.vertical, 8)
                         }
                         .buttonStyle(.bordered)
                     }
-                    .padding(.top, 2)
+                    .padding(.top, 4)
                 }
-                .readableWidth(1040)
-                .padding()
+                .readableWidth(1120)
+                .padding(24)
             }
             .navigationTitle("")
             .toolbar {
@@ -149,26 +151,26 @@ private struct ThemePickerCard: View {
     var onSelect: (AppTheme) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    SectionLabel(title: "테마")
+                VStack(alignment: .leading, spacing: 5) {
+                    SectionLabel(title: "THEME")
                     Text("여행마다 앱의 색감과 분위기를 바꿔요")
-                        .font(.callout.weight(.semibold))
+                        .font(.title3.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text(selectedTheme.title)
-                    .font(.caption.weight(.black))
+                    .font(.callout.weight(.black))
                     .foregroundStyle(selectedTheme.accent)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
                     .background(selectedTheme.accent.opacity(0.11), in: Capsule())
             }
 
             ThemeActivePreview(theme: selectedTheme)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 12)], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 250), spacing: 14)], spacing: 14) {
                 ForEach(AppTheme.allCases) { theme in
                     Button {
                         onSelect(theme)
@@ -179,7 +181,7 @@ private struct ThemePickerCard: View {
                 }
             }
         }
-        .appPanel(cornerRadius: 18)
+        .appPanel(cornerRadius: 24)
     }
 }
 
@@ -189,62 +191,95 @@ private struct ThemeActivePreview: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             themePreviewCard
-                .frame(width: 164, height: 104)
+                .frame(width: 220, height: 136)
             themeDescription
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 126, alignment: .center)
-        .padding(14)
-        .background(theme.accent.opacity(0.065), in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 174, alignment: .center)
+        .padding(18)
+        .background(theme.secondaryAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 20))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 20)
                 .fill(theme.accent)
-                .frame(width: 3)
-                .padding(.vertical, 11)
+                .frame(width: 5)
+                .padding(.vertical, 15)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(theme.accent.opacity(0.16))
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(theme.accent.opacity(0.20))
         }
     }
 
     private var themePreviewCard: some View {
-        HStack(spacing: 0) {
-            theme.accent
-            theme.secondaryAccent
-            theme.warmAccent
-            Color.primary.opacity(0.10)
-        }
-        .overlay(alignment: .bottomLeading) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(theme.title)
-                    .font(.headline.weight(.black))
-                Text(theme.subtitle)
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 22)
+                .fill(.regularMaterial)
+                .overlay(theme.secondaryAccent.opacity(0.10))
+
+            HStack(spacing: 0) {
+                theme.accent
+                    .frame(width: 18)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Circle()
+                            .fill(theme.accent)
+                            .frame(width: 24, height: 24)
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.primary.opacity(0.12))
+                            .frame(width: 82, height: 10)
+                        Spacer()
+                        Circle()
+                            .fill(theme.warmAccent)
+                            .frame(width: 16, height: 16)
+                    }
+
+                    HStack(spacing: 8) {
+                        previewBlock(theme.secondaryAccent.opacity(0.22), width: 72)
+                        previewBlock(theme.warmAccent.opacity(0.22), width: 50)
+                        previewBlock(theme.accent.opacity(0.18), width: 38)
+                    }
+
+                    VStack(alignment: .leading, spacing: 7) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(theme.accent)
+                            .frame(width: 116, height: 8)
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.primary.opacity(0.12))
+                            .frame(width: 88, height: 7)
+                    }
+                }
+                .padding(16)
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.background.opacity(0.80))
         }
-        .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 22)
                 .stroke(Color.primary.opacity(0.08))
         }
     }
 
+    private func previewBlock(_ color: Color, width: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: 10)
+            .fill(color)
+            .frame(width: width, height: 42)
+            .overlay(alignment: .bottomLeading) {
+                Circle()
+                    .fill(.background.opacity(0.84))
+                    .frame(width: 12, height: 12)
+                    .padding(8)
+            }
+    }
+
     private var themeDescription: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 8) {
             Label("선택됨", systemImage: "checkmark.circle.fill")
-                .font(.callout.weight(.black))
+                .font(.body.weight(.black))
                 .foregroundStyle(theme.accent)
             Text(theme.moodLine)
-                .font(.headline.weight(.black))
+                .font(.title2.weight(.black))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
-                .font(.callout.weight(.semibold))
+                .font(.body.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
@@ -266,18 +301,18 @@ private struct ThemeOptionTile: View {
     var isSelected: Bool
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: 13) {
             ThemePreviewMock(theme: theme, isSelected: isSelected)
-                .frame(width: 72, height: 54)
+                .frame(width: 96, height: 70)
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(theme.title)
-                    .font(.headline.weight(.black))
+                    .font(.title3.weight(.black))
                 Text(theme.subtitle)
-                    .font(.callout.weight(.semibold))
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     paletteDot(theme.accent)
                     paletteDot(theme.secondaryAccent)
                     paletteDot(theme.warmAccent)
@@ -287,14 +322,14 @@ private struct ThemeOptionTile: View {
             Spacer(minLength: 0)
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.subheadline.weight(.black))
+                .font(.title3.weight(.black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.42))
         }
-        .frame(maxWidth: .infinity, minHeight: 94, alignment: .center)
-        .padding(12)
-        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.085 : 0.035), in: RoundedRectangle(cornerRadius: 15))
+        .frame(maxWidth: .infinity, minHeight: 122, alignment: .center)
+        .padding(14)
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.08 : 0.028), in: RoundedRectangle(cornerRadius: 18))
         .overlay {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(isSelected ? theme.accent.opacity(0.52) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
         }
     }
@@ -302,7 +337,7 @@ private struct ThemeOptionTile: View {
     private func paletteDot(_ color: Color) -> some View {
         Circle()
             .fill(color)
-            .frame(width: 8, height: 8)
+            .frame(width: 10, height: 10)
             .overlay {
                 Circle()
                     .stroke(Color.primary.opacity(0.08), lineWidth: 0.8)
@@ -316,21 +351,37 @@ private struct ThemePreviewMock: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            HStack(spacing: 0) {
-                theme.accent
-                theme.secondaryAccent
-                theme.warmAccent
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.regularMaterial)
+                .overlay(theme.secondaryAccent.opacity(0.10))
+
+            VStack(alignment: .leading, spacing: 8) {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(theme.accent)
+                    .frame(width: 42, height: 8)
+                HStack(spacing: 5) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(theme.secondaryAccent.opacity(0.28))
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(theme.warmAccent.opacity(0.28))
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(theme.accent.opacity(0.20))
+                }
+                .frame(height: 28)
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(Color.primary.opacity(0.11))
+                    .frame(width: 58, height: 6)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 13))
+            .padding(10)
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.caption.weight(.black))
-                .foregroundStyle(isSelected ? .white : .white.opacity(0.72))
-                .padding(5)
+                .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.52))
+                .padding(7)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay {
-            RoundedRectangle(cornerRadius: 13)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.primary.opacity(0.08))
         }
     }
@@ -343,7 +394,7 @@ private struct SettingsOverviewGrid: View {
     var mapURL: String
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 172), spacing: 9)], spacing: 9) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 12)], spacing: 12) {
             SettingsOverviewTile(
                 title: "저장",
                 value: status,
@@ -373,30 +424,29 @@ private struct SettingsOverviewTile: View {
     var tint: Color
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
             Image(systemName: iconName)
-                .font(.subheadline.weight(.black))
+                .font(.headline.weight(.black))
                 .foregroundStyle(tint)
-                .frame(width: 34, height: 34)
-                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                .frame(width: 42, height: 42)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption.weight(.black))
+                    .font(.callout.weight(.black))
                     .foregroundStyle(.secondary)
                 Text(value)
-                    .font(.callout.weight(.black))
+                    .font(.headline.weight(.black))
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 68, alignment: .center)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
+        .frame(maxWidth: .infinity, minHeight: 84, alignment: .center)
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(.quaternary)
         }
     }
@@ -423,17 +473,17 @@ private struct SettingsSaveBanner: View {
             }
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
-        .padding(11)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
+        .frame(maxWidth: .infinity, minHeight: 72, alignment: .center)
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 18)
                 .fill(theme.accent)
                 .frame(width: 4)
                 .padding(.vertical, 9)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(.quaternary)
         }
     }
@@ -461,7 +511,7 @@ private struct SettingsTripHero: View {
                 tripScopeBlock
             }
         }
-        .padding(16)
+        .padding(20)
         .background {
             RoundedRectangle(cornerRadius: 20)
                 .fill(theme.accent.opacity(0.075))
@@ -470,8 +520,8 @@ private struct SettingsTripHero: View {
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 20)
                 .fill(theme.accent)
-                .frame(width: 5)
-                .padding(.vertical, 15)
+                .frame(width: 6)
+                .padding(.vertical, 18)
         }
         .overlay {
             RoundedRectangle(cornerRadius: 20)
@@ -481,20 +531,20 @@ private struct SettingsTripHero: View {
 
     private var heroIcon: some View {
         Image(systemName: "map.fill")
-            .font(.title3.weight(.black))
+            .font(.title2.weight(.black))
             .foregroundStyle(.white)
-            .frame(width: 48, height: 48)
-            .background(theme.accent, in: RoundedRectangle(cornerRadius: 16))
+            .frame(width: 58, height: 58)
+            .background(theme.accent, in: RoundedRectangle(cornerRadius: 18))
     }
 
     private var tripTitleBlock: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(currentCity.isEmpty ? trip.name : displayCity(currentCity))
-                .font(.title2.weight(.black))
+                .font(.system(size: 32, weight: .black, design: .rounded))
                 .lineLimit(1)
                 .minimumScaleFactor(0.82)
             Text("\(trip.country) · \(trip.cities.map(displayCity).joined(separator: " / "))")
-                .font(.callout.weight(.semibold))
+                .font(.body.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
@@ -503,13 +553,13 @@ private struct SettingsTripHero: View {
     private var tripScopeBlock: some View {
         HStack(spacing: 7) {
             Text(currentCity.isEmpty ? "ALL TRIP" : "LOCAL")
-                .font(.caption.weight(.black))
+                .font(.callout.weight(.black))
                 .foregroundStyle(theme.accent)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(theme.accent.opacity(0.12), in: Capsule())
             Text("\(trip.cities.count) cities")
-                .font(.caption.weight(.black))
+                .font(.callout.weight(.black))
                 .foregroundStyle(.secondary)
         }
     }
@@ -534,28 +584,28 @@ private struct FlightEditorCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Image(systemName: title.contains("오는") ? "airplane.arrival" : "airplane.departure")
-                    .font(.headline.weight(.bold))
-                    .frame(width: 34, height: 34)
-                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                    .font(.title3.weight(.bold))
+                    .frame(width: 44, height: 44)
+                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
                     .foregroundStyle(tint)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(title)
-                            .font(.headline.weight(.black))
+                            .font(.title2.weight(.black))
                         if !flight.flightNumber.isEmpty {
                             Text(flight.flightNumber)
-                                .font(.caption.weight(.black))
+                                .font(.callout.weight(.black))
                                 .foregroundStyle(tint)
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 5)
                                 .background(tint.opacity(0.12), in: Capsule())
                         }
                     }
                     Text(routeText)
-                        .font(.callout.weight(.semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
@@ -565,23 +615,23 @@ private struct FlightEditorCard: View {
 
             SettingsField(title: "편명", iconName: "number", placeholder: "편명", text: $flight.flightNumber)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 8)], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                 CompactFlightField(title: "출발지", text: $flight.origin)
                 CompactFlightField(title: "도착지", text: $flight.destination)
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 8)], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                 CompactFlightField(title: "출발 시간", text: $flight.localDeparture)
                 CompactFlightField(title: "도착 시간", text: $flight.localArrival)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 250, alignment: .topLeading)
-        .appPanel(cornerRadius: 18)
+        .frame(maxWidth: .infinity, minHeight: 292, alignment: .topLeading)
+        .appPanel(cornerRadius: 22)
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 22)
                 .fill(tint)
-                .frame(width: 4)
-                .padding(.vertical, 12)
+                .frame(width: 5)
+                .padding(.vertical, 16)
         }
     }
 
@@ -603,24 +653,25 @@ private struct SettingsField: View {
     var axis: Axis = .horizontal
 
     var body: some View {
-        HStack(alignment: axis == .vertical ? .top : .center, spacing: 10) {
+        HStack(alignment: axis == .vertical ? .top : .center, spacing: 12) {
             Image(systemName: iconName)
-                .font(.subheadline.weight(.bold))
+                .font(.headline.weight(.bold))
                 .foregroundStyle(theme.accent)
-                .frame(width: 32, height: 32)
-                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .frame(width: 40, height: 40)
+                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                 .padding(.top, axis == .vertical ? 1 : 0)
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 7) {
                 Text(title)
-                    .font(.caption.weight(.black))
+                    .font(.callout.weight(.black))
                     .foregroundStyle(.secondary)
                 TextField(placeholder, text: $text, axis: axis)
+                    .font(.body.weight(.semibold))
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(axis == .vertical ? 2...5 : 1...1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, minHeight: axis == .vertical ? 66 : 54, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: axis == .vertical ? 82 : 68, alignment: .center)
     }
 }
 
@@ -629,13 +680,14 @@ private struct CompactFlightField: View {
     @Binding var text: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 7) {
             Text(title)
-                .font(.caption.weight(.black))
+                .font(.callout.weight(.black))
                 .foregroundStyle(.secondary)
             TextField(title, text: $text)
+                .font(.body.weight(.semibold))
                 .textFieldStyle(.roundedBorder)
         }
-        .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 68, alignment: .leading)
     }
 }
