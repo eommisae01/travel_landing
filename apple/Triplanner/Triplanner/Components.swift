@@ -37,28 +37,28 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var accent: Color {
         switch self {
-        case .setouchi: return .teal
-        case .sunrise: return .orange
-        case .forest: return .green
-        case .graphite: return .indigo
+        case .setouchi: return Color(red: 0.04, green: 0.55, blue: 0.58)
+        case .sunrise: return Color(red: 0.82, green: 0.28, blue: 0.20)
+        case .forest: return Color(red: 0.10, green: 0.42, blue: 0.34)
+        case .graphite: return Color(red: 0.22, green: 0.25, blue: 0.34)
         }
     }
 
     var secondaryAccent: Color {
         switch self {
-        case .setouchi: return .blue
-        case .sunrise: return .pink
-        case .forest: return .mint
-        case .graphite: return .purple
+        case .setouchi: return Color(red: 0.42, green: 0.58, blue: 0.72)
+        case .sunrise: return Color(red: 0.68, green: 0.18, blue: 0.30)
+        case .forest: return Color(red: 0.55, green: 0.63, blue: 0.25)
+        case .graphite: return Color(red: 0.52, green: 0.45, blue: 0.61)
         }
     }
 
     var warmAccent: Color {
         switch self {
-        case .setouchi: return .orange
-        case .sunrise: return .yellow
-        case .forest: return .cyan
-        case .graphite: return .gray
+        case .setouchi: return Color(red: 0.88, green: 0.68, blue: 0.20)
+        case .sunrise: return Color(red: 0.91, green: 0.59, blue: 0.20)
+        case .forest: return Color(red: 0.75, green: 0.55, blue: 0.32)
+        case .graphite: return Color(red: 0.62, green: 0.58, blue: 0.54)
         }
     }
 
@@ -113,23 +113,17 @@ struct ScreenHeader: View {
     var body: some View {
         HStack(alignment: .center, spacing: 11) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(
-                    LinearGradient(
-                        colors: [theme.accent, theme.secondaryAccent.opacity(0.82)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .fill(theme.accent)
                 .frame(width: 4, height: subtitle.isEmpty ? 34 : 44)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 25, weight: .black, design: .rounded))
+                    .font(.system(size: 27, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.caption.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -192,7 +186,7 @@ struct EmptyStateView: View {
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
-            .padding(12)
+            .padding(14)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
@@ -218,19 +212,8 @@ private struct AppScreenBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background {
-                ZStack {
-                    Color.secondary.opacity(0.028)
-                    LinearGradient(
-                        colors: [
-                            theme.accent.opacity(0.055),
-                            theme.warmAccent.opacity(0.025),
-                            Color.secondary.opacity(0.026)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                }
-                .ignoresSafeArea()
+                Color.secondary.opacity(0.032)
+                    .ignoresSafeArea()
             }
             .tint(theme.accent)
     }
