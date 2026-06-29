@@ -231,7 +231,7 @@ struct HomeScreen: View {
                     }
                     .frame(maxWidth: .infinity)
 
-                    AccommodationSummaryRow(trip: trip)
+                    AccommodationSummaryRow(trip: trip, isTall: true)
                         .frame(maxWidth: 360)
                 }
 
@@ -525,39 +525,56 @@ private struct RouteTimeBadge: View {
 
 private struct AccommodationSummaryRow: View {
     var trip: Trip
+    var isTall = false
 
     var body: some View {
         Button {
             copyToClipboard(trip.accommodationAddress ?? trip.accommodation)
         } label: {
-            HStack(alignment: .center, spacing: 10) {
+            HStack(alignment: isTall ? .top : .center, spacing: 10) {
                 Image(systemName: "bed.double")
                     .font(.subheadline.weight(.black))
                     .frame(width: 32, height: 32)
                     .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(.purple)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("숙소")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.purple)
+                VStack(alignment: .leading, spacing: isTall ? 8 : 4) {
+                    HStack(spacing: 7) {
+                        Text("숙소")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(.purple)
+                        Text("주소 복사")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.purple)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(.purple.opacity(0.11), in: Capsule())
+                    }
                     Text(trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
                         .font(.subheadline.weight(.black))
-                        .lineLimit(1)
+                        .lineLimit(isTall ? 2 : 1)
                         .minimumScaleFactor(0.78)
                     if let address = trip.accommodationAddress, !address.isEmpty {
                         Text(address)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
-                            .lineLimit(2)
+                            .lineLimit(isTall ? 4 : 2)
+                    }
+                    if isTall {
+                        Spacer(minLength: 0)
+                        Label("탭하면 주소가 복사돼요", systemImage: "doc.on.doc")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
                     }
                 }
                 Spacer(minLength: 6)
-                Image(systemName: "doc.on.doc")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.secondary)
+                if !isTall {
+                    Image(systemName: "doc.on.doc")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.secondary)
+                }
             }
-            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isTall ? 156 : 74, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 10)
