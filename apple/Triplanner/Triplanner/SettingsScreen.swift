@@ -120,7 +120,7 @@ struct SettingsScreen: View {
     }
 
     private var saveStatusText: String {
-        guard let lastSavedAt else { return "저장 전" }
+        guard let lastSavedAt else { return "현재 기기에 저장됨" }
         let seconds = max(0, Int(Date().timeIntervalSince(lastSavedAt)))
         if seconds < 60 { return "방금 저장됨" }
         return "\(seconds / 60)분 전 저장"
@@ -132,15 +132,15 @@ private struct SettingsSaveBanner: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: status == "저장 전" ? "exclamationmark.circle" : "checkmark.circle.fill")
+            Image(systemName: "checkmark.circle.fill")
                 .font(.subheadline.weight(.black))
-                .foregroundStyle(status == "저장 전" ? .orange : .teal)
+                .foregroundStyle(.teal)
                 .frame(width: 30, height: 30)
-                .background((status == "저장 전" ? Color.orange : Color.teal).opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .background(Color.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 2) {
                 Text(status)
                     .font(.subheadline.weight(.black))
-                Text("항공편, 숙소, 지도 링크는 저장 후 홈과 지도에 반영됩니다.")
+                Text("수정한 뒤 저장하면 홈, 지도, 일정 화면에 바로 반영됩니다.")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
