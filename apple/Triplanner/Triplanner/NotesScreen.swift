@@ -272,7 +272,13 @@ struct NotesScreen: View {
                             .lineLimit(2)
                             .minimumScaleFactor(0.82)
 
-                        NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 5) {
+                                NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
+                                NoteKindPill(title: noteScopeTitle(note), iconName: noteScopeIcon(note), tint: noteScopeTint(note))
+                            }
+                            NoteKindPill(title: noteScopeTitle(note), iconName: noteScopeIcon(note), tint: noteScopeTint(note))
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -292,7 +298,7 @@ struct NotesScreen: View {
             }
             .frame(maxWidth: .infinity, minHeight: 162, maxHeight: 162, alignment: .topLeading)
             .padding(12)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .background(.background.opacity(0.78), in: RoundedRectangle(cornerRadius: 16))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
                     .fill(noteAccent(note))
@@ -303,7 +309,7 @@ struct NotesScreen: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(noteAccent(note).opacity(0.14))
             }
-            .shadow(color: Color.primary.opacity(0.022), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.018), radius: 7, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -374,6 +380,24 @@ struct NotesScreen: View {
         case "후보": return "fork.knife"
         default: return "doc.text.fill"
         }
+    }
+
+    private func noteScopeTitle(_ note: NoteGroup) -> String {
+        if commonNotes.contains(where: { $0.id == note.id }) { return "공통" }
+        if store.currentCity.isEmpty { return "지역" }
+        if selectedCityNotes.contains(where: { $0.id == note.id }) { return displayCity(store.currentCity) }
+        return "다른 지역"
+    }
+
+    private func noteScopeIcon(_ note: NoteGroup) -> String {
+        if commonNotes.contains(where: { $0.id == note.id }) { return "tray.full.fill" }
+        return "mappin.and.ellipse"
+    }
+
+    private func noteScopeTint(_ note: NoteGroup) -> Color {
+        if commonNotes.contains(where: { $0.id == note.id }) { return theme.accent }
+        if selectedCityNotes.contains(where: { $0.id == note.id }) { return theme.secondaryAccent }
+        return .secondary
     }
 }
 
