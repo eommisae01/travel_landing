@@ -149,7 +149,7 @@ private struct ThemePickerCard: View {
     var onSelect: (AppTheme) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 13) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     SectionLabel(title: "PERSONALIZE")
@@ -168,7 +168,7 @@ private struct ThemePickerCard: View {
 
             ThemeActivePreview(theme: selectedTheme)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 168), spacing: 10)], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 9)], spacing: 9) {
                 ForEach(AppTheme.allCases) { theme in
                     Button {
                         onSelect(theme)
@@ -187,32 +187,30 @@ private struct ThemeActivePreview: View {
     var theme: AppTheme
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: 12) {
-                themePreviewCard
-                    .frame(width: 148, height: 102)
-                themeDescription
-                Spacer(minLength: 0)
-            }
-
-            VStack(alignment: .leading, spacing: 10) {
-                themePreviewCard
-                    .frame(maxWidth: .infinity, minHeight: 92)
-                themeDescription
-            }
+        HStack(alignment: .center, spacing: 12) {
+            themePreviewCard
+                .frame(width: 118, height: 72)
+            themeDescription
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 116, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 84, alignment: .center)
         .padding(10)
-        .background(theme.accent.opacity(0.075), in: RoundedRectangle(cornerRadius: 18))
+        .background(theme.accent.opacity(0.065), in: RoundedRectangle(cornerRadius: 16))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(theme.accent)
+                .frame(width: 3)
+                .padding(.vertical, 11)
+        }
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(theme.accent.opacity(0.20))
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(theme.accent.opacity(0.16))
         }
     }
 
     private var themePreviewCard: some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 17)
+            RoundedRectangle(cornerRadius: 15)
                 .fill(
                     LinearGradient(
                         colors: [
@@ -232,27 +230,25 @@ private struct ThemeActivePreview: View {
                     paletteDot(theme.warmAccent)
                 }
                 Text(theme.title)
-                    .font(.headline.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(.white)
-                Text(theme.subtitle)
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.white.opacity(0.82))
+                    .lineLimit(1)
             }
-            .padding(12)
+            .padding(10)
         }
     }
 
     private var themeDescription: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: 5) {
             Text("Active Theme")
                 .font(.caption2.weight(.black))
                 .foregroundStyle(.secondary)
             Text(theme.moodLine)
-                .font(.subheadline.weight(.black))
+                .font(.caption.weight(.black))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
-                .font(.caption.weight(.semibold))
+                .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
@@ -274,8 +270,9 @@ private struct ThemeOptionTile: View {
     var isSelected: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        HStack(alignment: .center, spacing: 10) {
             ThemePreviewMock(theme: theme, isSelected: isSelected)
+                .frame(width: 54, height: 42)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(theme.title)
@@ -285,15 +282,17 @@ private struct ThemeOptionTile: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
+
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 62, alignment: .center)
         .padding(9)
-        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.10 : 0.052), in: RoundedRectangle(cornerRadius: 17))
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.095 : 0.045), in: RoundedRectangle(cornerRadius: 15))
         .overlay {
-            RoundedRectangle(cornerRadius: 17)
+            RoundedRectangle(cornerRadius: 15)
                 .stroke(isSelected ? theme.accent.opacity(0.45) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
         }
-        .shadow(color: isSelected ? theme.accent.opacity(0.14) : .clear, radius: 8, x: 0, y: 4)
+        .shadow(color: isSelected ? theme.accent.opacity(0.10) : .clear, radius: 6, x: 0, y: 3)
     }
 }
 
@@ -303,7 +302,7 @@ private struct ThemePreviewMock: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(
                     LinearGradient(
                         colors: [
@@ -316,7 +315,7 @@ private struct ThemePreviewMock: View {
                     )
                 )
 
-            VStack(alignment: .leading, spacing: 7) {
+            VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 5) {
                     paletteDot(theme.accent)
                     paletteDot(theme.secondaryAccent)
@@ -326,29 +325,29 @@ private struct ThemePreviewMock: View {
 
                 RoundedRectangle(cornerRadius: 5)
                     .fill(.white.opacity(0.82))
-                    .frame(width: 58, height: 6)
+                    .frame(width: 34, height: 5)
 
                 HStack(spacing: 5) {
                     RoundedRectangle(cornerRadius: 6)
                         .fill(.white.opacity(0.76))
-                        .frame(width: 38, height: 18)
+                        .frame(width: 26, height: 12)
                     RoundedRectangle(cornerRadius: 6)
                         .fill(.white.opacity(0.44))
-                        .frame(width: 26, height: 18)
+                        .frame(width: 18, height: 12)
                 }
             }
-            .padding(9)
+            .padding(7)
 
             if isSelected {
                 Image(systemName: "checkmark")
                     .font(.caption.weight(.black))
                     .foregroundStyle(theme.accent)
-                    .frame(width: 22, height: 22)
+                    .frame(width: 18, height: 18)
                     .background(.white.opacity(0.90), in: Circle())
-                    .padding(8)
+                    .padding(5)
             }
         }
-        .frame(height: 58)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func paletteDot(_ color: Color) -> some View {
