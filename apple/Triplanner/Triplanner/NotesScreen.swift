@@ -44,7 +44,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 12)], spacing: 12) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -249,18 +249,18 @@ struct NotesScreen: View {
 
                 noteAttachmentStrip(note)
             }
-            .frame(maxWidth: .infinity, minHeight: 164, maxHeight: 164, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 172, maxHeight: 172, alignment: .topLeading)
             .padding(12)
-            .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 15))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
             .overlay(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 15)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(noteAccent(note))
-                    .frame(width: 4)
-                    .padding(.vertical, 11)
+                    .frame(width: 3)
+                    .padding(.vertical, 13)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 15)
-                    .stroke(noteAccent(note).opacity(0.14))
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(noteAccent(note).opacity(0.10))
             }
         }
         .buttonStyle(.plain)
@@ -490,10 +490,10 @@ private struct FeaturedNoteTile: View {
         }
         .frame(width: 210, height: 174, alignment: .topLeading)
         .padding(9)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 17))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17))
         .overlay {
             RoundedRectangle(cornerRadius: 17)
-                .stroke(accent.opacity(0.12))
+                .stroke(accent.opacity(0.10))
         }
     }
 }
