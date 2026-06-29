@@ -242,10 +242,14 @@ struct ScheduleScreen: View {
                         .font(.caption2.weight(.black))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 28)
+                        .frame(height: 32)
                 }
             }
-            .background(.secondary.opacity(0.055), in: RoundedRectangle(cornerRadius: 12))
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 13))
+            .overlay {
+                RoundedRectangle(cornerRadius: 13)
+                    .stroke(Color.primary.opacity(0.045))
+            }
 
             LazyVGrid(columns: calendarColumns, spacing: 0) {
                 ForEach(calendarDisplayDates, id: \.self) { date in
@@ -270,10 +274,10 @@ struct ScheduleScreen: View {
                     .disabled(!isTripDay)
                 }
             }
-            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.primary.opacity(0.065), lineWidth: 0.75)
             }
 
@@ -837,45 +841,35 @@ private struct CalendarHourRow: View {
     var isLast: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: 12) {
             Text(hourLabel)
                 .font(.caption2.weight(.black).monospacedDigit())
                 .foregroundStyle(.secondary)
-                .frame(width: 52, alignment: .trailing)
-                .padding(.top, 10)
-
-            ZStack(alignment: .top) {
-                Rectangle()
-                    .fill(Color.secondary.opacity(isLast ? 0 : 0.16))
-                    .frame(width: 1)
-                Circle()
-                    .fill(items.isEmpty ? Color.secondary.opacity(0.28) : theme.accent)
-                    .frame(width: items.isEmpty ? 5 : 9, height: items.isEmpty ? 5 : 9)
-                    .padding(.top, 14)
-            }
-            .frame(width: 10)
-            .frame(minHeight: rowHeight)
+                .frame(width: 54, alignment: .trailing)
+                .padding(.top, 8)
 
             VStack(alignment: .leading, spacing: 6) {
+                Rectangle()
+                    .fill(Color.secondary.opacity(isLast ? 0.07 : 0.13))
+                    .frame(height: 0.7)
+                    .padding(.bottom, items.isEmpty ? 0 : 2)
+
                 if items.isEmpty {
-                    Rectangle()
-                        .fill(Color.secondary.opacity(0.09))
-                        .frame(height: 1)
-                        .padding(.top, 17)
+                    Spacer(minLength: 0)
                 } else {
                     ForEach(items) { item in
                         CalendarTimeBlock(item: item)
                     }
-                    .padding(.vertical, 5)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .topLeading)
         }
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 2)
     }
 
     private var rowHeight: CGFloat {
-        items.isEmpty ? 44 : CGFloat(max(1, items.count)) * 54 + 8
+        items.isEmpty ? 42 : CGFloat(max(1, items.count)) * 50 + 10
     }
 
     private var hourLabel: String {
@@ -892,7 +886,7 @@ private struct CalendarTimeBlock: View {
             Text(timeText)
                 .font(.caption2.weight(.black).monospacedDigit())
                 .foregroundStyle(tint)
-                .frame(width: 72, alignment: .leading)
+                .frame(width: 76, alignment: .leading)
                 .padding(.top, 1)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -918,19 +912,19 @@ private struct CalendarTimeBlock: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 46, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
         .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(tint.opacity(0.065), in: RoundedRectangle(cornerRadius: 11))
+        .padding(.vertical, 6)
+        .background(tint.opacity(0.075), in: RoundedRectangle(cornerRadius: 10))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(tint)
                 .frame(width: 3)
-                .padding(.vertical, 8)
+                .padding(.vertical, 7)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 11)
-                .stroke(tint.opacity(0.12))
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(tint.opacity(0.13))
         }
     }
 
@@ -1003,12 +997,12 @@ private struct CalendarDayCell: View {
     var isSelected: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
                 Text(dayNumber)
                     .font(.subheadline.weight(.black).monospacedDigit())
                     .foregroundStyle(dayNumberForeground)
-                    .frame(width: 26, height: 26)
+                    .frame(width: 28, height: 28)
                     .background(dayNumberBackground, in: Circle())
                 Spacer(minLength: 4)
                 if itemCount > 0 {
@@ -1036,9 +1030,10 @@ private struct CalendarDayCell: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(secondaryForeground)
                     .lineLimit(1)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 3)
-                    .background(eventBackground, in: RoundedRectangle(cornerRadius: 6))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(eventBackground, in: RoundedRectangle(cornerRadius: 7))
             } else if isTripDay {
                 Text("일정 없음")
                     .font(.caption2.weight(.bold))
@@ -1048,7 +1043,7 @@ private struct CalendarDayCell: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 82, maxHeight: 82, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 92, maxHeight: 92, alignment: .topLeading)
         .padding(8)
         .background(cellBackground)
         .overlay {
