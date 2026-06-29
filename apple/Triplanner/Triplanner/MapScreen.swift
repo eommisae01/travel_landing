@@ -94,7 +94,7 @@ struct MapScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 10)]
         }
-        return [GridItem(.adaptive(minimum: 380, maximum: 540), spacing: 10)]
+        return [GridItem(.adaptive(minimum: 340, maximum: 500), spacing: 10)]
     }
 
     private var placesTitle: String {
@@ -264,7 +264,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             cardHeader
 
             memoPreview
@@ -280,20 +280,20 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 184, maxHeight: 184, alignment: .topLeading)
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 204, maxHeight: 204, alignment: .topLeading)
+        .padding(13)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
                 .frame(width: 4)
-                .padding(.vertical, 12)
+                .padding(.vertical, 13)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(categoryColor.opacity(place.isFavorite ? 0.26 : 0.09))
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(categoryColor.opacity(place.isFavorite ? 0.30 : 0.10))
         }
-        .shadow(color: Color.primary.opacity(0.025), radius: 9, x: 0, y: 4)
+        .shadow(color: Color.primary.opacity(0.030), radius: 10, x: 0, y: 5)
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
                 .environmentObject(store)
@@ -309,14 +309,14 @@ struct PlaceRow: View {
     }
 
     private var cardHeader: some View {
-        HStack(alignment: .top, spacing: 9) {
+        HStack(alignment: .top, spacing: 10) {
             categoryBadge
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(place.name)
                     .font(.headline.weight(.black))
                     .lineLimit(2)
-                    .minimumScaleFactor(0.80)
+                    .minimumScaleFactor(0.78)
 
                 HStack(spacing: 5) {
                     Text(place.category)
@@ -386,7 +386,7 @@ struct PlaceRow: View {
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 34, height: 34)
+        .frame(width: 36, height: 36)
     }
 
     private var actionBar: some View {
@@ -451,8 +451,8 @@ struct PlaceRow: View {
                 }
             }
         }
-        .padding(.vertical, 1)
-        .frame(maxWidth: .infinity, minHeight: 54, alignment: .topLeading)
+        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
     }
 
     private var categoryColor: Color {
@@ -494,21 +494,25 @@ private struct PlaceMemoLine: View {
     var isPlaceholder = false
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 5) {
+        HStack(alignment: .top, spacing: 7) {
             Image(systemName: iconName)
                 .font(.caption2.weight(.black))
-                .foregroundStyle(tint)
-                .frame(width: 13)
-            Text(title)
-                .font(.caption2.weight(.black))
-                .foregroundStyle(tint)
-            Text(value.isEmpty ? "메모 없음" : value)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(isPlaceholder ? .tertiary : .secondary)
-                .lineLimit(1)
-                .truncationMode(.tail)
+                .foregroundStyle(isPlaceholder ? .secondary : tint)
+                .frame(width: 22, height: 22)
+                .background(tint.opacity(isPlaceholder ? 0.07 : 0.11), in: RoundedRectangle(cornerRadius: 7))
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(isPlaceholder ? .secondary : tint)
+                Text(value.isEmpty ? "메모 없음" : value)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(isPlaceholder ? .tertiary : .secondary)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
     }
 }
 
