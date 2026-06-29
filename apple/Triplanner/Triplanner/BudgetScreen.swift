@@ -52,6 +52,8 @@ struct BudgetScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    BudgetHeader()
+
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(alignment: .top, spacing: 12) {
                             VStack(alignment: .leading, spacing: 7) {
@@ -160,17 +162,12 @@ struct BudgetScreen: View {
                 .readableWidth(900)
                 .padding()
             }
-            .navigationTitle("Budget")
+            .navigationTitle("")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button {
-                        isEditingBudget = true
-                    } label: {
-                        Label("한도 설정", systemImage: "slider.horizontal.3")
-                    }
                     Button {
                         isAddingExpense = true
                     } label: {
@@ -194,6 +191,32 @@ struct BudgetScreen: View {
         if budget <= 0 { return theme.accent }
         if progress >= 0.9 { return .orange }
         return theme.accent
+    }
+}
+
+private struct BudgetHeader: View {
+    @Environment(\.appTheme) private var theme
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 10) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(theme.secondaryAccent)
+                .frame(width: 4, height: 42)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Budget")
+                    .font(.system(size: 25, weight: .black, design: .rounded))
+                    .lineLimit(1)
+                Text("여행 지출과 예상 부담을 한눈에 확인")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.86)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
