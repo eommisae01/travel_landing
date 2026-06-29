@@ -238,10 +238,11 @@ struct ScheduleScreen: View {
                         CalendarDayCell(
                             dayNumber: dayNumber(date),
                             dayLabel: index.map { "Day \($0 + 1)" },
-                            firstItemTitle: dayItems.first?.title,
+                            itemTitles: Array(dayItems.prefix(2).map(\.title)),
                             itemCount: dayItems.count,
                             isTripDay: isTripDay,
-                            isSelected: isSelected
+                            isSelected: isSelected,
+                            isToday: Calendar.current.isDateInToday(date)
                         )
                     }
                     .buttonStyle(.plain)
@@ -1021,13 +1022,14 @@ private struct CalendarDayCell: View {
     @Environment(\.appTheme) private var theme
     var dayNumber: String
     var dayLabel: String?
-    var firstItemTitle: String?
+    var itemTitles: [String]
     var itemCount: Int
     var isTripDay: Bool
     var isSelected: Bool
+    var isToday: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline) {
                 Text(dayNumber)
                     .font(.subheadline.weight(.black).monospacedDigit())
@@ -1055,20 +1057,29 @@ private struct CalendarDayCell: View {
                     .font(.caption2.weight(.black))
             }
 
-            if let firstItemTitle, isTripDay {
-                Text(firstItemTitle)
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(secondaryForeground)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 4)
-                    .background(eventBackground, in: RoundedRectangle(cornerRadius: 7))
+            if isTripDay && !itemTitles.isEmpty {
+                VStack(spacing: 4) {
+                    ForEach(itemTitles, id: \.self) { title in
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(eventDotColor)
+                                .frame(width: 5, height: 5)
+                            Text(title)
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(secondaryForeground)
+                                .lineLimit(1)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(eventBackground, in: RoundedRectangle(cornerRadius: 7))
+                    }
+                }
             } else {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 84, maxHeight: 84, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 96, maxHeight: 96, alignment: .topLeading)
         .padding(8)
         .background(cellBackground)
         .overlay {
@@ -1087,11 +1098,13 @@ private struct CalendarDayCell: View {
 
     private var cellBackground: Color {
         if isSelected { return theme.accent.opacity(0.12) }
+        if isToday { return theme.secondaryAccent.opacity(0.08) }
         return isTripDay ? Color.primary.opacity(0.018) : Color.clear
     }
 
     private var borderColor: Color {
         if isSelected { return theme.accent.opacity(0.62) }
+        if isToday { return theme.secondaryAccent.opacity(0.42) }
         return isTripDay ? Color.primary.opacity(0.070) : Color.primary.opacity(0.040)
     }
 
@@ -1100,11 +1113,13 @@ private struct CalendarDayCell: View {
     }
 
     private var dayNumberForeground: Color {
-        isSelected ? .white : primaryForeground
+        isSelected || isToday ? .white : primaryForeground
     }
 
     private var dayNumberBackground: Color {
-        isSelected ? theme.accent : .clear
+        if isSelected { return theme.accent }
+        if isToday { return theme.secondaryAccent }
+        return .clear
     }
 
     private var secondaryForeground: Color {
@@ -1125,6 +1140,10 @@ private struct CalendarDayCell: View {
 
     private var eventBackground: Color {
         isSelected ? theme.accent.opacity(0.12) : theme.accent.opacity(0.07)
+    }
+
+    private var eventDotColor: Color {
+        isSelected ? theme.accent : theme.secondaryAccent
     }
 }
 
