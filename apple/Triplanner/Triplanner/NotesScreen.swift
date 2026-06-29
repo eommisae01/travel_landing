@@ -12,6 +12,7 @@ struct NotesScreen: View {
     }
 
     private var cityOnlyNotes: [NoteGroup] {
+        guard !store.currentCity.isEmpty else { return [] }
         let commonIDs = Set(commonNotes.map(\.id))
         return selectedCityNotes.filter { !commonIDs.contains($0.id) }
     }
@@ -90,11 +91,11 @@ struct NotesScreen: View {
                     .padding(.top, 2)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(title: store.currentCity.isEmpty ? "CITY NOTES" : "\(displayCity(store.currentCity))", count: cityOnlyNotes.count)
+                        sectionHeader(title: currentAreaTitle, count: cityOnlyNotes.count)
                         if cityOnlyNotes.isEmpty {
                             EmptyStateView(
-                                title: "자료가 비어있어요",
-                                message: "시간표, 예약 캡처, 현장 메모를 도시별 보드로 모아둘 수 있습니다.",
+                                title: store.currentCity.isEmpty ? "지역을 고르면 해당 자료가 보여요" : "자료가 비어있어요",
+                                message: store.currentCity.isEmpty ? "상단의 Trip 메뉴에서 도시를 선택하면 그 지역 자료만 모아볼 수 있습니다." : "시간표, 예약 캡처, 현장 메모를 도시별 보드로 모아둘 수 있습니다.",
                                 iconName: "doc.text.image"
                             )
                         } else {
@@ -110,7 +111,17 @@ struct NotesScreen: View {
                             }
                             .padding(.top, 10)
                         } label: {
-                            sectionHeader(title: "ALL NOTES", count: hiddenAllNotes.count)
+                            AllNotesDisclosureLabel(
+                                count: hiddenAllNotes.count,
+                                isExpanded: showAllNotes,
+                                tint: .secondary
+                            )
+                        }
+                        .padding(12)
+                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(Color.primary.opacity(0.055))
                         }
                         .padding(.top, 2)
                     }
@@ -146,12 +157,12 @@ struct NotesScreen: View {
                     .foregroundStyle(theme.accent)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(store.currentCity.isEmpty ? "All Trip Materials" : "\(displayCity(store.currentCity)) Materials")
+                    Text(store.currentCity.isEmpty ? "Common Materials" : "\(displayCity(store.currentCity)) Materials")
                         .font(.headline.weight(.black))
-                    Text("공통 자료와 현재 지역 자료를 먼저 보여줍니다.")
+                    Text(store.currentCity.isEmpty ? "공통 자료를 먼저 보고, 지역 자료는 All Notes에서 펼쳐봅니다." : "공통 자료와 현재 지역 자료를 먼저 보여줍니다.")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
 
                 Spacer(minLength: 8)
@@ -255,7 +266,12 @@ struct NotesScreen: View {
     private func sectionSubtitle(_ title: String) -> String {
         if title == "COMMON" { return "여러 지역에서 같이 쓰는 자료" }
         if title == "ALL NOTES" { return "다른 지역 자료까지 펼쳐 보기" }
+        if store.currentCity.isEmpty { return "도시를 선택하면 이 영역이 채워져요" }
         return "현재 여행지에서 바로 볼 자료"
+    }
+
+    private var currentAreaTitle: String {
+        store.currentCity.isEmpty ? "CURRENT AREA" : displayCity(store.currentCity)
     }
 
     private func noteCard(_ note: NoteGroup) -> some View {
@@ -398,6 +414,47 @@ struct NotesScreen: View {
         if commonNotes.contains(where: { $0.id == note.id }) { return theme.accent }
         if selectedCityNotes.contains(where: { $0.id == note.id }) { return theme.secondaryAccent }
         return .secondary
+    }
+}
+
+private struct AllNotesDisclosureLabel: View {
+    var count: Int
+    var isExpanded: Bool
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "square.grid.2x2.fill")
+                .font(.caption.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.11), in: RoundedRectangle(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("ALL NOTES")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(.primary)
+                Text("다른 지역 자료까지 \(isExpanded ? "접기" : "펼쳐 보기")")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            Text("\(count)")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(tint)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(tint.opacity(0.10), in: Capsule())
+
+            Image(systemName: "chevron.down")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+                .rotationEffect(.degrees(isExpanded ? 180 : 0))
+        }
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+        .contentShape(Rectangle())
     }
 }
 
