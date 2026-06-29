@@ -118,7 +118,12 @@ struct ChecklistScreen: View {
                         selectedOwner = owner
                     } label: {
                         HStack(spacing: 7) {
-                            Image(systemName: isSelected ? "checkmark.circle.fill" : "person.crop.circle")
+                            if isSelected {
+                                Circle()
+                                    .fill(.white)
+                                    .frame(width: 6, height: 6)
+                            }
+                            Image(systemName: "person.crop.circle")
                                 .font(.caption2.weight(.black))
                             Text(owner)
                                 .font(.caption.weight(.black))
@@ -127,13 +132,13 @@ struct ChecklistScreen: View {
                                 .font(.caption2.weight(.black).monospacedDigit())
                                 .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
                         }
-                        .padding(.horizontal, 11)
-                        .padding(.vertical, 8)
-                        .background(isSelected ? theme.accent : Color.secondary.opacity(0.10), in: Capsule())
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .background(isSelected ? theme.accent : Color.clear, in: Capsule())
                         .foregroundStyle(isSelected ? .white : .primary)
                         .overlay {
                             Capsule()
-                                .stroke(isSelected ? theme.accent.opacity(0.35) : Color.secondary.opacity(0.08))
+                                .stroke(isSelected ? theme.accent.opacity(0.34) : Color.secondary.opacity(0.13))
                         }
                     }
                     .buttonStyle(.plain)
@@ -157,13 +162,12 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 9) {
             HStack {
-                Text(title)
-                    .font(.subheadline.weight(.black))
+                SectionLabel(title: title)
                 Spacer()
                 Text(subtitle)
-                    .font(.caption.weight(.black))
+                    .font(.caption2.weight(.black))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(tint.opacity(0.12), in: Capsule())
@@ -184,11 +188,11 @@ private struct ChecklistSection: View {
                         }
                     }
                 }
-                .background(.background.opacity(0.46), in: RoundedRectangle(cornerRadius: 14))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .background(Color.primary.opacity(0.018), in: RoundedRectangle(cornerRadius: 13))
+                .clipShape(RoundedRectangle(cornerRadius: 13))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(.quaternary)
+                    RoundedRectangle(cornerRadius: 13)
+                        .stroke(Color.primary.opacity(0.05))
                 }
             }
         }
@@ -223,7 +227,7 @@ private struct ChecklistItemRow: View {
                 .font(.caption2.weight(.black))
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
-                .frame(width: 58, height: 26)
+                .frame(width: 54, height: 24)
                 .background(ownerTint.opacity(0.11), in: Capsule())
                 .foregroundStyle(ownerTint)
 
@@ -235,16 +239,16 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 3)
+        .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 2)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
                 Rectangle()
                     .fill(Color.secondary.opacity(0.11))
                     .frame(height: 0.5)
-                    .padding(.leading, 42)
+                    .padding(.leading, 40)
             }
         }
         .opacity(item.isDone ? 0.66 : 1)
@@ -261,10 +265,10 @@ private struct ChecklistItemRow: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(item.isDone ? tint.opacity(0.42) : Color.secondary.opacity(0.16), lineWidth: 1)
             Image(systemName: item.isDone ? "checkmark" : "circle")
-                .font(.system(size: item.isDone ? 12 : 9, weight: .black))
+                .font(.system(size: item.isDone ? 11 : 8, weight: .black))
                 .foregroundStyle(item.isDone ? tint : .secondary)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: 26, height: 26)
         .contentShape(RoundedRectangle(cornerRadius: 8))
     }
 
@@ -276,7 +280,7 @@ private struct ChecklistItemRow: View {
             .lineLimit(1)
             .minimumScaleFactor(0.82)
             .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 26, alignment: .leading)
             .contentShape(Rectangle())
     }
 
@@ -284,7 +288,7 @@ private struct ChecklistItemRow: View {
         Image(systemName: "pencil")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 28, height: 28)
+            .frame(width: 26, height: 26)
             .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 
