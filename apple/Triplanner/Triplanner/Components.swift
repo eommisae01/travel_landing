@@ -89,10 +89,10 @@ struct InfoCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.subheadline.weight(.black))
+                .font(.system(size: 16, weight: .black, design: .rounded))
                 .foregroundStyle(theme.accent)
             Text(subtitle.isEmpty ? "입력 전" : subtitle)
-                .font(.headline.weight(.semibold))
+                .font(.system(size: 19, weight: .semibold, design: .rounded))
                 .lineLimit(3)
         }
         .frame(maxWidth: .infinity, minHeight: 74, alignment: .topLeading)
@@ -118,12 +118,12 @@ struct ScreenHeader: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 31, weight: .black, design: .rounded))
+                    .font(.system(size: 35, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.callout.weight(.semibold))
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -141,7 +141,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.subheadline.weight(.black))
+            .font(.system(size: 15, weight: .black, design: .rounded))
             .tracking(0.2)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -164,9 +164,9 @@ struct EmptyStateView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.headline.weight(.black))
+                    .font(.system(size: 19, weight: .black, design: .rounded))
                 Text(message)
-                    .font(.callout.weight(.semibold))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)

@@ -166,13 +166,13 @@ private struct ChecklistSection: View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
                 Text(title)
-                    .font(.title3.weight(.black))
+                    .font(.title2.weight(.black))
                     .foregroundStyle(.primary)
                 Spacer()
                 Text(subtitle)
-                    .font(.headline.weight(.black).monospacedDigit())
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
+                    .font(.system(size: 17, weight: .black, design: .rounded).monospacedDigit())
+                    .padding(.horizontal, 13)
+                    .padding(.vertical, 8)
                     .background(tint.opacity(0.12), in: Capsule())
                     .foregroundStyle(tint)
             }
@@ -247,7 +247,7 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { 80 }
+    private var rowHeight: CGFloat { 88 }
 
     private var checkmarkIcon: some View {
         ZStack {
@@ -257,17 +257,17 @@ private struct ChecklistItemRow: View {
                 .stroke(item.isDone ? tint.opacity(0.42) : Color.secondary.opacity(0.16), lineWidth: 1)
             if item.isDone {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 15, weight: .black))
+                    .font(.system(size: 16, weight: .black))
                     .foregroundStyle(tint)
             }
         }
-        .frame(width: 42, height: 42)
+        .frame(width: 46, height: 46)
         .contentShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var titleLabel: some View {
         Text(item.title)
-            .font(.system(size: 23, weight: .semibold, design: .rounded))
+            .font(.system(size: 26, weight: .semibold, design: .rounded))
             .strikethrough(item.isDone)
             .foregroundStyle(item.isDone ? .secondary : .primary)
             .lineLimit(1)
@@ -278,10 +278,10 @@ private struct ChecklistItemRow: View {
 
     private var ownerPill: some View {
         Text(item.owner)
-            .font(.title3.weight(.black))
+            .font(.system(size: 18, weight: .black, design: .rounded))
             .lineLimit(1)
             .minimumScaleFactor(0.78)
-            .frame(width: 104, height: 42)
+            .frame(width: 112, height: 46)
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
     }
@@ -298,14 +298,14 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(width: 162, height: rowHeight, alignment: .center)
+        .frame(width: 174, height: rowHeight, alignment: .center)
     }
 
     private var editIcon: some View {
         Image(systemName: "pencil")
             .font(.title3.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 42, height: 42)
+            .frame(width: 46, height: 46)
             .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 13))
     }
 
