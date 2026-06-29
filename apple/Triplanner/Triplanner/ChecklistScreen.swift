@@ -188,7 +188,7 @@ private struct ChecklistSection: View {
                         }
                     }
                 }
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
+                .background(.background.opacity(0.78), in: RoundedRectangle(cornerRadius: 13))
                 .clipShape(RoundedRectangle(cornerRadius: 13))
                 .overlay {
                     RoundedRectangle(cornerRadius: 13)
@@ -223,16 +223,7 @@ private struct ChecklistItemRow: View {
             .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .leading)
             .accessibilityLabel(item.isDone ? "완료 해제" : "완료")
 
-            ownerPill
-
-            Button {
-                isEditing = true
-            } label: {
-                editIcon
-            }
-            .buttonStyle(.plain)
-            .frame(width: 28, height: rowHeight)
-            .accessibilityLabel("항목 수정")
+            controlCluster
         }
         .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .center)
         .padding(.horizontal, 10)
@@ -253,7 +244,7 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { 38 }
+    private var rowHeight: CGFloat { 40 }
 
     private var checkmarkIcon: some View {
         ZStack {
@@ -287,9 +278,24 @@ private struct ChecklistItemRow: View {
             .font(.caption2.weight(.black))
             .lineLimit(1)
             .minimumScaleFactor(0.78)
-            .frame(width: 58, height: 22)
+            .frame(width: 54, height: 22)
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
+    }
+
+    private var controlCluster: some View {
+        HStack(spacing: 6) {
+            ownerPill
+
+            Button {
+                isEditing = true
+            } label: {
+                editIcon
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("항목 수정")
+        }
+        .frame(width: 88, height: rowHeight, alignment: .center)
     }
 
     private var editIcon: some View {
