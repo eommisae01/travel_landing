@@ -61,7 +61,7 @@ struct ScheduleScreen: View {
                         }
                     }
                 }
-                .readableWidth()
+                .readableWidth(1180)
                 .padding()
             }
             .navigationTitle("")
@@ -126,23 +126,23 @@ struct ScheduleScreen: View {
                         .font(.caption.weight(.black))
                     Text(subtitle)
                         .font(.caption2.weight(.bold))
-                        .foregroundStyle(isSelected ? theme.accent : .secondary)
+                        .foregroundStyle(isSelected ? .white.opacity(0.86) : .secondary)
                         .lineLimit(1)
                 }
 
                 Capsule()
-                    .fill(isSelected ? theme.accent : Color.clear)
+                    .fill(isSelected ? .white.opacity(0.92) : Color.clear)
                     .frame(height: 3)
             }
             .frame(width: title == "전체" ? 84 : 100, alignment: .leading)
             .frame(minHeight: 42, alignment: .leading)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(isSelected ? theme.accent.opacity(0.10) : Color.clear, in: RoundedRectangle(cornerRadius: 12))
-            .foregroundStyle(.primary)
+            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+            .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? theme.accent.opacity(0.34) : Color.secondary.opacity(0.13), lineWidth: 1)
+                    .stroke(isSelected ? theme.accent.opacity(0.56) : Color.secondary.opacity(0.13), lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -210,53 +210,58 @@ struct ScheduleScreen: View {
                 }
             }
 
-            HStack(spacing: 0) {
-                ForEach(weekdayLabels, id: \.self) { label in
-                    Text(label)
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 32)
-                }
-            }
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 13))
-            .overlay {
-                RoundedRectangle(cornerRadius: 13)
-                    .stroke(Color.primary.opacity(0.045))
-            }
-
-            LazyVGrid(columns: calendarColumns, spacing: 0) {
-                ForEach(calendarDisplayDates, id: \.self) { date in
-                    let dayItems = items(on: date)
-                    let index = dayIndex(for: date)
-                    let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
-                    let isTripDay = index != nil
-                    Button {
-                        guard isTripDay else { return }
-                        selectedDate = date
-                    } label: {
-                        CalendarDayCell(
-                            dayNumber: dayNumber(date),
-                            dayLabel: index.map { "Day \($0 + 1)" },
-                            itemTitles: Array(dayItems.prefix(2).map(\.title)),
-                            itemCount: dayItems.count,
-                            isTripDay: isTripDay,
-                            isSelected: isSelected,
-                            isToday: Calendar.current.isDateInToday(date)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!isTripDay)
-                }
-            }
-            .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.primary.opacity(0.065), lineWidth: 0.75)
-            }
-
             calendarDetailPanels
+
+            VStack(alignment: .leading, spacing: 8) {
+                SectionLabel(title: "MONTH")
+
+                HStack(spacing: 0) {
+                    ForEach(weekdayLabels, id: \.self) { label in
+                        Text(label)
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 32)
+                    }
+                }
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 13))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 13)
+                        .stroke(Color.primary.opacity(0.045))
+                }
+
+                LazyVGrid(columns: calendarColumns, spacing: 0) {
+                    ForEach(calendarDisplayDates, id: \.self) { date in
+                        let dayItems = items(on: date)
+                        let index = dayIndex(for: date)
+                        let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+                        let isTripDay = index != nil
+                        Button {
+                            guard isTripDay else { return }
+                            selectedDate = date
+                        } label: {
+                            CalendarDayCell(
+                                dayNumber: dayNumber(date),
+                                dayLabel: index.map { "Day \($0 + 1)" },
+                                itemTitles: Array(dayItems.prefix(2).map(\.title)),
+                                itemCount: dayItems.count,
+                                isTripDay: isTripDay,
+                                isSelected: isSelected,
+                                isToday: Calendar.current.isDateInToday(date)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!isTripDay)
+                    }
+                }
+                .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.primary.opacity(0.065), lineWidth: 0.75)
+                }
+            }
+            .padding(.top, 2)
         }
         .appPanel(cornerRadius: 18)
     }
@@ -688,7 +693,7 @@ private struct MultiDayCalendarGrid: View {
                             Text(compactDate(date))
                                 .font(.subheadline.weight(.black))
                         }
-                        .frame(width: 172, alignment: .leading)
+                        .frame(width: 210, alignment: .leading)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 8)
                         .background(theme.accent.opacity(0.055))
@@ -725,7 +730,7 @@ private struct MultiDayCalendarGrid: View {
                     }
                 }
             }
-            .frame(minWidth: CGFloat(max(dates.count, 1)) * 188 + 58, alignment: .leading)
+            .frame(minWidth: CGFloat(max(dates.count, 1)) * 226 + 58, alignment: .leading)
         }
         .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 15))
         .overlay {
@@ -738,7 +743,7 @@ private struct MultiDayCalendarGrid: View {
         let maxItems = dates
             .map { items(on: $0, at: hour).count }
             .max() ?? 0
-        return maxItems == 0 ? 48 : CGFloat(maxItems) * 54 + 10
+        return maxItems == 0 ? 50 : CGFloat(maxItems) * 58 + 12
     }
 
     private func items(on date: Date, at hour: Int) -> [ScheduleItem] {
@@ -788,7 +793,7 @@ private struct MultiDayHourCell: View {
                 .padding(.vertical, 4)
             }
         }
-        .frame(width: 172, alignment: .topLeading)
+        .frame(width: 210, alignment: .topLeading)
         .frame(height: rowHeight, alignment: .topLeading)
         .padding(.horizontal, 8)
         .overlay(alignment: .leading) {
