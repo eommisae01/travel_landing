@@ -230,56 +230,18 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: categoryIcon)
-                    .font(.headline.weight(.black))
-                    .foregroundStyle(categoryColor)
-                    .frame(width: 38, height: 38)
-                    .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
-
-                VStack(alignment: .leading, spacing: 5) {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(place.name)
-                            .font(.headline.weight(.black))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.82)
-                        if place.isFavorite {
-                            Image(systemName: "star.fill")
-                                .font(.caption.weight(.black))
-                                .foregroundStyle(.yellow)
-                        }
-                    }
-
-                    Text(summaryText)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .center, spacing: 7) {
-                    placePills
-                    Spacer(minLength: 8)
-                    actionCluster
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    placePills
-                    actionCluster
-                }
-            }
+        ViewThatFits(in: .horizontal) {
+            horizontalRow
+            stackedRow
         }
         .contentShape(Rectangle())
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 108, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 92, alignment: .center)
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
+        .padding(.vertical, 11)
+        .background(.background.opacity(0.68), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(categoryColor)
@@ -303,6 +265,66 @@ struct PlaceRow: View {
             PlaceDetailSheet(place: place, isEditing: $isEditing, isScheduling: $isScheduling)
                 .environmentObject(store)
         }
+    }
+
+    private var horizontalRow: some View {
+        HStack(alignment: .center, spacing: 11) {
+            categoryBadge
+            placeTextBlock
+            actionCluster
+        }
+    }
+
+    private var stackedRow: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                categoryBadge
+                placeTextBlock
+            }
+            actionCluster
+        }
+    }
+
+    private var categoryBadge: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(categoryColor.opacity(0.13))
+            Image(systemName: categoryIcon)
+                .font(.headline.weight(.black))
+                .foregroundStyle(categoryColor)
+        }
+        .frame(width: 40, height: 40)
+    }
+
+    private var placeTextBlock: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(place.name)
+                    .font(.headline.weight(.black))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+                if place.isFavorite {
+                    Image(systemName: "star.fill")
+                        .font(.caption.weight(.black))
+                        .foregroundStyle(.yellow)
+                        .accessibilityLabel("별표")
+                }
+            }
+
+            Text(summaryText)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            ViewThatFits(in: .horizontal) {
+                placePills
+                VStack(alignment: .leading, spacing: 5) {
+                    placePills
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var actionCluster: some View {
@@ -357,7 +379,7 @@ struct PlaceRow: View {
             .menuStyle(.button)
             .buttonStyle(.plain)
         }
-        .fixedSize()
+        .frame(minWidth: 135, alignment: .trailing)
     }
 
     private var placePills: some View {
