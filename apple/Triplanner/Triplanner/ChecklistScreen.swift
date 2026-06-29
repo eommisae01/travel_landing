@@ -129,7 +129,7 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(title)
                     .font(.subheadline.weight(.black))
@@ -157,6 +157,7 @@ private struct ChecklistSection: View {
                     }
                 }
                 .background(.background.opacity(0.50), in: RoundedRectangle(cornerRadius: 14))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(.quaternary)
@@ -176,50 +177,39 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 9) {
+        HStack(alignment: .center, spacing: 8) {
             Button(action: action) {
-                Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 26, height: 26)
-                    .contentShape(Circle())
+                checkmarkIcon
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(item.isDone ? "완료 해제" : "완료")
 
             Button(action: action) {
-                Text(item.title)
-                    .font(.subheadline.weight(.semibold))
-                    .strikethrough(item.isDone)
-                    .foregroundStyle(item.isDone ? .secondary : .primary)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
-                    .contentShape(Rectangle())
+                titleLabel
             }
             .buttonStyle(.plain)
 
             Text(item.owner)
                 .font(.caption2.weight(.black))
                 .lineLimit(1)
-                .frame(minWidth: 36)
+                .minimumScaleFactor(0.78)
+                .frame(minWidth: 38, maxWidth: 52)
                 .padding(.horizontal, 7)
-                .frame(height: 24)
+                .frame(height: 26)
                 .background(ownerTint.opacity(0.11), in: RoundedRectangle(cornerRadius: 7))
                 .foregroundStyle(ownerTint)
 
             Button {
                 isEditing = true
             } label: {
-                Image(systemName: "pencil")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 24, height: 24)
-                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 7))
+                editIcon
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("항목 수정")
         }
-        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 1)
+        .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 2)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
@@ -234,6 +224,32 @@ private struct ChecklistItemRow: View {
             ChecklistEditorSheet(existingItem: item)
                 .environmentObject(store)
         }
+    }
+
+    private var checkmarkIcon: some View {
+        Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
+            .font(.system(size: 18, weight: .bold))
+            .foregroundStyle(item.isDone ? tint : .secondary)
+            .frame(width: 28, height: 28)
+            .contentShape(Circle())
+    }
+
+    private var titleLabel: some View {
+        Text(item.title)
+            .font(.subheadline.weight(.semibold))
+            .strikethrough(item.isDone)
+            .foregroundStyle(item.isDone ? .secondary : .primary)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
+            .contentShape(Rectangle())
+    }
+
+    private var editIcon: some View {
+        Image(systemName: "pencil")
+            .font(.caption2.weight(.black))
+            .foregroundStyle(.secondary)
+            .frame(width: 28, height: 28)
+            .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private var ownerTint: Color {
