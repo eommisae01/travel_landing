@@ -18,7 +18,7 @@ struct NotesScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Notes", subtitle: "시간표, 예약, 현장 정보를 묶어두는 보드")
+                    ScreenHeader(title: "Notes", subtitle: "시간표, 예약 캡처, 현장 메모를 도시별로 묶어두는 자료함")
 
                     notesOverview
 
@@ -31,7 +31,7 @@ struct NotesScreen: View {
                                 iconName: "doc.text.image"
                             )
                         } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 8)], spacing: 8) {
                                 ForEach(selectedCityNotes) { note in
                                     noteCard(note)
                                 }
@@ -43,7 +43,7 @@ struct NotesScreen: View {
                     if !otherNotes.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
                             sectionHeader(title: "ALL NOTES", count: otherNotes.count)
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 8)], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 8)], spacing: 8) {
                                 ForEach(otherNotes) { note in
                                     noteCard(note)
                                 }
@@ -98,35 +98,46 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .top, spacing: 11) {
                 notePreviewStrip(note)
 
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(note.title)
-                        .font(.subheadline.weight(.black))
-                        .lineLimit(1)
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(note.title)
+                            .font(.subheadline.weight(.black))
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.caption2.weight(.black))
+                            .foregroundStyle(.secondary)
+                    }
+
                     Text(note.body.isEmpty ? "메모 없음" : note.body)
                         .lineLimit(2)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                }
+                        .fixedSize(horizontal: false, vertical: true)
 
-                Spacer(minLength: 0)
-                HStack {
-                    Label(note.imageNames.isEmpty ? "텍스트" : "\(note.imageNames.count)장", systemImage: note.imageNames.isEmpty ? "text.alignleft" : "photo")
-                        .font(.caption2.weight(.black))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.secondary.opacity(0.10), in: Capsule())
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 6) {
+                        NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
+                        NoteKindPill(
+                            title: note.imageNames.isEmpty ? "텍스트" : "\(note.imageNames.count)장",
+                            iconName: note.imageNames.isEmpty ? "text.alignleft" : "photo.stack",
+                            tint: .secondary
+                        )
+                        Spacer(minLength: 0)
+                    }
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 136, alignment: .topLeading)
-            .padding(9)
+            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+            .padding(10)
             .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(noteAccent(note))
+                    .frame(width: 4)
+                    .padding(.vertical, 10)
+            }
             .overlay {
                 RoundedRectangle(cornerRadius: 14)
                     .stroke(.quaternary)
@@ -136,46 +147,45 @@ struct NotesScreen: View {
     }
 
     private func notePreviewStrip(_ note: NoteGroup) -> some View {
-        ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 11)
+        ZStack {
+            RoundedRectangle(cornerRadius: 13)
                 .fill(
                     LinearGradient(
                         colors: note.imageNames.isEmpty
                             ? [Color.secondary.opacity(0.10), Color.secondary.opacity(0.05)]
-                            : [Color.teal.opacity(0.22), Color.blue.opacity(0.13), Color.purple.opacity(0.10)],
+                            : [noteAccent(note).opacity(0.24), Color.blue.opacity(0.12), Color.secondary.opacity(0.06)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
 
-            if !note.imageNames.isEmpty {
-                Label("묶음 \(note.imageNames.count)", systemImage: "photo.stack")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.teal)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 4)
-                    .background(.background.opacity(0.74), in: Capsule())
-                    .padding(7)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-            }
-
-            HStack(spacing: -8) {
-                if note.imageNames.isEmpty {
-                    Image(systemName: "doc.text")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 34, height: 34)
-                        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 10))
-                } else {
-                    ForEach(Array(note.imageNames.prefix(4).enumerated()), id: \.offset) { index, imageName in
-                        MiniImageBadge(title: imageName, index: index)
+            if note.imageNames.isEmpty {
+                Image(systemName: noteKindIcon(note))
+                    .font(.title3.weight(.black))
+                    .foregroundStyle(noteAccent(note))
+                    .frame(width: 38, height: 38)
+                    .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 12))
+            } else {
+                ZStack {
+                    ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
+                        MiniImageBadge(title: imageName, index: index, tint: noteAccent(note))
+                            .offset(x: CGFloat(index) * 8, y: CGFloat(index) * -7)
                     }
                 }
-                Spacer()
+                .offset(x: -8, y: 6)
             }
-            .padding(9)
         }
-        .frame(height: 62)
+        .frame(width: 74, height: 74)
+        .overlay(alignment: .bottomTrailing) {
+            if !note.imageNames.isEmpty {
+                Text("\(note.imageNames.count)")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.white)
+                    .frame(width: 22, height: 22)
+                    .background(noteAccent(note), in: Circle())
+                    .padding(5)
+            }
+        }
     }
 
     private func displayCity(_ city: String) -> String {
@@ -185,6 +195,50 @@ struct NotesScreen: View {
         case "도쿄": return "Tokyo"
         default: return city
         }
+    }
+
+    private func noteAccent(_ note: NoteGroup) -> Color {
+        let value = (note.title + " " + note.body).lowercased()
+        if value.contains("페리") || value.contains("버스") || value.contains("교통") { return .blue }
+        if value.contains("예약") || value.contains("미술관") || value.contains("ticket") { return .purple }
+        if value.contains("공항") || value.contains("atm") || value.contains("환전") { return .orange }
+        if value.contains("식당") || value.contains("카페") { return .pink }
+        return .teal
+    }
+
+    private func noteKindTitle(_ note: NoteGroup) -> String {
+        let value = note.title + " " + note.body
+        if value.contains("페리") || value.contains("버스") || value.contains("교통") { return "이동" }
+        if value.contains("예약") || value.contains("미술관") { return "예약" }
+        if value.contains("공항") || value.contains("ATM") || value.contains("환전") { return "현장" }
+        if value.contains("식당") || value.contains("카페") { return "후보" }
+        return "메모"
+    }
+
+    private func noteKindIcon(_ note: NoteGroup) -> String {
+        switch noteKindTitle(note) {
+        case "이동": return "tram.fill"
+        case "예약": return "ticket.fill"
+        case "현장": return "exclamationmark.circle.fill"
+        case "후보": return "fork.knife"
+        default: return "doc.text.fill"
+        }
+    }
+}
+
+private struct NoteKindPill: View {
+    var title: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        Label(title, systemImage: iconName)
+            .font(.caption2.weight(.black))
+            .lineLimit(1)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 4)
+            .background(tint.opacity(0.11), in: Capsule())
+            .foregroundStyle(tint)
     }
 }
 
@@ -395,6 +449,7 @@ struct NoteDetailView: View {
 private struct MiniImageBadge: View {
     var title: String
     var index: Int
+    var tint: Color
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -408,8 +463,8 @@ private struct MiniImageBadge: View {
                 .font(.system(size: 8, weight: .black))
                 .lineLimit(1)
         }
-        .foregroundStyle(.teal)
-        .frame(width: 46, height: 38, alignment: .leading)
+        .foregroundStyle(tint)
+        .frame(width: 42, height: 34, alignment: .leading)
         .padding(.horizontal, 7)
         .background(.background.opacity(index == 0 ? 0.86 : 0.70), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
