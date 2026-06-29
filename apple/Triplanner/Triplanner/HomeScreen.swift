@@ -222,20 +222,20 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(.quaternary)
         }
     }
 
     private var statusStrip: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 154), spacing: 10)], spacing: 10) {
-            StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개", tint: theme.accent) {
+            StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개", iconName: "checklist", tint: theme.accent) {
                 showingChecklistSummary = true
             }
-            StatChip(title: "지출", value: "\(expenseTotal)", unit: store.trip?.budgetCurrency ?? "JPY", tint: theme.secondaryAccent)
+            StatChip(title: "지출", value: "\(expenseTotal)", unit: store.trip?.budgetCurrency ?? "JPY", iconName: "creditcard", tint: theme.secondaryAccent)
         }
     }
 
@@ -402,7 +402,7 @@ private struct FlightSummaryRow: View {
             HStack(alignment: .center, spacing: 10) {
                 Image(systemName: iconName)
                     .font(.subheadline.weight(.black))
-                    .frame(width: 31, height: 31)
+                    .frame(width: 32, height: 32)
                     .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(tint)
 
@@ -421,6 +421,7 @@ private struct FlightSummaryRow: View {
                     Text(routeText)
                         .font(.subheadline.weight(.black))
                         .lineLimit(1)
+                        .minimumScaleFactor(0.78)
                     HStack(spacing: 8) {
                         RouteTimeBadge(title: "출발", city: flight.origin, time: flight.localDeparture, tint: tint)
                         RouteTimeBadge(title: "도착", city: flight.destination, time: flight.localArrival, tint: tint)
@@ -431,7 +432,7 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
@@ -491,7 +492,7 @@ private struct AccommodationSummaryRow: View {
             HStack(alignment: .center, spacing: 10) {
                 Image(systemName: "bed.double")
                     .font(.subheadline.weight(.black))
-                    .frame(width: 31, height: 31)
+                    .frame(width: 32, height: 32)
                     .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
                     .foregroundStyle(.purple)
 
@@ -502,6 +503,7 @@ private struct AccommodationSummaryRow: View {
                     Text(trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
                         .font(.subheadline.weight(.black))
                         .lineLimit(1)
+                        .minimumScaleFactor(0.78)
                     if let address = trip.accommodationAddress, !address.isEmpty {
                         Text(address)
                             .font(.caption.weight(.semibold))
@@ -514,7 +516,7 @@ private struct AccommodationSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
@@ -555,12 +557,13 @@ private struct StatButton: View {
     var title: String
     var value: String
     var unit: String
+    var iconName: String
     var tint: Color
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            StatChipContent(title: title, value: value, unit: unit, iconName: "checklist", tint: tint)
+            StatChipContent(title: title, value: value, unit: unit, iconName: iconName, tint: tint)
         }
         .buttonStyle(.plain)
     }
@@ -570,10 +573,11 @@ private struct StatChip: View {
     var title: String
     var value: String
     var unit: String
+    var iconName: String
     var tint: Color
 
     var body: some View {
-        StatChipContent(title: title, value: value, unit: unit, iconName: "creditcard", tint: tint)
+        StatChipContent(title: title, value: value, unit: unit, iconName: iconName, tint: tint)
     }
 }
 
@@ -598,16 +602,19 @@ private struct StatChipContent: View {
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(value)
                         .font(.title3.weight(.black))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.76)
                     Text(unit)
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 58, maxHeight: 58, alignment: .leading)
         .padding(11)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(.quaternary)
@@ -738,6 +745,7 @@ private struct HeroCountPill: View {
 }
 
 private struct CompactScheduleRow: View {
+    @Environment(\.appTheme) private var theme
     var item: ScheduleItem
 
     var body: some View {
@@ -746,6 +754,7 @@ private struct CompactScheduleRow: View {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
                     .font(.caption.weight(.black))
                     .foregroundStyle(kindColor)
+                    .lineLimit(1)
                 if !item.endTime.isEmpty {
                     Text(item.endTime)
                         .font(.caption2.weight(.bold))
@@ -779,6 +788,7 @@ private struct CompactScheduleRow: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .center)
         .background(kindColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
@@ -791,7 +801,7 @@ private struct CompactScheduleRow: View {
         case .move: return .blue
         case .food: return .orange
         case .flight: return .purple
-        case .place: return .teal
+        case .place: return theme.accent
         }
     }
 }
