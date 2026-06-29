@@ -1029,6 +1029,9 @@ private struct CalendarDayCell: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(secondaryForeground)
                     .lineLimit(1)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 3)
+                    .background(eventBackground, in: RoundedRectangle(cornerRadius: 6))
             } else if isTripDay {
                 Text("일정 없음")
                     .font(.caption2.weight(.bold))
@@ -1038,34 +1041,24 @@ private struct CalendarDayCell: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 72, maxHeight: 72, alignment: .topLeading)
-        .padding(8)
-        .background(cellBackground, in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 78, maxHeight: 78, alignment: .topLeading)
+        .padding(7)
+        .background(cellBackground, in: RoundedRectangle(cornerRadius: 10))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(borderColor, lineWidth: isSelected ? 1.5 : 1)
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(borderColor, lineWidth: isSelected ? 1.25 : 0.75)
         }
-        .overlay(alignment: .top) {
-            if isSelected {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(theme.accent)
-                    .frame(height: 3)
-                    .padding(.horizontal, 12)
-                    .padding(.top, 4)
-            }
-        }
-        .shadow(color: isSelected ? theme.accent.opacity(0.14) : .clear, radius: 8, x: 0, y: 4)
         .opacity(isTripDay ? 1 : 0.36)
     }
 
     private var cellBackground: Color {
-        if isSelected { return theme.accent.opacity(0.14) }
-        return isTripDay ? Color.secondary.opacity(0.065) : Color.secondary.opacity(0.035)
+        if isSelected { return theme.accent.opacity(0.075) }
+        return isTripDay ? Color.primary.opacity(0.018) : Color.clear
     }
 
     private var borderColor: Color {
-        if isSelected { return theme.accent.opacity(0.62) }
-        return isTripDay ? Color.secondary.opacity(0.12) : Color.clear
+        if isSelected { return theme.accent.opacity(0.50) }
+        return isTripDay ? Color.primary.opacity(0.065) : Color.primary.opacity(0.035)
     }
 
     private var primaryForeground: Color {
@@ -1085,7 +1078,7 @@ private struct CalendarDayCell: View {
     }
 
     private var dayLabelForeground: Color {
-        isSelected ? theme.accent : theme.accent
+        isTripDay ? theme.accent : .secondary
     }
 
     private var counterBackground: Color {
@@ -1094,6 +1087,10 @@ private struct CalendarDayCell: View {
 
     private var counterForeground: Color {
         isSelected ? theme.accent : .secondary
+    }
+
+    private var eventBackground: Color {
+        isSelected ? theme.accent.opacity(0.12) : theme.accent.opacity(0.07)
     }
 }
 
