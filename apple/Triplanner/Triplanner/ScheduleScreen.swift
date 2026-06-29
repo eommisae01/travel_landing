@@ -913,39 +913,41 @@ private struct CalendarTimeBlock: View {
     var item: ScheduleItem
 
     var body: some View {
-        HStack(alignment: .top, spacing: 9) {
-            Text(timeText)
-                .font(.caption2.weight(.black).monospacedDigit())
-                .foregroundStyle(tint)
-                .frame(width: 76, alignment: .leading)
-                .padding(.top, 1)
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .center, spacing: 6) {
+                Text(timeText)
+                    .font(.caption2.weight(.black).monospacedDigit())
+                    .foregroundStyle(tint)
+                    .lineLimit(1)
 
-            VStack(alignment: .leading, spacing: 2) {
+                Text(item.kind.rawValue)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(tint)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(tint.opacity(0.12), in: Capsule())
+
+                Spacer(minLength: 0)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
                     .font(.caption.weight(.black))
                     .foregroundStyle(.primary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                HStack(spacing: 5) {
-                    Text(item.kind.rawValue)
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(tint)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(tint.opacity(0.11), in: Capsule())
-                    if !item.placeName.isEmpty {
-                        Text(item.placeName)
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
+                if !item.placeName.isEmpty {
+                    Label(item.placeName, systemImage: "mappin")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, minHeight: 46, alignment: .topLeading)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
         .background(tint.opacity(0.075), in: RoundedRectangle(cornerRadius: 10))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
@@ -1029,17 +1031,18 @@ private struct CalendarDayCell: View {
     var isToday: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            HStack(alignment: .firstTextBaseline) {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center, spacing: 5) {
                 Text(dayNumber)
-                    .font(.subheadline.weight(.black).monospacedDigit())
+                    .font(.caption.weight(.black).monospacedDigit())
                     .foregroundStyle(dayNumberForeground)
-                    .frame(width: 28, height: 28)
-                    .background(dayNumberBackground, in: Circle())
+                    .frame(width: 26, height: 26)
+                    .background(dayNumberBackground, in: RoundedRectangle(cornerRadius: 9))
                 Spacer(minLength: 4)
                 if itemCount > 0 {
-                    Text("\(itemCount)")
+                    Label("\(itemCount)", systemImage: "list.bullet")
                         .font(.caption2.weight(.black))
+                        .labelStyle(.titleAndIcon)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
                         .background(counterBackground, in: Capsule())
@@ -1058,39 +1061,39 @@ private struct CalendarDayCell: View {
             }
 
             if isTripDay && !itemTitles.isEmpty {
-                VStack(spacing: 4) {
+                VStack(spacing: 3) {
                     ForEach(itemTitles, id: \.self) { title in
                         HStack(spacing: 4) {
-                            Circle()
+                            RoundedRectangle(cornerRadius: 2)
                                 .fill(eventDotColor)
-                                .frame(width: 5, height: 5)
+                                .frame(width: 3, height: 12)
                             Text(title)
                                 .font(.caption2.weight(.bold))
                                 .foregroundStyle(secondaryForeground)
                                 .lineLimit(1)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 4)
-                        .background(eventBackground, in: RoundedRectangle(cornerRadius: 7))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 3)
+                        .background(eventBackground, in: RoundedRectangle(cornerRadius: 6))
                     }
                 }
             } else {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 96, maxHeight: 96, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 88, maxHeight: 88, alignment: .topLeading)
         .padding(8)
         .background(cellBackground)
         .overlay {
             Rectangle()
-                .stroke(borderColor, lineWidth: isSelected ? 1.25 : 0.75)
+                .stroke(borderColor, lineWidth: isSelected ? 1.1 : 0.7)
         }
-        .overlay(alignment: .top) {
+        .overlay(alignment: .leading) {
             if isSelected {
                 Rectangle()
                     .fill(theme.accent)
-                    .frame(height: 3)
+                    .frame(width: 3)
             }
         }
         .opacity(isTripDay ? 1 : 0.36)
@@ -1113,12 +1116,12 @@ private struct CalendarDayCell: View {
     }
 
     private var dayNumberForeground: Color {
-        isSelected || isToday ? .white : primaryForeground
+        isSelected ? .white : primaryForeground
     }
 
     private var dayNumberBackground: Color {
         if isSelected { return theme.accent }
-        if isToday { return theme.secondaryAccent }
+        if isToday { return theme.secondaryAccent.opacity(0.14) }
         return .clear
     }
 
@@ -1127,7 +1130,7 @@ private struct CalendarDayCell: View {
     }
 
     private var dayLabelForeground: Color {
-        isSelected ? theme.accent : (isTripDay ? theme.accent : .secondary)
+        isSelected ? theme.accent : (isTripDay ? .secondary : .secondary)
     }
 
     private var counterBackground: Color {
