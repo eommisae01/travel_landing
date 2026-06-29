@@ -40,7 +40,7 @@ struct MapScreen: View {
                                 tint: sectionColor(for: category)
                             )
 
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 430, maximum: 560), spacing: 12)], spacing: 12) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 320, maximum: 420), spacing: 12)], spacing: 12) {
                                 ForEach(places) { place in
                                     PlaceRow(place: place)
                                 }
@@ -256,22 +256,15 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 8) {
             cardHeader
 
             memoPreview
 
-            ViewThatFits(in: .horizontal) {
-                placePills
-                VStack(alignment: .leading, spacing: 5) {
-                    placePills
-                }
-            }
-
             Spacer(minLength: 0)
 
             Divider()
-                .opacity(0.55)
+                .opacity(0.42)
 
             actionBar
         }
@@ -279,8 +272,8 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 198, maxHeight: 198, alignment: .topLeading)
-        .padding(13)
+        .frame(maxWidth: .infinity, minHeight: 172, maxHeight: 172, alignment: .topLeading)
+        .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
@@ -308,13 +301,13 @@ struct PlaceRow: View {
     }
 
     private var cardHeader: some View {
-        HStack(alignment: .top, spacing: 9) {
+        HStack(alignment: .top, spacing: 8) {
             categoryBadge
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(place.name)
-                        .font(.headline.weight(.black))
+                        .font(.subheadline.weight(.black))
                         .lineLimit(2)
                         .minimumScaleFactor(0.82)
 
@@ -378,10 +371,10 @@ struct PlaceRow: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(categoryColor.opacity(0.13))
             Image(systemName: categoryIcon)
-                .font(.headline.weight(.black))
+                .font(.subheadline.weight(.black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 32, height: 32)
     }
 
     private var actionBar: some View {
@@ -428,19 +421,7 @@ struct PlaceRow: View {
                 tint: theme.secondaryAccent
             )
         }
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .topLeading)
-    }
-
-    private var placePills: some View {
-        HStack(spacing: 6) {
-            PlaceMiniPill(title: place.category, iconName: categoryIcon, tint: categoryColor)
-            if hasMapLink {
-                PlaceMiniPill(title: "지도", iconName: "map", tint: theme.secondaryAccent)
-            }
-            if !place.appNote.isEmpty {
-                PlaceMiniPill(title: "앱 메모", iconName: "note.text", tint: .secondary)
-            }
-        }
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .topLeading)
     }
 
     private var categoryColor: Color {
@@ -465,14 +446,10 @@ struct PlaceRow: View {
         }
     }
 
-    private var hasMapLink: Bool {
-        URL(string: place.mapURL) != nil
-    }
-
     private func actionIcon(_ iconName: String, tint: Color) -> some View {
         Image(systemName: iconName)
             .font(.caption.weight(.black))
-            .frame(width: 31, height: 31)
+            .frame(width: 29, height: 29)
             .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
             .foregroundStyle(tint)
     }
@@ -500,22 +477,6 @@ private struct PlaceMemoLine: View {
                 .truncationMode(.tail)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-private struct PlaceMiniPill: View {
-    var title: String
-    var iconName: String
-    var tint: Color
-
-    var body: some View {
-        Label(title, systemImage: iconName)
-            .font(.caption2.weight(.black))
-            .lineLimit(1)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 4)
-            .background(tint.opacity(0.09), in: Capsule())
-            .foregroundStyle(tint)
     }
 }
 
