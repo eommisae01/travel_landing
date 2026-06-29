@@ -31,10 +31,6 @@ struct BudgetScreen: View {
         max(total - budget, 0)
     }
 
-    private var balanceTitle: String {
-        budget > 0 && total > budget ? "Over" : "Remaining"
-    }
-
     private var balanceValue: String {
         guard budget > 0 else { return "-" }
         return "\(Int(total > budget ? overBudget : remainingBudget))"
@@ -51,29 +47,31 @@ struct BudgetScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 24) {
+                    ScreenHeader(title: "Budget", subtitle: "여행 지출과 예상 부담을 한눈에 확인")
+
+                    VStack(alignment: .leading, spacing: 22) {
                         HStack(alignment: .top, spacing: 14) {
                             VStack(alignment: .leading, spacing: 7) {
                                 HStack(spacing: 10) {
                                     Image(systemName: "creditcard.fill")
-                                        .font(.headline.weight(.black))
+                                        .font(.title3.weight(.black))
                                         .foregroundStyle(.white)
-                                        .frame(width: 42, height: 42)
-                                        .background(spendingTint, in: RoundedRectangle(cornerRadius: 13))
+                                        .frame(width: 48, height: 48)
+                                        .background(spendingTint, in: RoundedRectangle(cornerRadius: 15))
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("BUDGET")
-                                            .font(.subheadline.weight(.black))
+                                        Text("여행 한도")
+                                            .font(.callout.weight(.black))
                                             .foregroundStyle(.secondary)
                                         Text(budget > 0 ? "\(Int(budget)) \(currency)" : "미설정")
-                                            .font(.title2.weight(.black))
+                                            .font(.system(size: 31, weight: .black, design: .rounded))
                                             .monospacedDigit()
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.82)
                                     }
                                 }
-                                Text(budget > 0 ? "이 금액을 기준으로 사용률과 남은 금액을 계산해요" : "Set budget에서 이번 여행 기준 금액을 정할 수 있어요")
-                                    .font(.caption.weight(.semibold))
+                                Text(budget > 0 ? "이 금액을 기준으로 사용률과 남은 금액을 계산해요" : "예산 설정에서 이번 여행 기준 금액을 정할 수 있어요")
+                                    .font(.callout.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
                             }
@@ -86,12 +84,12 @@ struct BudgetScreen: View {
 
                         ViewThatFits(in: .horizontal) {
                             HStack(alignment: .lastTextBaseline, spacing: 24) {
-                                BudgetAmountBlock(title: "Spent", amount: total, unit: currency, tint: spendingTint, isPrimary: true)
-                                BudgetAmountBlock(title: budget > 0 && total > budget ? "Over" : "Left", amount: budget > 0 ? (total > budget ? overBudget : remainingBudget) : 0, unit: currency, tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent, isPrimary: false)
+                                BudgetAmountBlock(title: "사용", amount: total, unit: currency, tint: spendingTint, isPrimary: true)
+                                BudgetAmountBlock(title: budget > 0 && total > budget ? "초과" : "남음", amount: budget > 0 ? (total > budget ? overBudget : remainingBudget) : 0, unit: currency, tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent, isPrimary: false)
                             }
                             VStack(alignment: .leading, spacing: 10) {
-                                BudgetAmountBlock(title: "Spent", amount: total, unit: currency, tint: spendingTint, isPrimary: true)
-                                BudgetAmountBlock(title: budget > 0 && total > budget ? "Over" : "Left", amount: budget > 0 ? (total > budget ? overBudget : remainingBudget) : 0, unit: currency, tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent, isPrimary: false)
+                                BudgetAmountBlock(title: "사용", amount: total, unit: currency, tint: spendingTint, isPrimary: true)
+                                BudgetAmountBlock(title: budget > 0 && total > budget ? "초과" : "남음", amount: budget > 0 ? (total > budget ? overBudget : remainingBudget) : 0, unit: currency, tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent, isPrimary: false)
                             }
                         }
 
@@ -110,24 +108,25 @@ struct BudgetScreen: View {
                             HStack {
                                 Text("0")
                                 Spacer()
-                                Text(budget > 0 ? "\(Int(budget)) \(currency)" : "Set budget에서 한도를 정해요")
+                                Text(budget > 0 ? "\(Int(budget)) \(currency)" : "예산 설정에서 한도를 정해요")
                             }
                             .font(.caption.weight(.black))
                             .foregroundStyle(.secondary)
                         }
 
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
-                            BudgetStat(title: "Limit", value: budget > 0 ? "\(Int(budget))" : "미정", unit: currency, tint: theme.accent)
-                            BudgetStat(title: balanceTitle, value: balanceValue, unit: currency, tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent)
-                            BudgetStat(title: "Entries", value: "\(store.expenses.count)", unit: "개", tint: theme.warmAccent)
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 12)], spacing: 12) {
+                            BudgetStat(title: "한도", value: budget > 0 ? "\(Int(budget))" : "미정", unit: currency, tint: theme.accent)
+                            BudgetStat(title: budget > 0 && total > budget ? "초과" : "남음", value: balanceValue, unit: currency, tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent)
+                            BudgetStat(title: "지출", value: "\(store.expenses.count)", unit: "개", tint: theme.warmAccent)
                         }
                     }
-                    .appPanel(cornerRadius: 22)
+                    .appPanel(cornerRadius: 24)
 
                     if !categoryTotals.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            SectionLabel(title: "CATEGORY")
-                            VStack(spacing: 8) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("카테고리별 지출")
+                                .font(.title3.weight(.black))
+                            VStack(spacing: 10) {
                                 ForEach(categoryTotals, id: \.0) { category, amount in
                                     CategoryBudgetRow(
                                         category: category,
@@ -141,7 +140,18 @@ struct BudgetScreen: View {
                         .appPanel(cornerRadius: 18)
                     }
 
-                    SectionLabel(title: "EXPENSES")
+                    HStack {
+                        Text("지출 내역")
+                            .font(.title3.weight(.black))
+                        Spacer()
+                        Button {
+                            isAddingExpense = true
+                        } label: {
+                            Label("지출 추가", systemImage: "plus")
+                                .font(.headline.weight(.black))
+                        }
+                        .buttonStyle(.bordered)
+                    }
                     if store.expenses.isEmpty {
                         EmptyStateView(
                             title: "지출이 비어있어요",
@@ -149,7 +159,7 @@ struct BudgetScreen: View {
                             iconName: "creditcard"
                         )
                     } else {
-                        VStack(spacing: 8) {
+                        VStack(spacing: 10) {
                             ForEach(store.expenses) { expense in
                                 ExpenseRow(expense: expense)
                             }
@@ -157,13 +167,10 @@ struct BudgetScreen: View {
                         .appPanel(cornerRadius: 18)
                     }
                 }
-                .readableWidth(900)
-                .padding()
+                .readableWidth(980)
+                .padding(28)
             }
-            .navigationTitle("Budget")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.large)
-            #endif
+            .navigationTitle("")
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button {
@@ -201,13 +208,13 @@ private struct BudgetLimitButton: View {
         Button {
             onEditLimit()
         } label: {
-            Label(budgetIsSet ? "Edit budget" : "Set budget", systemImage: "slider.horizontal.3")
-                .font(.caption.weight(.black))
+            Label(budgetIsSet ? "예산 수정" : "예산 설정", systemImage: "slider.horizontal.3")
+                .font(.callout.weight(.black))
                 .labelStyle(.titleAndIcon)
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
-                .padding(.horizontal, 11)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 10)
         }
         .buttonStyle(.plain)
         .foregroundStyle(theme.accent)
@@ -230,10 +237,10 @@ private struct BudgetLimitSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ScreenHeader(title: "Set budget", subtitle: "이번 여행에서 함께 확인할 총 금액")
+                    ScreenHeader(title: "예산 설정", subtitle: "이번 여행에서 함께 확인할 총 금액")
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel(title: "LIMIT")
+                        SectionLabel(title: "금액")
                         HStack(spacing: 10) {
                             TextField("예: 150000", text: $amount)
                                 .textFieldStyle(.roundedBorder)
@@ -242,7 +249,7 @@ private struct BudgetLimitSheet: View {
                                 .frame(maxWidth: 92)
                         }
                         Text("0으로 저장하면 한도 미정으로 표시됩니다.")
-                            .font(.caption.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
                     .appPanel(cornerRadius: 18)
