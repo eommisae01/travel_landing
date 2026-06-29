@@ -28,9 +28,9 @@ struct ScheduleScreen: View {
 
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            SectionLabel(title: "DATE")
+                            SectionLabel(title: "SCHEDULE")
                             Spacer()
-                            Text(viewMode.title)
+                            Text(selectedDate.map(compactDayLabel) ?? "전체")
                                 .font(.caption2.weight(.black))
                                 .foregroundStyle(theme.accent)
                                 .padding(.horizontal, 8)
@@ -120,33 +120,30 @@ struct ScheduleScreen: View {
 
     private func dayFilterButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 7) {
-                if isSelected {
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 6, height: 6)
-                }
-
+            VStack(alignment: .leading, spacing: 4) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.caption.weight(.black))
                     Text(subtitle)
                         .font(.caption2.weight(.bold))
-                        .foregroundStyle(isSelected ? .white.opacity(0.84) : .secondary)
+                        .foregroundStyle(isSelected ? theme.accent : .secondary)
                         .lineLimit(1)
                 }
+
+                Capsule()
+                    .fill(isSelected ? theme.accent : Color.clear)
+                    .frame(height: 3)
             }
             .frame(width: title == "전체" ? 84 : 100, alignment: .leading)
-            .frame(minHeight: 38, alignment: .leading)
+            .frame(minHeight: 42, alignment: .leading)
             .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 12))
-            .foregroundStyle(isSelected ? .white : .primary)
+            .padding(.vertical, 6)
+            .background(isSelected ? theme.accent.opacity(0.10) : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+            .foregroundStyle(.primary)
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? theme.accent.opacity(0.42) : Color.secondary.opacity(0.13), lineWidth: 1)
+                    .stroke(isSelected ? theme.accent.opacity(0.34) : Color.secondary.opacity(0.13), lineWidth: 1)
             }
-            .shadow(color: isSelected ? theme.accent.opacity(0.13) : .clear, radius: 6, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -1067,16 +1064,11 @@ private struct CalendarDayCell: View {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
                     .background(eventBackground, in: RoundedRectangle(cornerRadius: 7))
-            } else if isTripDay {
-                Text("일정 없음")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(secondaryForeground)
-                    .lineLimit(1)
             } else {
                 Spacer(minLength: 0)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 92, maxHeight: 92, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 84, maxHeight: 84, alignment: .topLeading)
         .padding(8)
         .background(cellBackground)
         .overlay {
