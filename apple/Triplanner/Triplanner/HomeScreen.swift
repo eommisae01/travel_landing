@@ -199,7 +199,7 @@ struct HomeScreen: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Label("Copy ready", systemImage: "doc.on.doc")
+                Label("탭하면 복사", systemImage: "doc.on.doc")
                     .font(.caption2.weight(.black))
                     .foregroundStyle(theme.accent)
                     .padding(.horizontal, 8)
@@ -421,11 +421,11 @@ private struct FlightSummaryRow: View {
             HStack(alignment: .center, spacing: 10) {
                 Image(systemName: iconName)
                     .font(.subheadline.weight(.black))
-                    .frame(width: 34, height: 34)
-                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                    .frame(width: isCompact ? 30 : 34, height: isCompact ? 30 : 34)
+                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: isCompact ? 9 : 10))
                     .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: isCompact ? 3 : 4) {
                     HStack(spacing: 8) {
                         Text(title)
                             .font(.caption.weight(.black))
@@ -438,7 +438,7 @@ private struct FlightSummaryRow: View {
                             .foregroundStyle(tint)
                     }
                     Text(routeText)
-                        .font(.subheadline.weight(.black))
+                        .font((isCompact ? Font.caption : Font.subheadline).weight(.black))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
                     ViewThatFits(in: .horizontal) {
@@ -457,11 +457,11 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 112 : 82, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 92 : 82, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
+        .padding(.horizontal, isCompact ? 10 : 11)
+        .padding(.vertical, isCompact ? 7 : 8)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 14)
@@ -518,16 +518,16 @@ private struct AccommodationSummaryRow: View {
             HStack(alignment: .center, spacing: 10) {
                 Image(systemName: "bed.double")
                     .font(.subheadline.weight(.black))
-                    .frame(width: 34, height: 34)
-                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                    .frame(width: isCompact ? 30 : 34, height: isCompact ? 30 : 34)
+                    .background(.purple.opacity(0.14), in: RoundedRectangle(cornerRadius: isCompact ? 9 : 10))
                     .foregroundStyle(.purple)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: isCompact ? 3 : 4) {
                     Text("숙소")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.purple)
                     Text(trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
-                        .font(.subheadline.weight(.black))
+                        .font((isCompact ? Font.caption : Font.subheadline).weight(.black))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
                     if let address = trip.accommodationAddress, !address.isEmpty {
@@ -542,11 +542,11 @@ private struct AccommodationSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: isCompact ? 112 : 82, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 92 : 82, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
+        .padding(.horizontal, isCompact ? 10 : 11)
+        .padding(.vertical, isCompact ? 7 : 8)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 14)
