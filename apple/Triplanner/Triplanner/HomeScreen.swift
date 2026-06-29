@@ -16,6 +16,10 @@ struct HomeScreen: View {
         store.checklist.filter { !$0.isDone }.count
     }
 
+    private var expenseTotal: Int {
+        Int(store.expenses.reduce(0) { $0 + $1.amount })
+    }
+
     private var cityScheduleItems: [ScheduleItem] {
         store.scheduleItemsForSelectedCity()
     }
@@ -118,10 +122,10 @@ struct HomeScreen: View {
     }
 
     private func cityHero(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 14) {
+        VStack(alignment: .leading, spacing: isWideLayout ? 18 : 15) {
+            HStack(alignment: .center, spacing: 14) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(trip.country.isEmpty ? "TRIP" : trip.country.uppercased())
+                    Text("TRIP")
                         .font(.caption.weight(.black))
                         .foregroundStyle(.secondary)
                         .tracking(1.3)
@@ -130,16 +134,7 @@ struct HomeScreen: View {
 
                 Spacer(minLength: 12)
 
-                VStack(alignment: .trailing, spacing: 5) {
-                    Image(systemName: "sparkles")
-                        .font(.headline.weight(.black))
-                        .foregroundStyle(.white)
-                        .frame(width: 38, height: 38)
-                        .background(.teal, in: RoundedRectangle(cornerRadius: 13))
-                    Text("\(store.trip?.cities.count ?? 0) cities")
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(.secondary)
-                }
+                CityCountBadge(count: store.trip?.cities.count ?? 0)
             }
 
             HStack(spacing: 8) {
@@ -153,6 +148,27 @@ struct HomeScreen: View {
                 }
                 Spacer(minLength: 0)
             }
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: isWideLayout ? 180 : 132), spacing: 8)], spacing: 8) {
+                HeroMetric(
+                    title: "TODAY",
+                    value: todaySummary,
+                    iconName: "sun.max",
+                    tint: .orange
+                )
+                HeroMetric(
+                    title: "준비",
+                    value: "\(undoneChecklistCount)개 남음",
+                    iconName: "checklist",
+                    tint: .teal
+                )
+                HeroMetric(
+                    title: "지출",
+                    value: "\(expenseTotal) \(trip.budgetCurrency)",
+                    iconName: "creditcard",
+                    tint: .blue
+                )
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, isWideLayout ? 24 : 20)
@@ -162,8 +178,8 @@ struct HomeScreen: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.teal.opacity(0.22),
-                            Color.blue.opacity(0.08),
+                            Color.teal.opacity(0.18),
+                            Color.orange.opacity(0.08),
                             Color.secondary.opacity(0.04)
                         ],
                         startPoint: .topLeading,
@@ -228,7 +244,7 @@ struct HomeScreen: View {
             StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개") {
                 showingChecklistSummary = true
             }
-            StatChip(title: "지출", value: "\(Int(store.expenses.reduce(0) { $0 + $1.amount }))", unit: "JPY")
+            StatChip(title: "지출", value: "\(expenseTotal)", unit: store.trip?.budgetCurrency ?? "JPY")
         }
     }
 
@@ -418,6 +434,12 @@ private struct FlightSummaryRow: View {
         .padding(.horizontal, 11)
         .padding(.vertical, 10)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(tint)
+                .frame(width: 4)
+                .padding(.vertical, 9)
+        }
         .overlay {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
@@ -495,6 +517,12 @@ private struct AccommodationSummaryRow: View {
         .padding(.horizontal, 11)
         .padding(.vertical, 10)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(.purple)
+                .frame(width: 4)
+                .padding(.vertical, 9)
+        }
         .overlay {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(.quaternary)
@@ -528,7 +556,7 @@ private struct StatButton: View {
 
     var body: some View {
         Button(action: action) {
-            StatChipContent(title: title, value: value, unit: unit, iconName: "checklist")
+            StatChipContent(title: title, value: value, unit: unit, iconName: "checklist", tint: .teal)
         }
         .buttonStyle(.plain)
     }
@@ -540,7 +568,7 @@ private struct StatChip: View {
     var unit: String
 
     var body: some View {
-        StatChipContent(title: title, value: value, unit: unit, iconName: "creditcard")
+        StatChipContent(title: title, value: value, unit: unit, iconName: "creditcard", tint: .blue)
     }
 }
 
@@ -549,14 +577,15 @@ private struct StatChipContent: View {
     var value: String
     var unit: String
     var iconName: String
+    var tint: Color
 
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: iconName)
                 .font(.headline.weight(.bold))
                 .frame(width: 34, height: 34)
-                .background(.teal.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
-                .foregroundStyle(.teal)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption.weight(.bold))
@@ -576,6 +605,58 @@ private struct StatChipContent: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
+                .stroke(.quaternary)
+        }
+    }
+}
+
+private struct CityCountBadge: View {
+    var count: Int
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 5) {
+            Image(systemName: "map.fill")
+                .font(.headline.weight(.black))
+                .foregroundStyle(.white)
+                .frame(width: 38, height: 38)
+                .background(.teal, in: RoundedRectangle(cornerRadius: 13))
+            Text("\(count) cities")
+                .font(.caption2.weight(.black))
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct HeroMetric: View {
+    var title: String
+    var value: String
+    var iconName: String
+    var tint: Color
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: iconName)
+                .font(.caption.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 24, height: 24)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.caption.weight(.black))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .background(.background.opacity(0.58), in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(.quaternary)
         }
     }
