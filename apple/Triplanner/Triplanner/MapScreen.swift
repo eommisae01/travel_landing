@@ -94,7 +94,7 @@ struct MapScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 10)]
         }
-        return [GridItem(.adaptive(minimum: 306, maximum: 390), spacing: 10)]
+        return [GridItem(.adaptive(minimum: 292, maximum: 360), spacing: 10)]
     }
 
     private var placesTitle: String {
@@ -264,7 +264,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             cardHeader
 
             memoPreview
@@ -280,9 +280,9 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 190, maxHeight: 190, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 176, maxHeight: 176, alignment: .topLeading)
         .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.background.opacity(0.78), in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
@@ -293,7 +293,7 @@ struct PlaceRow: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(categoryColor.opacity(place.isFavorite ? 0.34 : 0.12), lineWidth: place.isFavorite ? 1.2 : 0.8)
         }
-        .shadow(color: Color.primary.opacity(0.026), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.primary.opacity(0.024), radius: 7, x: 0, y: 3)
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
                 .environmentObject(store)
@@ -312,41 +312,14 @@ struct PlaceRow: View {
         HStack(alignment: .top, spacing: 9) {
             categoryBadge
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(place.name)
                     .font(.subheadline.weight(.black))
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
                     .fixedSize(horizontal: false, vertical: true)
 
-                HStack(spacing: 5) {
-                    Text(place.category)
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(categoryColor)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(categoryColor.opacity(0.10), in: Capsule())
-
-                    if place.isFavorite {
-                        Label("Favorite", systemImage: "star.fill")
-                            .font(.caption2.weight(.black))
-                            .labelStyle(.iconOnly)
-                            .foregroundStyle(.yellow)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(.yellow.opacity(0.13), in: Capsule())
-                            .accessibilityLabel("별표")
-                    }
-
-                    if URL(string: place.mapURL) != nil {
-                        Image(systemName: "link")
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(.blue)
-                            .frame(width: 21, height: 21)
-                            .background(.blue.opacity(0.10), in: Capsule())
-                            .accessibilityLabel("지도 링크 있음")
-                    }
-                }
+                cardBadges
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -433,7 +406,7 @@ struct PlaceRow: View {
     }
 
     private var memoPreview: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 4) {
             if place.appNote.isEmpty && place.mapNote.isEmpty {
                 PlaceMemoLine(
                     title: "메모",
@@ -461,8 +434,41 @@ struct PlaceRow: View {
                 }
             }
         }
-        .padding(.vertical, 2)
-        .frame(maxWidth: .infinity, minHeight: 58, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 48, maxHeight: 48, alignment: .topLeading)
+        .clipped()
+    }
+
+    private var cardBadges: some View {
+        HStack(spacing: 5) {
+            Text(place.category)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(categoryColor)
+                .lineLimit(1)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(categoryColor.opacity(0.10), in: Capsule())
+
+            if place.isFavorite {
+                Label("Favorite", systemImage: "star.fill")
+                    .font(.caption2.weight(.black))
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(.yellow)
+                    .frame(width: 21, height: 21)
+                    .background(.yellow.opacity(0.13), in: Capsule())
+                    .accessibilityLabel("별표")
+            }
+
+            if URL(string: place.mapURL) != nil {
+                Image(systemName: "link")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.blue)
+                    .frame(width: 21, height: 21)
+                    .background(.blue.opacity(0.10), in: Capsule())
+                    .accessibilityLabel("지도 링크 있음")
+            }
+
+            Spacer(minLength: 0)
+        }
     }
 
     private var categoryColor: Color {
@@ -518,11 +524,11 @@ private struct PlaceMemoLine: View {
                 Text(value.isEmpty ? "메모 없음" : value)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(isPlaceholder ? .tertiary : .secondary)
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .truncationMode(.tail)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 25, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 22, alignment: .leading)
     }
 }
 
