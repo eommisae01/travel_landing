@@ -386,7 +386,7 @@ private struct ExpenseRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 11) {
+        HStack(alignment: .center, spacing: 11) {
             categoryIcon
 
             VStack(alignment: .leading, spacing: 7) {
@@ -412,30 +412,7 @@ private struct ExpenseRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(alignment: .trailing, spacing: 7) {
-                VStack(alignment: .trailing, spacing: 1) {
-                    Text("\(Int(expense.amount))")
-                        .font(.headline.weight(.black))
-                        .monospacedDigit()
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.78)
-                    Text(expense.currency)
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(.secondary)
-                }
-                .frame(minWidth: 78, alignment: .trailing)
-
-                Button {
-                    isEditing = true
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 30, height: 30)
-                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
-                }
-                .buttonStyle(.plain)
-            }
+            amountControl
         }
         .frame(maxWidth: .infinity, minHeight: 84, alignment: .center)
         .padding(.horizontal, 12)
@@ -467,6 +444,36 @@ private struct ExpenseRow: View {
             .frame(width: 30, height: 30)
             .background(categoryColor.opacity(0.13), in: RoundedRectangle(cornerRadius: 9))
             .foregroundStyle(categoryColor)
+    }
+
+    private var amountControl: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .trailing, spacing: 1) {
+                Text("\(Int(expense.amount))")
+                    .font(.headline.weight(.black))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                Text(expense.currency)
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(width: 78, alignment: .trailing)
+
+            Button {
+                isEditing = true
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 30, height: 30)
+                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("지출 수정")
+        }
+        .frame(width: 116, alignment: .center)
+        .frame(minHeight: 52, alignment: .center)
     }
 
     private var iconName: String {
