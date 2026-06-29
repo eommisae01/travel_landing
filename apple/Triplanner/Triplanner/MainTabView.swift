@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedSection: AppSection = .home
     @State private var showingAddCity = false
@@ -58,7 +59,7 @@ struct MainTabView: View {
                         }
                         .buttonStyle(.plain)
                         .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
-                        .listRowBackground(selectedSection == section ? Color.teal.opacity(0.10) : Color.clear)
+                        .listRowBackground(selectedSection == section ? theme.accent.opacity(0.10) : Color.clear)
                     }
                 }
             }
@@ -131,6 +132,7 @@ private struct SidebarCityOption: Identifiable {
 }
 
 private struct SidebarTripSummary: View {
+    @Environment(\.appTheme) private var theme
     var city: String
     var subtitle: String
     var cityOptions: [SidebarCityOption]
@@ -159,7 +161,7 @@ private struct SidebarTripSummary: View {
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(.white)
                     .frame(width: 30, height: 30)
-                    .background(.teal, in: RoundedRectangle(cornerRadius: 10))
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(city)
@@ -185,6 +187,7 @@ private struct SidebarTripSummary: View {
 }
 
 private struct SidebarMenuRow: View {
+    @Environment(\.appTheme) private var theme
     var section: AppSection
     var count: Int?
     var isSelected = false
@@ -193,7 +196,7 @@ private struct SidebarMenuRow: View {
         HStack(spacing: 10) {
             Image(systemName: section.iconName)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isSelected ? .teal : .secondary)
+                .foregroundStyle(isSelected ? theme.accent : .secondary)
                 .frame(width: 24, height: 24)
             VStack(alignment: .leading, spacing: 1) {
                 Text(section.title)
@@ -207,10 +210,10 @@ private struct SidebarMenuRow: View {
             if let count {
                 Text("\(count)")
                     .font(.caption2.weight(.black))
-                    .foregroundStyle(isSelected ? .teal : .secondary)
+                    .foregroundStyle(isSelected ? theme.accent : .secondary)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
-                    .background((isSelected ? Color.teal : Color.secondary).opacity(0.10), in: Capsule())
+                    .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
         .frame(minHeight: 34, alignment: .center)
@@ -219,6 +222,7 @@ private struct SidebarMenuRow: View {
 
 private struct CompactMoreScreen: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
 
     private var remainingChecklistCount: Int {
         store.checklist.filter { !$0.isDone }.count
@@ -257,7 +261,7 @@ private struct CompactMoreScreen: View {
                                 title: "체크리스트",
                                 subtitle: "남은 준비 \(remainingChecklistCount)개",
                                 iconName: "checklist",
-                                tint: .teal
+                                tint: theme.accent
                             )
                         }
 
@@ -268,7 +272,7 @@ private struct CompactMoreScreen: View {
                                 title: "Budget",
                                 subtitle: "현재 지출 \(totalExpense) \(store.trip?.budgetCurrency ?? "JPY")",
                                 iconName: "creditcard",
-                                tint: .blue
+                                tint: theme.secondaryAccent
                             )
                         }
 
@@ -290,6 +294,7 @@ private struct CompactMoreScreen: View {
             }
             .navigationTitle("더보기")
         }
+        .appScreenBackground()
     }
 
     private func displayCity(_ city: String) -> String {
@@ -303,6 +308,7 @@ private struct CompactMoreScreen: View {
 }
 
 private struct MoreSummaryStrip: View {
+    @Environment(\.appTheme) private var theme
     var checklistCount: Int
     var expenseTotal: Int
     var currency: String
@@ -310,14 +316,15 @@ private struct MoreSummaryStrip: View {
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
-            MoreMetric(title: "남은 준비", value: "\(checklistCount)", unit: "개", iconName: "checklist", tint: .teal)
-            MoreMetric(title: "지출", value: "\(expenseTotal)", unit: currency, iconName: "creditcard", tint: .blue)
+            MoreMetric(title: "남은 준비", value: "\(checklistCount)", unit: "개", iconName: "checklist", tint: theme.accent)
+            MoreMetric(title: "지출", value: "\(expenseTotal)", unit: currency, iconName: "creditcard", tint: theme.secondaryAccent)
             MoreMetric(title: "자료", value: "\(noteCount)", unit: "개", iconName: "note.text", tint: .purple)
         }
     }
 }
 
 private struct MoreTripCard: View {
+    @Environment(\.appTheme) private var theme
     var trip: Trip
     var currentCity: String
 
@@ -328,7 +335,7 @@ private struct MoreTripCard: View {
                     .font(.headline.weight(.bold))
                     .frame(width: 38, height: 38)
                     .foregroundStyle(.white)
-                    .background(.teal, in: RoundedRectangle(cornerRadius: 13))
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 13))
                 VStack(alignment: .leading, spacing: 3) {
                     Text(currentCity)
                         .font(.headline.weight(.black))
@@ -340,10 +347,10 @@ private struct MoreTripCard: View {
                 Spacer()
                 Text(trip.country)
                     .font(.caption2.weight(.black))
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(theme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(.teal.opacity(0.11), in: Capsule())
+                    .background(theme.accent.opacity(0.11), in: Capsule())
             }
 
             VStack(spacing: 8) {
@@ -368,6 +375,7 @@ private struct MoreTripCard: View {
 }
 
 private struct MoreTripInfoLine: View {
+    @Environment(\.appTheme) private var theme
     var iconName: String
     var title: String
     var value: String
@@ -376,7 +384,7 @@ private struct MoreTripInfoLine: View {
         HStack(spacing: 8) {
             Image(systemName: iconName)
                 .font(.caption.weight(.black))
-                .foregroundStyle(.teal)
+                .foregroundStyle(theme.accent)
                 .frame(width: 22)
             Text(title)
                 .font(.caption2.weight(.black))
