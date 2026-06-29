@@ -386,32 +386,19 @@ private struct ExpenseRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .top, spacing: 11) {
             categoryIcon
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .top, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(expense.title)
-                            .font(.subheadline.weight(.black))
-                            .lineLimit(1)
+            VStack(alignment: .leading, spacing: 7) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(expense.title)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.82)
 
-                        Label(expense.category, systemImage: iconName)
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(categoryColor)
-                    }
-
-                    Spacer(minLength: 8)
-
-                    VStack(alignment: .trailing, spacing: 1) {
-                        Text("\(Int(expense.amount))")
-                            .font(.headline.weight(.black))
-                            .monospacedDigit()
-                        Text(expense.currency)
-                            .font(.caption2.weight(.black))
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(minWidth: 70, alignment: .trailing)
+                    Label(expense.category, systemImage: iconName)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(categoryColor)
                 }
 
                 ViewThatFits(in: .horizontal) {
@@ -425,20 +412,34 @@ private struct ExpenseRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button {
-                isEditing = true
-            } label: {
-                Image(systemName: "pencil")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .trailing, spacing: 7) {
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text("\(Int(expense.amount))")
+                        .font(.headline.weight(.black))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                    Text(expense.currency)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(minWidth: 78, alignment: .trailing)
+
+                Button {
+                    isEditing = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, height: 30)
+                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 76, alignment: .center)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, minHeight: 84, alignment: .center)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
         .background(.background.opacity(0.56))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
@@ -451,7 +452,7 @@ private struct ExpenseRow: View {
                 Rectangle()
                     .fill(Color.secondary.opacity(0.10))
                     .frame(height: 0.5)
-                    .padding(.leading, 48)
+                    .padding(.leading, 52)
             }
         }
         .sheet(isPresented: $isEditing) {
