@@ -46,7 +46,13 @@ struct HomeScreen: View {
 
     private var focusItems: [ScheduleItem] {
         guard let focusDate else { return Array(cityScheduleItems.prefix(5)) }
-        return cityScheduleItems.filter { Calendar.current.isDate($0.date, inSameDayAs: focusDate) }
+        return cityScheduleItems
+            .filter { Calendar.current.isDate($0.date, inSameDayAs: focusDate) }
+            .sorted(by: scheduleSort)
+    }
+
+    private var nextFocusItem: ScheduleItem? {
+        focusItems.first
     }
 
     private var focusNotes: [NoteGroup] {
@@ -156,6 +162,7 @@ struct HomeScreen: View {
 
             HeroTodayLine(
                 title: todaySummary,
+                nextItem: nextFocusItem,
                 scheduleCount: focusItems.count,
                 accent: theme.accent,
                 secondaryAccent: theme.secondaryAccent
@@ -400,6 +407,13 @@ struct HomeScreen: View {
             .lowercased()
             .replacingOccurrences(of: " ", with: "")
             .replacingOccurrences(of: "\n", with: "")
+    }
+
+    private func scheduleSort(_ lhs: ScheduleItem, _ rhs: ScheduleItem) -> Bool {
+        if lhs.startTime != rhs.startTime {
+            return lhs.startTime < rhs.startTime
+        }
+        return lhs.title < rhs.title
     }
 
     private func sectionTitle(_ title: String) -> some View {
@@ -732,36 +746,49 @@ private struct CityChipRail: View {
 
 private struct HeroTodayLine: View {
     var title: String
+    var nextItem: ScheduleItem?
     var scheduleCount: Int
     var accent: Color
     var secondaryAccent: Color
 
     var body: some View {
-        HStack(spacing: 9) {
+        HStack(alignment: .center, spacing: 10) {
             Image(systemName: "sun.max.fill")
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(secondaryAccent)
-                .frame(width: 30, height: 30)
+                .frame(width: 34, height: 34)
                 .background(secondaryAccent.opacity(0.13), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 2) {
-                Text("TODAY")
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(.secondary)
-                Text(title)
+                HStack(spacing: 6) {
+                    Text("TODAY")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.secondary)
+                    Text(title)
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(accent)
+                }
+                Text(nextLine)
                     .font(.subheadline.weight(.black))
                     .lineLimit(1)
+                    .minimumScaleFactor(0.82)
             }
             Spacer(minLength: 8)
             HeroCountPill(title: "일정", value: scheduleCount, tint: accent)
         }
-        .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, minHeight: 58, alignment: .center)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.primary.opacity(0.05))
         }
+    }
+
+    private var nextLine: String {
+        guard let nextItem else { return "다음 일정 없음" }
+        let time = nextItem.startTime.isEmpty ? nextItem.kind.rawValue : nextItem.startTime
+        return "\(time) · \(nextItem.title)"
     }
 }
 
