@@ -205,20 +205,40 @@ struct HomeScreen: View {
                     .padding(.vertical, 4)
                     .background(.secondary.opacity(0.10), in: Capsule())
             }
-            VStack(spacing: 8) {
-                FlightSummaryRow(
-                    title: "가는 편",
-                    flight: trip.outbound,
-                    iconName: "airplane.departure",
-                    tint: theme.accent
-                )
-                FlightSummaryRow(
-                    title: "오는 편",
-                    flight: trip.inbound,
-                    iconName: "airplane.arrival",
-                    tint: theme.secondaryAccent
-                )
-                AccommodationSummaryRow(trip: trip)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    FlightSummaryRow(
+                        title: "가는 편",
+                        flight: trip.outbound,
+                        iconName: "airplane.departure",
+                        tint: theme.accent,
+                        isCompact: true
+                    )
+                    FlightSummaryRow(
+                        title: "오는 편",
+                        flight: trip.inbound,
+                        iconName: "airplane.arrival",
+                        tint: theme.secondaryAccent,
+                        isCompact: true
+                    )
+                    AccommodationSummaryRow(trip: trip, isCompact: true)
+                }
+
+                VStack(spacing: 8) {
+                    FlightSummaryRow(
+                        title: "가는 편",
+                        flight: trip.outbound,
+                        iconName: "airplane.departure",
+                        tint: theme.accent
+                    )
+                    FlightSummaryRow(
+                        title: "오는 편",
+                        flight: trip.inbound,
+                        iconName: "airplane.arrival",
+                        tint: theme.secondaryAccent
+                    )
+                    AccommodationSummaryRow(trip: trip)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -394,6 +414,7 @@ private struct FlightSummaryRow: View {
     var flight: FlightInfo
     var iconName: String
     var tint: Color
+    var isCompact = false
 
     var body: some View {
         Button {
@@ -432,7 +453,7 @@ private struct FlightSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 108 : 74, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
@@ -484,6 +505,7 @@ private struct RouteTimeBadge: View {
 
 private struct AccommodationSummaryRow: View {
     var trip: Trip
+    var isCompact = false
 
     var body: some View {
         Button {
@@ -516,7 +538,7 @@ private struct AccommodationSummaryRow: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isCompact ? 108 : 74, alignment: .leading)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 11)
