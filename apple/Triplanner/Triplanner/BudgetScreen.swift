@@ -52,7 +52,9 @@ struct BudgetScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    BudgetHeader(
+                    BudgetLimitBanner(
+                        budget: budget,
+                        currency: currency,
                         budgetIsSet: budget > 0,
                         onEditLimit: { isEditingBudget = true }
                     )
@@ -151,9 +153,9 @@ struct BudgetScreen: View {
                 .readableWidth(900)
                 .padding()
             }
-            .navigationTitle("")
+            .navigationTitle("Budget")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             #endif
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -183,43 +185,71 @@ struct BudgetScreen: View {
     }
 }
 
-private struct BudgetHeader: View {
+private struct BudgetLimitBanner: View {
     @Environment(\.appTheme) private var theme
+    var budget: Double
+    var currency: String
     var budgetIsSet: Bool
     var onEditLimit: () -> Void
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(theme.secondaryAccent)
-                .frame(width: 4, height: 42)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Budget")
-                    .font(.system(size: 25, weight: .black, design: .rounded))
-                    .lineLimit(1)
-                Text("한도, 지출, 분담을 한눈에 확인")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.86)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) {
+                limitIcon
+                limitCopy
+                Spacer(minLength: 12)
+                editButton
             }
 
-            Spacer(minLength: 0)
-
-            Button {
-                onEditLimit()
-            } label: {
-                Label(budgetIsSet ? "Edit limit" : "Set limit", systemImage: "slider.horizontal.3")
-                    .font(.caption.weight(.black))
-                    .padding(.horizontal, 11)
-                    .padding(.vertical, 8)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    limitIcon
+                    limitCopy
+                }
+                editButton
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(theme.accent)
-            .background(theme.accent.opacity(0.12), in: Capsule())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .appPanel(cornerRadius: 18)
+    }
+
+    private var limitIcon: some View {
+        Image(systemName: "slider.horizontal.3")
+            .font(.subheadline.weight(.black))
+            .foregroundStyle(.white)
+            .frame(width: 36, height: 36)
+            .background(theme.accent, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var limitCopy: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("Limit")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.secondary)
+            Text(budgetIsSet ? "\(Int(budget)) \(currency)" : "Set a trip budget")
+                .font(.headline.weight(.black))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+            Text(budgetIsSet ? "사용률과 남은 금액을 이 한도 기준으로 계산해요" : "이번 여행에서 함께 확인할 총 금액을 정해요")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+    }
+
+    private var editButton: some View {
+        Button {
+            onEditLimit()
+        } label: {
+            Label(budgetIsSet ? "Edit Budget" : "Set Budget", systemImage: "pencil")
+                .font(.caption.weight(.black))
+                .padding(.horizontal, 11)
+                .padding(.vertical, 8)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(theme.accent)
+        .background(theme.accent.opacity(0.12), in: Capsule())
     }
 }
 
