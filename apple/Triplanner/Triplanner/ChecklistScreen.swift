@@ -162,7 +162,7 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack {
                 SectionLabel(title: title)
                 Spacer()
@@ -210,45 +210,43 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(spacing: 9) {
             Button(action: action) {
                 checkmarkIcon
             }
             .buttonStyle(.plain)
+            .frame(width: 32, height: rowHeight)
             .accessibilityLabel(item.isDone ? "완료 해제" : "완료")
 
             Button(action: action) {
                 titleLabel
             }
             .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .leading)
 
-            Text(item.owner)
-                .font(.caption2.weight(.black))
-                .lineLimit(1)
-                .minimumScaleFactor(0.78)
-                .frame(width: 54, height: 24)
-                .background(ownerTint.opacity(0.11), in: Capsule())
-                .foregroundStyle(ownerTint)
+            HStack(spacing: 6) {
+                ownerPill
 
-            Button {
-                isEditing = true
-            } label: {
-                editIcon
+                Button {
+                    isEditing = true
+                } label: {
+                    editIcon
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("항목 수정")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("항목 수정")
+            .frame(height: rowHeight, alignment: .center)
         }
-        .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .center)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 0)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
                 Rectangle()
                     .fill(Color.secondary.opacity(0.11))
                     .frame(height: 0.5)
-                    .padding(.leading, 40)
+                    .padding(.leading, 51)
             }
         }
         .opacity(item.isDone ? 0.66 : 1)
@@ -258,14 +256,16 @@ private struct ChecklistItemRow: View {
         }
     }
 
+    private var rowHeight: CGFloat { 40 }
+
     private var checkmarkIcon: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
                 .fill(item.isDone ? tint.opacity(0.15) : Color.secondary.opacity(0.08))
             RoundedRectangle(cornerRadius: 8)
                 .stroke(item.isDone ? tint.opacity(0.42) : Color.secondary.opacity(0.16), lineWidth: 1)
-            Image(systemName: item.isDone ? "checkmark" : "circle")
-                .font(.system(size: item.isDone ? 11 : 8, weight: .black))
+            Image(systemName: item.isDone ? "checkmark" : "circle.fill")
+                .font(.system(size: item.isDone ? 11 : 6, weight: .black))
                 .foregroundStyle(item.isDone ? tint : .secondary)
         }
         .frame(width: 26, height: 26)
@@ -280,15 +280,25 @@ private struct ChecklistItemRow: View {
             .lineLimit(1)
             .minimumScaleFactor(0.82)
             .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, minHeight: 26, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .leading)
             .contentShape(Rectangle())
+    }
+
+    private var ownerPill: some View {
+        Text(item.owner)
+            .font(.caption2.weight(.black))
+            .lineLimit(1)
+            .minimumScaleFactor(0.78)
+            .frame(width: 54, height: 24)
+            .background(ownerTint.opacity(0.11), in: Capsule())
+            .foregroundStyle(ownerTint)
     }
 
     private var editIcon: some View {
         Image(systemName: "pencil")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 26, height: 26)
+            .frame(width: 28, height: 28)
             .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 
