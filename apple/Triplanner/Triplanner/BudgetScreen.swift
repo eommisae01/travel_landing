@@ -278,6 +278,7 @@ private struct BudgetStat: View {
 }
 
 private struct CategoryBudgetRow: View {
+    @Environment(\.appTheme) private var theme
     var category: String
     var amount: Double
     var total: Double
@@ -319,9 +320,9 @@ private struct CategoryBudgetRow: View {
     private var tint: Color {
         switch category {
         case "교통": return .blue
-        case "입장권": return .teal
+        case "입장권": return theme.accent
         case "식비": return .orange
-        case "숙소": return .purple
+        case "숙소": return theme.secondaryAccent
         case "쇼핑": return .pink
         default: return .secondary
         }
@@ -341,6 +342,7 @@ private struct CategoryBudgetRow: View {
 
 private struct ExpenseRow: View {
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     var expense: ExpenseItem
     var showsDivider = false
     @State private var isEditing = false
@@ -374,10 +376,13 @@ private struct ExpenseRow: View {
                     .frame(minWidth: 70, alignment: .trailing)
                 }
 
-                HStack(spacing: 6) {
-                    ExpenseMetaText(title: "결제", value: expense.paidBy, tint: .teal)
-                    ExpenseMetaText(title: "부담", value: expense.intendedPayer, tint: .blue)
-                    ExpenseMetaText(title: "사용", value: participantText, tint: .secondary)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 6) {
+                        expenseMetaChips
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        expenseMetaChips
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -393,7 +398,7 @@ private struct ExpenseRow: View {
             }
             .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 62, alignment: .top)
+        .frame(maxWidth: .infinity, minHeight: 66, alignment: .top)
         .padding(.horizontal, 10)
         .padding(.vertical, 9)
         .background(.background.opacity(0.50))
@@ -439,11 +444,19 @@ private struct ExpenseRow: View {
     private var categoryColor: Color {
         switch expense.category {
         case "교통": return .blue
-        case "입장권": return .teal
+        case "입장권": return theme.accent
         case "식비": return .orange
-        case "숙소": return .purple
+        case "숙소": return theme.secondaryAccent
         case "쇼핑": return .pink
         default: return .secondary
+        }
+    }
+
+    private var expenseMetaChips: some View {
+        Group {
+            ExpenseMetaText(title: "결제", value: expense.paidBy, tint: theme.accent)
+            ExpenseMetaText(title: "부담", value: expense.intendedPayer, tint: theme.secondaryAccent)
+            ExpenseMetaText(title: "사용", value: participantText, tint: .secondary)
         }
     }
 
@@ -476,6 +489,7 @@ private struct ExpenseMetaText: View {
 private struct ExpenseEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var store: TripStore
+    @Environment(\.appTheme) private var theme
     var existingExpense: ExpenseItem?
 
     @State private var category = "교통"
@@ -520,7 +534,7 @@ private struct ExpenseEditorSheet: View {
                                 }
                                 .buttonStyle(.plain)
                                 .foregroundStyle(category == item ? .white : .primary)
-                                .background(category == item ? .teal : .secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                                .background(category == item ? categoryTint(item) : .secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                             }
                         }
                     }
@@ -623,9 +637,21 @@ private struct ExpenseEditorSheet: View {
             selectedParticipants = Set(memberNames)
         }
     }
+
+    private func categoryTint(_ value: String) -> Color {
+        switch value {
+        case "교통": return .blue
+        case "입장권": return theme.accent
+        case "식비": return .orange
+        case "숙소": return theme.secondaryAccent
+        case "쇼핑": return .pink
+        default: return theme.warmAccent
+        }
+    }
 }
 
 private struct LabeledExpenseField: View {
+    @Environment(\.appTheme) private var theme
     var title: String
     var iconName: String
     var placeholder: String
@@ -635,9 +661,9 @@ private struct LabeledExpenseField: View {
         HStack(spacing: 10) {
             Image(systemName: iconName)
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(.teal)
+                .foregroundStyle(theme.accent)
                 .frame(width: 32, height: 32)
-                .background(.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             TextField(placeholder, text: $text)
                 #if os(iOS)
                 .keyboardType(title == "금액" ? .decimalPad : .default)
@@ -682,6 +708,7 @@ private struct ParticipantChipSection: View {
 }
 
 private struct FlowChips: View {
+    @Environment(\.appTheme) private var theme
     var names: [String]
     var selected: (String) -> Bool
     var onTap: (String) -> Void
@@ -703,7 +730,7 @@ private struct FlowChips: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(selected(name) ? .white : .primary)
-                .background(selected(name) ? .teal : .secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                .background(selected(name) ? theme.accent : .secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
             }
         }
     }
