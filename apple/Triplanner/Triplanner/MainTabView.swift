@@ -57,7 +57,8 @@ struct MainTabView: View {
                             )
                         }
                         .buttonStyle(.plain)
-                        .listRowInsets(EdgeInsets(top: 3, leading: 10, bottom: 3, trailing: 10))
+                        .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
+                        .listRowBackground(selectedSection == section ? Color.teal.opacity(0.10) : Color.clear)
                     }
                 }
             }
@@ -148,18 +149,18 @@ private struct SidebarTripSummary: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.headline.weight(.bold))
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(.white)
-                    .frame(width: 32, height: 32)
-                    .background(.teal, in: RoundedRectangle(cornerRadius: 11))
+                    .frame(width: 30, height: 30)
+                    .background(.teal, in: RoundedRectangle(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(city)
-                        .font(.title3.weight(.black))
+                        .font(.headline.weight(.black))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.caption.weight(.semibold))
+                            .font(.caption2.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -184,14 +185,12 @@ private struct SidebarMenuRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: section.iconName)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(isSelected ? .white : .teal)
-                .frame(width: 28, height: 28)
-                .background(isSelected ? Color.teal : Color.teal.opacity(0.11), in: RoundedRectangle(cornerRadius: 9))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(isSelected ? .teal : .secondary)
+                .frame(width: 24, height: 24)
             VStack(alignment: .leading, spacing: 1) {
                 Text(section.title)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(isSelected ? .primary : .primary)
+                    .font(.subheadline.weight(isSelected ? .bold : .semibold))
                 Text(section.sidebarSubtitle)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
@@ -207,9 +206,7 @@ private struct SidebarMenuRow: View {
                     .background((isSelected ? Color.teal : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 7)
-        .background(isSelected ? Color.teal.opacity(0.10) : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+        .frame(minHeight: 34, alignment: .center)
     }
 }
 
