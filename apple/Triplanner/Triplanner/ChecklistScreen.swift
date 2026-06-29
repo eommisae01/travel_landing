@@ -188,10 +188,10 @@ private struct ChecklistSection: View {
                         }
                     }
                 }
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
+                .clipShape(RoundedRectangle(cornerRadius: 13))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 13)
                         .stroke(Color.primary.opacity(0.055))
                 }
             }
@@ -210,19 +210,18 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(alignment: .center, spacing: 8) {
             Button(action: action) {
-                checkmarkIcon
+                HStack(alignment: .center, spacing: 9) {
+                    checkmarkIcon
+                    titleLabel
+                }
+                .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .frame(width: 30, height: rowHeight)
+            .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .leading)
             .accessibilityLabel(item.isDone ? "완료 해제" : "완료")
-
-            Button(action: action) {
-                titleLabel
-            }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .leading)
 
             ownerPill
 
@@ -232,11 +231,11 @@ private struct ChecklistItemRow: View {
                 editIcon
             }
             .buttonStyle(.plain)
-            .frame(width: 30, height: rowHeight)
+            .frame(width: 28, height: rowHeight)
             .accessibilityLabel("항목 수정")
         }
-        .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .center)
-        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .center)
+        .padding(.horizontal, 10)
         .padding(.vertical, 0)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
@@ -244,7 +243,7 @@ private struct ChecklistItemRow: View {
                 Rectangle()
                     .fill(Color.secondary.opacity(0.11))
                     .frame(height: 0.5)
-                    .padding(.leading, 54)
+                    .padding(.leading, 48)
             }
         }
         .opacity(item.isDone ? 0.66 : 1)
@@ -254,7 +253,7 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { 42 }
+    private var rowHeight: CGFloat { 38 }
 
     private var checkmarkIcon: some View {
         ZStack {
@@ -268,7 +267,7 @@ private struct ChecklistItemRow: View {
                     .foregroundStyle(tint)
             }
         }
-        .frame(width: 23, height: 23)
+        .frame(width: 22, height: 22)
         .contentShape(RoundedRectangle(cornerRadius: 8))
     }
 
@@ -280,8 +279,7 @@ private struct ChecklistItemRow: View {
             .lineLimit(1)
             .minimumScaleFactor(0.82)
             .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .leading)
-            .contentShape(Rectangle())
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var ownerPill: some View {
@@ -289,7 +287,7 @@ private struct ChecklistItemRow: View {
             .font(.caption2.weight(.black))
             .lineLimit(1)
             .minimumScaleFactor(0.78)
-            .frame(width: 64, height: 24)
+            .frame(width: 58, height: 22)
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
     }
@@ -298,8 +296,8 @@ private struct ChecklistItemRow: View {
         Image(systemName: "pencil")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
-            .frame(width: 28, height: 28)
-            .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 9))
+            .frame(width: 26, height: 26)
+            .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private var ownerTint: Color {
