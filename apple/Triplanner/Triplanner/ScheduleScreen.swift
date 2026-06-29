@@ -261,17 +261,26 @@ struct ScheduleScreen: View {
     }
 
     private var calendarDetailPanels: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .top, spacing: 10) {
-                calendarTimeGridPanel
-                    .frame(minWidth: 420)
-                calendarAgendaPanel
-                    .frame(width: 300)
-            }
+        Group {
+            if selectedDate == nil {
+                VStack(alignment: .leading, spacing: 10) {
+                    calendarTimeGridPanel
+                    calendarAgendaPanel
+                }
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 12) {
+                        calendarTimeGridPanel
+                            .frame(minWidth: 460)
+                        calendarAgendaPanel
+                            .frame(width: 320)
+                    }
 
-            VStack(alignment: .leading, spacing: 10) {
-                calendarTimeGridPanel
-                calendarAgendaPanel
+                    VStack(alignment: .leading, spacing: 10) {
+                        calendarTimeGridPanel
+                        calendarAgendaPanel
+                    }
+                }
             }
         }
     }
@@ -291,6 +300,19 @@ struct ScheduleScreen: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
+                    Button {
+                        selectedDate = nil
+                    } label: {
+                        CalendarSummaryCard(
+                            dayTitle: "전체",
+                            dateTitle: "\(dates.count)일",
+                            itemCount: allVisibleItemsSorted.count,
+                            firstTitle: allVisibleItemsSorted.first?.title ?? "전체 일정",
+                            isSelected: selectedDate == nil
+                        )
+                    }
+                    .buttonStyle(.plain)
+
                     ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
                         let dayItems = items(on: date)
                         let isSelected = selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
@@ -317,7 +339,7 @@ struct ScheduleScreen: View {
     private var calendarTimeGridPanel: some View {
         VStack(alignment: .leading, spacing: 9) {
             HStack {
-                SectionLabel(title: selectedDate == nil && dates.count > 1 ? "WEEK GRID" : "DAY GRID")
+                SectionLabel(title: selectedDate == nil && dates.count > 1 ? "TIME GRID" : "DAY GRID")
                 Spacer()
                 Text(selectedDate.map(compactDayLabel) ?? "전체 날짜")
                     .font(.caption2.weight(.black))
@@ -328,7 +350,7 @@ struct ScheduleScreen: View {
             }
 
             if selectedDate == nil && dates.count > 1 {
-                MultiDayCalendarGrid(dates: timelineDates.isEmpty ? dates : timelineDates, itemsForDate: items(on:))
+                MultiDayCalendarGrid(dates: dates, itemsForDate: items(on:))
             } else if let focusDate = calendarFocusDate {
                 CalendarTimeGrid(date: focusDate, items: items(on: focusDate), dayLabel: dayTitle(for: focusDate))
             } else {
@@ -368,11 +390,11 @@ struct ScheduleScreen: View {
                     .background(.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
             } else {
                 VStack(spacing: 6) {
-                    ForEach(agendaItems.prefix(5)) { item in
+                    ForEach(agendaItems.prefix(selectedDate == nil ? 8 : 5)) { item in
                         CalendarAgendaRow(item: item)
                     }
-                    if agendaItems.count > 5 {
-                        Text("+ \(agendaItems.count - 5)개 더 있음")
+                    if agendaItems.count > (selectedDate == nil ? 8 : 5) {
+                        Text("+ \(agendaItems.count - (selectedDate == nil ? 8 : 5))개 더 있음")
                             .font(.caption2.weight(.black))
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
