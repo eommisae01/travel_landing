@@ -183,10 +183,10 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            HStack(alignment: .top, spacing: 11) {
+            HStack(alignment: .center, spacing: 11) {
                 notePreviewStrip(note)
 
-                VStack(alignment: .leading, spacing: 7) {
+                VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(note.title)
                             .font(.subheadline.weight(.black))
@@ -201,6 +201,7 @@ struct NotesScreen: View {
                         .lineLimit(2)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     HStack(spacing: 6) {
                         NoteKindPill(title: noteKindTitle(note), iconName: noteKindIcon(note), tint: noteAccent(note))
@@ -213,7 +214,7 @@ struct NotesScreen: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 104, maxHeight: 104, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 96, maxHeight: 96, alignment: .center)
             .padding(10)
             .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 14))
             .overlay(alignment: .leading) {
@@ -250,16 +251,16 @@ struct NotesScreen: View {
                     .frame(width: 38, height: 38)
                     .background(.background.opacity(0.64), in: RoundedRectangle(cornerRadius: 12))
             } else {
-                ZStack {
+                ZStack(alignment: .center) {
                     ForEach(Array(note.imageNames.prefix(3).enumerated()), id: \.offset) { index, imageName in
-                        MiniImageBadge(title: imageName, index: index, tint: noteAccent(note))
-                            .offset(x: CGFloat(index) * 8, y: CGFloat(index) * -7)
+                        MiniImageBadge(title: imageName, index: index, tint: noteAccent(note), compact: true)
+                            .offset(x: CGFloat(index - 1) * 7, y: CGFloat(index - 1) * -5)
+                            .rotationEffect(.degrees(Double(index - 1) * 4))
                     }
                 }
-                .offset(x: -8, y: 6)
             }
         }
-        .frame(width: 72, height: 72)
+        .frame(width: 70, height: 70)
         .overlay(alignment: .bottomTrailing) {
             if !note.imageNames.isEmpty {
                 Text("\(note.imageNames.count)")
@@ -621,6 +622,7 @@ private struct MiniImageBadge: View {
     var title: String
     var index: Int
     var tint: Color
+    var compact = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -635,8 +637,8 @@ private struct MiniImageBadge: View {
                 .lineLimit(1)
         }
         .foregroundStyle(tint)
-        .frame(width: 42, height: 34, alignment: .leading)
-        .padding(.horizontal, 7)
+        .frame(width: compact ? 36 : 42, height: compact ? 30 : 34, alignment: .leading)
+        .padding(.horizontal, compact ? 6 : 7)
         .background(.background.opacity(index == 0 ? 0.86 : 0.70), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
