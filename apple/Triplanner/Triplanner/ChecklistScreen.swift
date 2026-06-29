@@ -176,14 +176,13 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: 9) {
             Button(action: action) {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 19, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(item.isDone ? tint : .secondary)
-                    .frame(width: 32, height: 32)
-                    .background((item.isDone ? tint : Color.secondary).opacity(item.isDone ? 0.10 : 0.06), in: RoundedRectangle(cornerRadius: 9))
-                    .contentShape(RoundedRectangle(cornerRadius: 9))
+                    .frame(width: 26, height: 26)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
 
@@ -193,44 +192,41 @@ private struct ChecklistItemRow: View {
                     .strikethrough(item.isDone)
                     .foregroundStyle(item.isDone ? .secondary : .primary)
                     .lineLimit(1)
-                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            HStack(alignment: .center, spacing: 6) {
-                Text(item.owner)
-                    .font(.caption2.weight(.black))
-                    .lineLimit(1)
-                    .frame(minWidth: 36)
-                    .padding(.horizontal, 6)
-                    .frame(height: 28)
-                    .background(ownerTint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-                    .foregroundStyle(ownerTint)
+            Text(item.owner)
+                .font(.caption2.weight(.black))
+                .lineLimit(1)
+                .frame(minWidth: 36)
+                .padding(.horizontal, 7)
+                .frame(height: 24)
+                .background(ownerTint.opacity(0.11), in: RoundedRectangle(cornerRadius: 7))
+                .foregroundStyle(ownerTint)
 
-                Button {
-                    isEditing = true
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
-                        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
-                }
-                .buttonStyle(.plain)
+            Button {
+                isEditing = true
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+                    .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 7))
             }
-            .frame(height: 32)
+            .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, minHeight: 38, alignment: .center)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 1)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if showsDivider {
                 Rectangle()
-                    .fill(Color.secondary.opacity(0.13))
+                    .fill(Color.secondary.opacity(0.11))
                     .frame(height: 0.5)
-                    .padding(.leading, 47)
+                    .padding(.leading, 44)
             }
         }
         .opacity(item.isDone ? 0.66 : 1)
