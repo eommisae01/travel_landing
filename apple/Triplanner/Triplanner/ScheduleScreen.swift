@@ -30,22 +30,16 @@ struct ScheduleScreen: View {
                         HStack {
                             SectionLabel(title: "DATE")
                             Spacer()
-                            Text(viewMode == .timeline ? "Timeline" : "Calendar")
+                            Text(viewMode.title)
                                 .font(.caption2.weight(.black))
-                                .foregroundStyle(viewMode == .calendar ? theme.accent : .secondary)
+                                .foregroundStyle(theme.accent)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background((viewMode == .calendar ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
+                                .background(theme.accent.opacity(0.10), in: Capsule())
                         }
                         filterBar
 
-                        Picker("보기 방식", selection: $viewMode) {
-                            Label("Timeline", systemImage: "list.bullet.rectangle")
-                                .tag(ScheduleViewMode.timeline)
-                            Label("Calendar", systemImage: "calendar")
-                                .tag(ScheduleViewMode.calendar)
-                        }
-                        .pickerStyle(.segmented)
+                        ScheduleModeSwitch(viewMode: $viewMode)
 
                         if !dates.isEmpty && viewMode == .timeline {
                             calendarPreview
@@ -115,29 +109,31 @@ struct ScheduleScreen: View {
                     }
                 }
             }
+            .padding(3)
+            .background(.secondary.opacity(0.055), in: RoundedRectangle(cornerRadius: 15))
         }
     }
 
     private func dayFilterButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
                     Text(title)
                         .font(.caption.weight(.black))
-                    Text(subtitle)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
+                    Spacer(minLength: 0)
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .font(.caption2.weight(.black))
+                    }
                 }
-                Spacer(minLength: 0)
-                if isSelected {
-                    Circle()
-                        .fill(.white.opacity(0.92))
-                        .frame(width: 7, height: 7)
-                }
+                Text(subtitle)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
             }
-            .frame(width: title == "전체" ? 92 : 112, alignment: .leading)
+            .frame(width: title == "전체" ? 86 : 104, alignment: .leading)
+            .frame(minHeight: 46, alignment: .leading)
             .padding(.horizontal, 10)
-            .padding(.vertical, 7)
+            .padding(.vertical, 8)
             .background(isSelected ? theme.accent : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
@@ -578,6 +574,52 @@ struct ScheduleScreen: View {
 private enum ScheduleViewMode: Hashable {
     case timeline
     case calendar
+
+    var title: String {
+        switch self {
+        case .timeline: return "Timeline"
+        case .calendar: return "Calendar"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .timeline: return "list.bullet.rectangle"
+        case .calendar: return "calendar"
+        }
+    }
+}
+
+private struct ScheduleModeSwitch: View {
+    @Environment(\.appTheme) private var theme
+    @Binding var viewMode: ScheduleViewMode
+
+    var body: some View {
+        HStack(spacing: 6) {
+            modeButton(.timeline)
+            modeButton(.calendar)
+        }
+        .padding(4)
+        .background(.secondary.opacity(0.075), in: RoundedRectangle(cornerRadius: 15))
+    }
+
+    private func modeButton(_ mode: ScheduleViewMode) -> some View {
+        let isSelected = viewMode == mode
+        return Button {
+            viewMode = mode
+        } label: {
+            Label(mode.title, systemImage: mode.iconName)
+                .font(.caption.weight(.black))
+                .frame(maxWidth: .infinity, minHeight: 34)
+                .foregroundStyle(isSelected ? .white : .primary)
+                .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(isSelected ? theme.accent.opacity(0.38) : Color.secondary.opacity(0.10))
+                }
+        }
+        .buttonStyle(.plain)
+    }
 }
 
 private struct MultiDayCalendarGrid: View {
@@ -1048,17 +1090,26 @@ private struct CalendarDayCell: View {
             RoundedRectangle(cornerRadius: 13)
                 .stroke(borderColor, lineWidth: isSelected ? 1.5 : 1)
         }
+        .overlay(alignment: .top) {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(theme.accent)
+                    .frame(height: 3)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 4)
+            }
+        }
         .shadow(color: isSelected ? theme.accent.opacity(0.14) : .clear, radius: 8, x: 0, y: 4)
         .opacity(isTripDay ? 1 : 0.36)
     }
 
     private var cellBackground: Color {
-        if isSelected { return theme.accent.opacity(0.10) }
+        if isSelected { return theme.accent.opacity(0.14) }
         return isTripDay ? Color.secondary.opacity(0.065) : Color.secondary.opacity(0.035)
     }
 
     private var borderColor: Color {
-        if isSelected { return theme.accent.opacity(0.48) }
+        if isSelected { return theme.accent.opacity(0.62) }
         return isTripDay ? Color.secondary.opacity(0.12) : Color.clear
     }
 
