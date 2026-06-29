@@ -149,10 +149,10 @@ private struct ThemePickerCard: View {
     var onSelect: (AppTheme) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    SectionLabel(title: "PERSONALIZE")
+                    SectionLabel(title: "테마")
                     Text("여행마다 앱의 색감과 분위기를 바꿔요")
                         .font(.callout.weight(.semibold))
                         .foregroundStyle(.secondary)
@@ -168,7 +168,7 @@ private struct ThemePickerCard: View {
 
             ThemeActivePreview(theme: selectedTheme)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 9)], spacing: 9) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 12)], spacing: 12) {
                 ForEach(AppTheme.allCases) { theme in
                     Button {
                         onSelect(theme)
@@ -187,14 +187,14 @@ private struct ThemeActivePreview: View {
     var theme: AppTheme
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 16) {
             themePreviewCard
-                .frame(width: 132, height: 86)
+                .frame(width: 164, height: 104)
             themeDescription
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 98, alignment: .center)
-        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 126, alignment: .center)
+        .padding(14)
         .background(theme.accent.opacity(0.065), in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 16)
@@ -209,45 +209,35 @@ private struct ThemeActivePreview: View {
     }
 
     private var themePreviewCard: some View {
-        ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 15)
-                .fill(theme.accent.opacity(0.92))
-
-            VStack(alignment: .leading, spacing: 7) {
-                HStack(spacing: 5) {
-                    paletteDot(theme.accent)
-                    paletteDot(theme.secondaryAccent)
-                    paletteDot(theme.warmAccent)
-                    Spacer()
-                    Image(systemName: "sparkles")
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(.white.opacity(0.86))
-                }
+        HStack(spacing: 0) {
+            theme.accent
+            theme.secondaryAccent
+            theme.warmAccent
+            Color.primary.opacity(0.10)
+        }
+        .overlay(alignment: .bottomLeading) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(theme.title)
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-
-                HStack(spacing: 6) {
-                    RoundedRectangle(cornerRadius: 7)
-                        .fill(.white.opacity(0.84))
-                        .frame(width: 50, height: 18)
-                    RoundedRectangle(cornerRadius: 7)
-                        .fill(.white.opacity(0.45))
-                        .frame(width: 34, height: 18)
-                }
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(.white.opacity(0.62))
-                    .frame(width: 76, height: 5)
+                    .font(.headline.weight(.black))
+                Text(theme.subtitle)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
             }
-            .padding(10)
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.background.opacity(0.80))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.primary.opacity(0.08))
         }
     }
 
     private var themeDescription: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Label("Active theme", systemImage: "checkmark.circle.fill")
-                .font(.caption.weight(.black))
+            Label("선택됨", systemImage: "checkmark.circle.fill")
+                .font(.callout.weight(.black))
                 .foregroundStyle(theme.accent)
             Text(theme.moodLine)
                 .font(.headline.weight(.black))
@@ -278,7 +268,7 @@ private struct ThemeOptionTile: View {
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
             ThemePreviewMock(theme: theme, isSelected: isSelected)
-                .frame(width: 54, height: 42)
+                .frame(width: 72, height: 54)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(theme.title)
@@ -300,8 +290,8 @@ private struct ThemeOptionTile: View {
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.42))
         }
-        .frame(maxWidth: .infinity, minHeight: 76, alignment: .center)
-        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 94, alignment: .center)
+        .padding(12)
         .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.085 : 0.035), in: RoundedRectangle(cornerRadius: 15))
         .overlay {
             RoundedRectangle(cornerRadius: 15)
@@ -326,31 +316,12 @@ private struct ThemePreviewMock: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(theme.accent.opacity(0.92))
-
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 5) {
-                    paletteDot(theme.accent)
-                    paletteDot(theme.secondaryAccent)
-                    paletteDot(theme.warmAccent)
-                    Spacer()
-                }
-
-                RoundedRectangle(cornerRadius: 5)
-                    .fill(.white.opacity(0.82))
-                    .frame(width: 34, height: 5)
-
-                HStack(spacing: 5) {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(.white.opacity(0.76))
-                        .frame(width: 26, height: 12)
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(.white.opacity(0.44))
-                        .frame(width: 18, height: 12)
-                }
+            HStack(spacing: 0) {
+                theme.accent
+                theme.secondaryAccent
+                theme.warmAccent
             }
-            .padding(7)
+            .clipShape(RoundedRectangle(cornerRadius: 13))
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.caption.weight(.black))
@@ -358,16 +329,10 @@ private struct ThemePreviewMock: View {
                 .padding(5)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func paletteDot(_ color: Color) -> some View {
-        Circle()
-            .fill(color)
-            .frame(width: 9, height: 9)
-            .overlay {
-                Circle()
-                    .stroke(.white.opacity(0.76), lineWidth: 1)
-            }
+        .overlay {
+            RoundedRectangle(cornerRadius: 13)
+                .stroke(Color.primary.opacity(0.08))
+        }
     }
 }
 

@@ -10,55 +10,55 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .setouchi: return "Setouchi"
-        case .sunrise: return "Sunrise"
-        case .forest: return "Forest"
+        case .setouchi: return "Seaside"
+        case .sunrise: return "Cherry"
+        case .forest: return "Olive"
         case .graphite: return "Graphite"
         }
     }
 
     var subtitle: String {
         switch self {
-        case .setouchi: return "바다와 미술관"
-        case .sunrise: return "따뜻한 도시 산책"
-        case .forest: return "조용한 자연 여행"
-        case .graphite: return "차분한 출장/도시"
+        case .setouchi: return "바다, 미술관, 여유"
+        case .sunrise: return "체리 레드와 민트"
+        case .forest: return "올리브와 조용한 숙소"
+        case .graphite: return "차분한 도시 이동"
         }
     }
 
     var moodLine: String {
         switch self {
-        case .setouchi: return "청량하고 여행 앱다운 기본 테마"
-        case .sunrise: return "밥집, 산책, 쇼핑이 많은 여행에 어울려요"
-        case .forest: return "자연, 숙소, 느린 일정 중심일 때 차분해요"
-        case .graphite: return "정보 밀도가 높은 도시 이동형 여행에 좋아요"
+        case .setouchi: return "밝고 부드러운 바닷가 여행 톤"
+        case .sunrise: return "식당, 카페, 사진 자료가 많은 여행에 좋아요"
+        case .forest: return "숙소와 자연 중심의 느린 여행에 어울려요"
+        case .graphite: return "일정과 이동 정보가 많은 도시 여행에 좋아요"
         }
     }
 
     var accent: Color {
         switch self {
-        case .setouchi: return Color(red: 0.04, green: 0.55, blue: 0.58)
-        case .sunrise: return Color(red: 0.82, green: 0.28, blue: 0.20)
-        case .forest: return Color(red: 0.10, green: 0.42, blue: 0.34)
-        case .graphite: return Color(red: 0.22, green: 0.25, blue: 0.34)
+        case .setouchi: return Color(red: 0.05, green: 0.58, blue: 0.55)
+        case .sunrise: return Color(red: 0.72, green: 0.08, blue: 0.15)
+        case .forest: return Color(red: 0.10, green: 0.31, blue: 0.25)
+        case .graphite: return Color(red: 0.18, green: 0.20, blue: 0.28)
         }
     }
 
     var secondaryAccent: Color {
         switch self {
-        case .setouchi: return Color(red: 0.42, green: 0.58, blue: 0.72)
-        case .sunrise: return Color(red: 0.68, green: 0.18, blue: 0.30)
-        case .forest: return Color(red: 0.55, green: 0.63, blue: 0.25)
-        case .graphite: return Color(red: 0.52, green: 0.45, blue: 0.61)
+        case .setouchi: return Color(red: 0.58, green: 0.72, blue: 0.74)
+        case .sunrise: return Color(red: 0.53, green: 0.75, blue: 0.69)
+        case .forest: return Color(red: 0.63, green: 0.65, blue: 0.28)
+        case .graphite: return Color(red: 0.63, green: 0.57, blue: 0.69)
         }
     }
 
     var warmAccent: Color {
         switch self {
-        case .setouchi: return Color(red: 0.88, green: 0.68, blue: 0.20)
-        case .sunrise: return Color(red: 0.91, green: 0.59, blue: 0.20)
-        case .forest: return Color(red: 0.75, green: 0.55, blue: 0.32)
-        case .graphite: return Color(red: 0.62, green: 0.58, blue: 0.54)
+        case .setouchi: return Color(red: 0.88, green: 0.78, blue: 0.22)
+        case .sunrise: return Color(red: 0.88, green: 0.86, blue: 0.22)
+        case .forest: return Color(red: 0.73, green: 0.50, blue: 0.27)
+        case .graphite: return Color(red: 0.78, green: 0.62, blue: 0.32)
         }
     }
 
