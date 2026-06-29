@@ -52,13 +52,6 @@ struct BudgetScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    BudgetLimitBanner(
-                        budget: budget,
-                        currency: currency,
-                        budgetIsSet: budget > 0,
-                        onEditLimit: { isEditingBudget = true }
-                    )
-
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(alignment: .top, spacing: 12) {
                             VStack(alignment: .leading, spacing: 7) {
@@ -79,11 +72,16 @@ struct BudgetScreen: View {
                                             .minimumScaleFactor(0.82)
                                     }
                                 }
-                                Text(budget > 0 ? "설정한 한도 기준으로 사용률과 남은 금액을 계산해요" : "맨 위 Set limit에서 이번 여행 기준 금액을 정할 수 있어요")
+                                Text(budget > 0 ? "이 한도를 기준으로 사용률과 남은 금액을 계산해요" : "Set limit에서 이번 여행 기준 금액을 정할 수 있어요")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
                             }
+                            Spacer(minLength: 10)
+                            BudgetLimitButton(
+                                budgetIsSet: budget > 0,
+                                onEditLimit: { isEditingBudget = true }
+                            )
                         }
 
                         ViewThatFits(in: .horizontal) {
@@ -185,71 +183,27 @@ struct BudgetScreen: View {
     }
 }
 
-private struct BudgetLimitBanner: View {
+private struct BudgetLimitButton: View {
     @Environment(\.appTheme) private var theme
-    var budget: Double
-    var currency: String
     var budgetIsSet: Bool
     var onEditLimit: () -> Void
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: 12) {
-                limitIcon
-                limitCopy
-                Spacer(minLength: 12)
-                editButton
-            }
-
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 10) {
-                    limitIcon
-                    limitCopy
-                }
-                editButton
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .appPanel(cornerRadius: 18)
-    }
-
-    private var limitIcon: some View {
-        Image(systemName: "slider.horizontal.3")
-            .font(.subheadline.weight(.black))
-            .foregroundStyle(.white)
-            .frame(width: 36, height: 36)
-            .background(theme.accent, in: RoundedRectangle(cornerRadius: 12))
-    }
-
-    private var limitCopy: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text("Trip limit")
-                .font(.caption.weight(.black))
-                .foregroundStyle(.secondary)
-            Text(budgetIsSet ? "\(Int(budget)) \(currency)" : "Set a trip budget")
-                .font(.headline.weight(.black))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.82)
-            Text(budgetIsSet ? "사용률과 남은 금액을 이 한도 기준으로 계산해요" : "이번 여행에서 함께 확인할 총 금액을 정해요")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-        }
-    }
-
-    private var editButton: some View {
         Button {
             onEditLimit()
         } label: {
-            Label(budgetIsSet ? "Edit limit" : "Set limit", systemImage: "pencil")
+            Label(budgetIsSet ? "Edit limit" : "Set limit", systemImage: "slider.horizontal.3")
                 .font(.caption.weight(.black))
+                .labelStyle(.titleAndIcon)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
                 .padding(.horizontal, 11)
                 .padding(.vertical, 8)
         }
         .buttonStyle(.plain)
         .foregroundStyle(theme.accent)
         .background(theme.accent.opacity(0.12), in: Capsule())
+        .accessibilityHint("여행 전체 예산 한도를 설정합니다")
     }
 }
 
