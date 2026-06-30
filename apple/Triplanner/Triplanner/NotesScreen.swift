@@ -52,7 +52,7 @@ struct NotesScreen: View {
     }
 
     private func noteGrid(_ notes: [NoteGroup]) -> some View {
-        LazyVGrid(columns: noteGridColumns, spacing: 18) {
+        LazyVGrid(columns: noteGridColumns, spacing: 14) {
             ForEach(notes) { note in
                 noteCard(note)
             }
@@ -63,7 +63,7 @@ struct NotesScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 16)]
         }
-        return [GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 18)]
+        return [GridItem(.adaptive(minimum: 320, maximum: 460), spacing: 14)]
     }
 
     private var featuredNotes: [NoteGroup] {
@@ -154,17 +154,17 @@ struct NotesScreen: View {
     }
 
     private var notesOverview: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .center, spacing: 12) {
                 Image(systemName: "doc.text.image.fill")
-                    .font(.system(size: 22, weight: .black))
-                    .frame(width: 50, height: 50)
-                    .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 15))
+                    .font(.system(size: 18, weight: .black))
+                    .frame(width: 42, height: 42)
+                    .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
                     .foregroundStyle(theme.accent)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(store.currentCity.isEmpty ? "Common Materials" : "\(displayCity(store.currentCity)) Materials")
-                        .font(.system(size: 25, weight: .black, design: .rounded))
+                        .font(.system(size: 20, weight: .black, design: .rounded))
                     Text(store.currentCity.isEmpty ? "공통 자료를 먼저 보고, 지역 자료는 All Notes에서 펼쳐봅니다." : "공통 자료와 현재 지역 자료를 먼저 보여줍니다.")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
@@ -174,7 +174,7 @@ struct NotesScreen: View {
                 Spacer(minLength: 8)
 
                 Text("\(currentNoteCount)")
-                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .font(.system(size: 25, weight: .black, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(theme.accent)
             }
@@ -195,10 +195,10 @@ struct NotesScreen: View {
                 }
             }
         }
-        .padding(20)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
@@ -301,24 +301,24 @@ struct NotesScreen: View {
         NavigationLink {
             NoteDetailView(note: note)
         } label: {
-            VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: displaySize.size(12)) {
                 noteThumbnail(note)
                 noteCardText(note)
             }
-            .frame(maxWidth: .infinity, minHeight: displaySize.size(244), alignment: .topLeading)
-            .padding(displaySize.size(16))
-            .background(.background.opacity(0.96), in: RoundedRectangle(cornerRadius: 22))
+            .frame(maxWidth: .infinity, minHeight: displaySize.size(142), alignment: .topLeading)
+            .padding(displaySize.size(12))
+            .background(.background.opacity(0.96), in: RoundedRectangle(cornerRadius: 18))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
                     .fill(noteAccent(note))
                     .frame(width: 3)
-                    .padding(.vertical, 18)
+                    .padding(.vertical, 15)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 22)
+                RoundedRectangle(cornerRadius: 18)
                     .stroke(noteAccent(note).opacity(0.13))
             }
-            .shadow(color: Color.primary.opacity(0.018), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.014), radius: 7, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -328,12 +328,13 @@ struct NotesScreen: View {
             imageName: note.imageNames.first,
             iconName: note.imageNames.isEmpty ? noteKindIcon(note) : "photo",
             tint: noteAccent(note),
-            compact: false
+            compact: false,
+            board: true
         )
         .overlay(alignment: .topTrailing) {
             if note.imageNames.count > 1 {
                 NoteCountBadge(count: note.imageNames.count, tint: noteAccent(note))
-                    .padding(12)
+                    .padding(8)
             }
         }
     }
@@ -342,7 +343,7 @@ struct NotesScreen: View {
         VStack(alignment: .leading, spacing: displaySize.size(10)) {
             VStack(alignment: .leading, spacing: displaySize.size(8)) {
                 Text(note.title)
-                    .font(.system(size: displaySize.size(22), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(17), weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.84)
 
@@ -354,20 +355,20 @@ struct NotesScreen: View {
 
             Text(note.body.isEmpty ? "메모 없음" : note.body)
                 .lineLimit(2)
-                .font(.system(size: displaySize.size(14), weight: .semibold, design: .rounded))
+                .font(.system(size: displaySize.size(12), weight: .semibold, design: .rounded))
                 .lineSpacing(3)
                 .foregroundStyle(note.body.isEmpty ? .tertiary : .secondary)
-                .frame(maxWidth: .infinity, minHeight: displaySize.size(42), alignment: .topLeading)
+                .frame(maxWidth: .infinity, minHeight: displaySize.size(34), alignment: .topLeading)
 
             Spacer(minLength: 0)
 
             HStack(spacing: 8) {
                 Label(note.imageNames.isEmpty ? "텍스트 메모" : "\(note.imageNames.count)장 자료", systemImage: note.imageNames.isEmpty ? "text.alignleft" : "photo.stack")
-                    .font(.system(size: displaySize.size(12), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(11), weight: .black, design: .rounded))
                     .foregroundStyle(noteAccent(note))
                 Spacer(minLength: 0)
                 Text("열기")
-                    .font(.system(size: displaySize.size(12), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(11), weight: .black, design: .rounded))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, displaySize.size(10))
                     .padding(.vertical, displaySize.size(6))
@@ -585,6 +586,7 @@ private struct RepresentativeNoteThumbnail: View {
     var iconName: String
     var tint: Color
     var compact = false
+    var board = false
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -603,11 +605,11 @@ private struct RepresentativeNoteThumbnail: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
                 Image(systemName: iconName)
-                    .font(.system(size: 18, weight: .black))
+                    .font(.system(size: board ? 15 : 18, weight: .black))
                     .foregroundStyle(tint)
-                    .frame(width: 42, height: 42)
-                    .background(.background.opacity(0.82), in: RoundedRectangle(cornerRadius: 13))
-                    .padding(12)
+                    .frame(width: board ? 34 : 42, height: board ? 34 : 42)
+                    .background(.background.opacity(0.82), in: RoundedRectangle(cornerRadius: board ? 11 : 13))
+                    .padding(board ? 8 : 12)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
 
@@ -625,15 +627,18 @@ private struct RepresentativeNoteThumbnail: View {
     }
 
     private var thumbnailWidth: CGFloat {
-        compact ? 92 : displaySize.size(260)
+        if board { return displaySize.size(116) }
+        return compact ? 92 : displaySize.size(260)
     }
 
     private var thumbnailHeight: CGFloat {
-        compact ? 68 : displaySize.size(132)
+        if board { return displaySize.size(96) }
+        return compact ? 68 : displaySize.size(132)
     }
 
     private var cornerRadius: CGFloat {
-        compact ? 14 : displaySize.size(24)
+        if board { return displaySize.size(16) }
+        return compact ? 14 : displaySize.size(24)
     }
 
     @ViewBuilder
@@ -648,23 +653,23 @@ private struct RepresentativeNoteThumbnail: View {
             ZStack {
                 RoundedRectangle(cornerRadius: compact ? 12 : 22)
                     .fill(tint.opacity(compact ? 0.085 : 0.095))
-                    .padding(compact ? 5 : 10)
+                    .padding(compact || board ? 5 : 10)
                 Circle()
                     .fill(tint.opacity(compact ? 0.16 : 0.13))
-                    .frame(width: compact ? 40 : 108, height: compact ? 40 : 108)
-                    .offset(x: compact ? 23 : 62, y: compact ? -10 : -40)
+                    .frame(width: compact ? 40 : (board ? 54 : 108), height: compact ? 40 : (board ? 54 : 108))
+                    .offset(x: compact ? 23 : (board ? 34 : 62), y: compact ? -10 : (board ? -18 : -40))
                 RoundedRectangle(cornerRadius: compact ? 9 : 18)
                     .fill(.background.opacity(compact ? 0.66 : 0.78))
-                    .frame(width: compact ? 48 : 140, height: compact ? 22 : 54)
+                    .frame(width: compact ? 48 : (board ? 72 : 140), height: compact ? 22 : (board ? 34 : 54))
                     .rotationEffect(.degrees(-3))
-                    .offset(x: compact ? -12 : -32, y: compact ? 12 : 26)
+                    .offset(x: compact ? -12 : (board ? -18 : -32), y: compact ? 12 : (board ? 16 : 26))
                 RoundedRectangle(cornerRadius: compact ? 8 : 16)
                     .fill(tint.opacity(compact ? 0.20 : 0.22))
-                    .frame(width: compact ? 32 : 92, height: compact ? 17 : 38)
+                    .frame(width: compact ? 32 : (board ? 48 : 92), height: compact ? 17 : (board ? 24 : 38))
                     .rotationEffect(.degrees(5))
-                    .offset(x: compact ? 16 : 58, y: compact ? 13 : 42)
+                    .offset(x: compact ? 16 : (board ? 34 : 58), y: compact ? 13 : (board ? 26 : 42))
                 Image(systemName: imageName == nil ? iconName : "photo.on.rectangle.angled")
-                    .font(.system(size: compact ? 18 : 36, weight: .black))
+                    .font(.system(size: compact ? 18 : (board ? 22 : 36), weight: .black))
                     .foregroundStyle(tint.opacity(0.82))
             }
         }
@@ -673,16 +678,16 @@ private struct RepresentativeNoteThumbnail: View {
     private func thumbnailCaption(_ imageName: String) -> some View {
         VStack(alignment: .leading, spacing: compact ? 1 : 3) {
             Text(imageName)
-                .font(.system(size: compact ? 10 : 12, weight: .black, design: .rounded))
+                .font(.system(size: compact || board ? 10 : 12, weight: .black, design: .rounded))
                 .foregroundStyle(.primary)
                 .lineLimit(compact ? 1 : 2)
                 .minimumScaleFactor(0.76)
         }
-        .padding(.horizontal, compact ? 7 : 9)
-        .padding(.vertical, compact ? 5 : 7)
-        .frame(maxWidth: compact ? 66 : 166, alignment: .leading)
-        .background(.background.opacity(0.88), in: RoundedRectangle(cornerRadius: compact ? 9 : 11))
-        .padding(compact ? 6 : 10)
+        .padding(.horizontal, compact || board ? 7 : 9)
+        .padding(.vertical, compact || board ? 5 : 7)
+        .frame(maxWidth: compact ? 66 : (board ? 88 : 166), alignment: .leading)
+        .background(.background.opacity(0.88), in: RoundedRectangle(cornerRadius: compact || board ? 9 : 11))
+        .padding(compact || board ? 6 : 10)
     }
 
     private func hasImageAsset(named name: String) -> Bool {
@@ -773,45 +778,46 @@ private struct FeaturedNoteTile: View {
     var kindIcon: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 14) {
             RepresentativeNoteThumbnail(
                 imageName: note.imageNames.first,
                 iconName: note.imageNames.isEmpty ? kindIcon : "photo",
-                tint: accent
+                tint: accent,
+                board: true
             )
             .frame(maxWidth: .infinity, alignment: .leading)
             .overlay(alignment: .topTrailing) {
                 if note.imageNames.count > 1 {
                     NoteCountBadge(count: note.imageNames.count, tint: accent)
-                        .padding(12)
+                        .padding(8)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 11) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: kindIcon)
-                        .font(.system(size: 18, weight: .black))
+                        .font(.system(size: 14, weight: .black))
                     Text(kindTitle)
-                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .font(.system(size: 14, weight: .black, design: .rounded))
                 }
                 .foregroundStyle(accent)
 
                 Text(note.title)
-                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .font(.system(size: 20, weight: .black, design: .rounded))
                     .lineLimit(2)
 
                 Text(note.body.isEmpty ? "메모 없음" : note.body)
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
-                    .lineSpacing(4)
+                    .lineSpacing(2)
             }
         }
-        .frame(width: 396, height: 468, alignment: .topLeading)
-        .padding(24)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 26))
+        .frame(width: 250, height: 260, alignment: .topLeading)
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
         .overlay {
-            RoundedRectangle(cornerRadius: 26)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(accent.opacity(0.10))
         }
     }
