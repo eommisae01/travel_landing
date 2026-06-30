@@ -95,9 +95,9 @@ enum AppDisplaySize: String, CaseIterable, Identifiable {
 
     var scale: CGFloat {
         switch self {
-        case .standard: return 0.74
-        case .comfortable: return 0.80
-        case .large: return 0.90
+        case .standard: return 0.72
+        case .comfortable: return 0.76
+        case .large: return 0.84
         }
     }
 
@@ -167,7 +167,7 @@ struct ScreenHeader: View {
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.system(size: displaySize.size(36), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(32), weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
                 if !subtitle.isEmpty {
@@ -191,7 +191,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: displaySize.size(21), weight: .black, design: .rounded))
+            .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
             .tracking(0.2)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -237,7 +237,7 @@ struct EmptyStateView: View {
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
-            .padding(26)
+            .padding(22)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
