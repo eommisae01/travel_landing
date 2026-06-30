@@ -57,28 +57,28 @@ struct ChecklistScreen: View {
                 VStack(alignment: .leading, spacing: 28) {
                     ScreenHeader(title: "체크리스트", subtitle: "남은 준비 \(remainingCount)개 · 완료 \(doneCount)개")
 
-                    VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 14) {
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(selectedOwner == "전체" ? "전체 준비" : selectedOwner)
-                                    .font(.system(size: displaySize.size(23), weight: .black, design: .rounded))
+                                    .font(.system(size: displaySize.size(17), weight: .black, design: .rounded))
                                     .foregroundStyle(.secondary)
                                 Text("\(remainingCount)개 남음")
-                                    .font(.system(size: displaySize.size(34), weight: .black, design: .rounded))
+                                    .font(.system(size: displaySize.size(24), weight: .black, design: .rounded))
                             }
                             Spacer()
                             Text("\(Int(progress * 100))%")
-                                .font(.system(size: displaySize.size(34), weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(24), weight: .black, design: .rounded))
                                 .foregroundStyle(progress >= 1 ? theme.accent : .primary)
                         }
                         ProgressView(value: progress)
                             .tint(theme.accent)
-                            .scaleEffect(x: 1, y: 1.9, anchor: .center)
+                            .scaleEffect(x: 1, y: 1.35, anchor: .center)
 
                         ownerFilterBar
                     }
                     .appPanel(cornerRadius: 24)
-                    .frame(minHeight: displaySize.size(154), alignment: .center)
+                    .frame(minHeight: displaySize.size(124), alignment: .center)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     ChecklistSection(title: "남은 준비", subtitle: "\(remainingItems.count)개", items: remainingItems, tint: theme.accent) { item in
@@ -125,19 +125,19 @@ struct ChecklistScreen: View {
                             if isSelected {
                                 Circle()
                                     .fill(.white)
-                                    .frame(width: 6, height: 6)
+                                    .frame(width: 5, height: 5)
                             }
                             Image(systemName: "person.crop.circle")
-                                .font(.system(size: displaySize.size(14), weight: .black))
+                                .font(.system(size: displaySize.size(12), weight: .black))
                             Text(owner)
-                                .font(.system(size: displaySize.size(14), weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(12), weight: .black, design: .rounded))
                                 .lineLimit(1)
                             Text("\(summary.remaining)/\(summary.total)")
-                                .font(.system(size: displaySize.size(14), weight: .black, design: .rounded).monospacedDigit())
+                                .font(.system(size: displaySize.size(12), weight: .black, design: .rounded).monospacedDigit())
                                 .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
                         .background(isSelected ? theme.accent : Color.clear, in: Capsule())
                         .foregroundStyle(isSelected ? .white : .primary)
                         .overlay {

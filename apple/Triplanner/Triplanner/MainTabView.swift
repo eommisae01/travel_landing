@@ -172,7 +172,7 @@ private struct SidebarTripSummary: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
+                        .font(.system(size: displaySize.size(16), weight: .black, design: .rounded))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
@@ -187,7 +187,7 @@ private struct SidebarTripSummary: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 7)
+            .padding(.vertical, 5)
         }
         .buttonStyle(.plain)
     }
@@ -210,25 +210,25 @@ private struct SidebarMenuRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(section.title)
-                    .font(.system(size: displaySize.size(18), weight: isSelected ? .black : .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(16), weight: isSelected ? .black : .semibold, design: .rounded))
                 Text(section.sidebarSubtitle)
-                    .font(.system(size: displaySize.size(12), weight: .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(11), weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer()
             if let count {
                 Text("\(count)")
-                    .font(.system(size: displaySize.size(14), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(12), weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? theme.accent : .secondary)
                     .monospacedDigit()
                     .frame(minWidth: 26)
                     .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
+                    .padding(.vertical, 4)
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: displaySize.size(54), alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: displaySize.size(48), alignment: .center)
         .padding(.horizontal, 8)
         .padding(.vertical, 2)
         .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 14))

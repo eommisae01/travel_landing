@@ -16,7 +16,7 @@ struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 22) {
                     ScreenHeader(title: "Settings", subtitle: "공유 전 꼭 확인할 여행 기본 정보")
 
                     if let trip = store.trip {
@@ -50,32 +50,38 @@ struct SettingsScreen: View {
                         }
                     }
 
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: 16)], spacing: 16) {
-                        VStack(alignment: .leading, spacing: 16) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 14)], spacing: 14) {
+                        VStack(alignment: .leading, spacing: 13) {
                             SectionLabel(title: "STAY")
                             SettingsField(title: "이름", iconName: "bed.double", placeholder: "숙소 이름", text: $accommodation)
                             SettingsField(title: "주소", iconName: "mappin", placeholder: "숙소 주소", text: $accommodationAddress, axis: .vertical)
                         }
-                        .appPanel(cornerRadius: 22)
+                        .padding(18)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                        .overlay { RoundedRectangle(cornerRadius: 20).stroke(Color.primary.opacity(0.055)) }
 
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 13) {
                             SectionLabel(title: "MY MAPS")
                             SettingsField(title: "링크", iconName: "map", placeholder: "Google My Maps 공유 링크", text: $myMapsURL, axis: .vertical)
                         }
-                        .appPanel(cornerRadius: 22)
+                        .padding(18)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                        .overlay { RoundedRectangle(cornerRadius: 20).stroke(Color.primary.opacity(0.055)) }
                     }
 
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 12) {
                         SectionLabel(title: "INVITE")
                         ShareLink(item: "Triplanner 초대 링크는 Supabase 연결 후 생성됩니다.") {
                             Label("초대 메시지 공유", systemImage: "square.and.arrow.up")
-                                .font(.title3.weight(.bold))
+                                .font(.headline.weight(.bold))
                         }
                         Text("지금은 로컬 프로토타입입니다. 다음 단계에서 Supabase 가족코드/초대 링크를 붙이면 여러 기기에서 함께 볼 수 있습니다.")
-                            .font(.body.weight(.medium))
+                            .font(.callout.weight(.medium))
                             .foregroundStyle(.secondary)
                     }
-                    .appPanel(cornerRadius: 22)
+                    .padding(18)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                    .overlay { RoundedRectangle(cornerRadius: 20).stroke(Color.primary.opacity(0.055)) }
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
                         Button {
@@ -102,8 +108,8 @@ struct SettingsScreen: View {
                     }
                     .padding(.top, 4)
                 }
-                .readableWidth(1120)
-                .padding(24)
+                .readableWidth(1080)
+                .padding(horizontalSizeClass == .compact ? 18 : 30)
             }
             .navigationTitle("")
             .toolbar {
@@ -161,12 +167,12 @@ private struct DisplaySizePickerCard: View {
     var onSelect: (AppDisplaySize) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     SectionLabel(title: "DISPLAY")
                     Text("아이폰, 아이패드, 맥에서 읽기 편한 크기를 고릅니다")
-                        .font(.title3.weight(.semibold))
+                        .font(.callout.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -178,7 +184,7 @@ private struct DisplaySizePickerCard: View {
                     .background(theme.accent.opacity(0.11), in: Capsule())
             }
 
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 ForEach(AppDisplaySize.allCases) { size in
                     Button {
                         onSelect(size)
@@ -189,7 +195,9 @@ private struct DisplaySizePickerCard: View {
                 }
             }
         }
-        .appPanel(cornerRadius: 24)
+        .padding(18)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .overlay { RoundedRectangle(cornerRadius: 22).stroke(Color.primary.opacity(0.055)) }
     }
 }
 
@@ -199,18 +207,18 @@ private struct DisplaySizeTile: View {
     var isSelected: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(size.title)
-                    .font(.title3.weight(.black))
+                    .font(.headline.weight(.black))
                 Spacer()
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.44))
             }
 
             Text(size.subtitle)
-                .font(.body.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
 
@@ -221,13 +229,13 @@ private struct DisplaySizeTile: View {
                     .font(.system(size: size.size(18), weight: .bold, design: .rounded))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
-        .padding(16)
-        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.08 : 0.030), in: RoundedRectangle(cornerRadius: 18))
+        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+        .padding(13)
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.08 : 0.030), in: RoundedRectangle(cornerRadius: 15))
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 15)
                 .stroke(isSelected ? theme.accent.opacity(0.48) : Color.secondary.opacity(0.11), lineWidth: isSelected ? 1.4 : 1)
         }
     }
@@ -238,12 +246,12 @@ private struct ThemePickerCard: View {
     var onSelect: (AppTheme) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     SectionLabel(title: "THEME")
                     Text("여행마다 앱의 색감과 분위기를 바꿔요")
-                        .font(.title3.weight(.semibold))
+                        .font(.callout.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -257,7 +265,7 @@ private struct ThemePickerCard: View {
 
             ThemeActivePreview(theme: selectedTheme)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 250), spacing: 14)], spacing: 14) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
                 ForEach(AppTheme.allCases) { theme in
                     Button {
                         onSelect(theme)
@@ -268,7 +276,9 @@ private struct ThemePickerCard: View {
                 }
             }
         }
-        .appPanel(cornerRadius: 24)
+        .padding(18)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .overlay { RoundedRectangle(cornerRadius: 22).stroke(Color.primary.opacity(0.055)) }
     }
 }
 
@@ -276,23 +286,23 @@ private struct ThemeActivePreview: View {
     var theme: AppTheme
 
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center, spacing: 14) {
             themePreviewCard
-                .frame(width: 220, height: 136)
+                .frame(width: 168, height: 104)
             themeDescription
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 174, alignment: .center)
-        .padding(18)
-        .background(theme.secondaryAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 20))
+        .frame(maxWidth: .infinity, minHeight: 132, alignment: .center)
+        .padding(14)
+        .background(theme.secondaryAccent.opacity(0.10), in: RoundedRectangle(cornerRadius: 18))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 18)
                 .fill(theme.accent)
-                .frame(width: 5)
-                .padding(.vertical, 15)
+                .frame(width: 4)
+                .padding(.vertical, 12)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(theme.accent.opacity(0.20))
         }
     }
@@ -320,22 +330,22 @@ private struct ThemeActivePreview: View {
                             .frame(width: 16, height: 16)
                     }
 
-                    HStack(spacing: 8) {
-                        previewBlock(theme.secondaryAccent.opacity(0.22), width: 72)
-                        previewBlock(theme.warmAccent.opacity(0.22), width: 50)
-                        previewBlock(theme.accent.opacity(0.18), width: 38)
+                    HStack(spacing: 6) {
+                        previewBlock(theme.secondaryAccent.opacity(0.22), width: 52)
+                        previewBlock(theme.warmAccent.opacity(0.22), width: 38)
+                        previewBlock(theme.accent.opacity(0.18), width: 30)
                     }
 
-                    VStack(alignment: .leading, spacing: 7) {
+                    VStack(alignment: .leading, spacing: 5) {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(theme.accent)
-                            .frame(width: 116, height: 8)
+                            .frame(width: 88, height: 6)
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.primary.opacity(0.12))
-                            .frame(width: 88, height: 7)
+                            .frame(width: 64, height: 5)
                     }
                 }
-                .padding(16)
+                .padding(12)
             }
         }
         .overlay {
@@ -359,14 +369,14 @@ private struct ThemeActivePreview: View {
     private var themeDescription: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("선택됨", systemImage: "checkmark.circle.fill")
-                .font(.body.weight(.black))
+                .font(.callout.weight(.black))
                 .foregroundStyle(theme.accent)
             Text(theme.moodLine)
-                .font(.title2.weight(.black))
+                .font(.headline.weight(.black))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Text("홈, 일정, 지도, Notes 카드의 강조색에 바로 반영됩니다.")
-                .font(.body.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
@@ -390,13 +400,13 @@ private struct ThemeOptionTile: View {
     var body: some View {
         HStack(alignment: .center, spacing: 13) {
             ThemePreviewMock(theme: theme, isSelected: isSelected)
-                .frame(width: 96, height: 70)
+                .frame(width: 76, height: 56)
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(theme.title)
-                    .font(.title3.weight(.black))
+                    .font(.headline.weight(.black))
                 Text(theme.subtitle)
-                    .font(.body.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                 HStack(spacing: 5) {
@@ -409,14 +419,14 @@ private struct ThemeOptionTile: View {
             Spacer(minLength: 0)
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.title3.weight(.black))
+                .font(.subheadline.weight(.black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.42))
         }
-        .frame(maxWidth: .infinity, minHeight: 122, alignment: .center)
-        .padding(14)
-        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.08 : 0.028), in: RoundedRectangle(cornerRadius: 18))
+        .frame(maxWidth: .infinity, minHeight: 94, alignment: .center)
+        .padding(12)
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.08 : 0.028), in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(isSelected ? theme.accent.opacity(0.52) : Color.secondary.opacity(0.10), lineWidth: isSelected ? 1.4 : 1)
         }
     }
@@ -442,10 +452,10 @@ private struct ThemePreviewMock: View {
                 .fill(.regularMaterial)
                 .overlay(theme.secondaryAccent.opacity(0.10))
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 RoundedRectangle(cornerRadius: 6)
                     .fill(theme.accent)
-                    .frame(width: 42, height: 8)
+                    .frame(width: 34, height: 6)
                 HStack(spacing: 5) {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(theme.secondaryAccent.opacity(0.28))
@@ -454,17 +464,17 @@ private struct ThemePreviewMock: View {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(theme.accent.opacity(0.20))
                 }
-                .frame(height: 28)
+                .frame(height: 22)
                 RoundedRectangle(cornerRadius: 5)
                     .fill(Color.primary.opacity(0.11))
-                    .frame(width: 58, height: 6)
+                    .frame(width: 46, height: 5)
             }
-            .padding(10)
+            .padding(8)
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.caption.weight(.black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.52))
-                .padding(7)
+                .padding(5)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay {
