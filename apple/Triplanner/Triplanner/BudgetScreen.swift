@@ -48,7 +48,7 @@ struct BudgetScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 34) {
-                    ScreenHeader(title: "Budget", subtitle: "여행 지출과 함께 낼 금액 확인")
+                    ScreenHeader(title: "Budget", subtitle: "지출 한도와 함께 낼 금액 확인")
 
                     VStack(alignment: .leading, spacing: 28) {
                         budgetHeroHeader
@@ -179,13 +179,6 @@ struct BudgetScreen: View {
                     isPrimary: false
                 )
 
-                BudgetProgressDial(
-                    progress: progress,
-                    title: budget > 0 ? "\(Int(progress * 100))%" : "--",
-                    subtitle: "사용률",
-                    tint: spendingTint
-                )
-
                 BudgetLimitButton(
                     budgetIsSet: budget > 0,
                     onEditLimit: { isEditingBudget = true }
@@ -202,10 +195,17 @@ struct BudgetScreen: View {
                     tint: total > budget && budget > 0 ? .orange : theme.secondaryAccent,
                     isPrimary: false
                 )
-                BudgetLimitButton(
-                    budgetIsSet: budget > 0,
-                    onEditLimit: { isEditingBudget = true }
-                )
+                HStack {
+                    BudgetLimitButton(
+                        budgetIsSet: budget > 0,
+                        onEditLimit: { isEditingBudget = true }
+                    )
+                    Spacer(minLength: 0)
+                    Text(budget > 0 ? "\(Int(progress * 100))%" : "한도 미정")
+                        .font(.system(size: 26, weight: .black, design: .rounded))
+                        .foregroundStyle(spendingTint)
+                        .monospacedDigit()
+                }
             }
         }
     }
@@ -234,36 +234,6 @@ struct BudgetScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-private struct BudgetProgressDial: View {
-    var progress: Double
-    var title: String
-    var subtitle: String
-    var tint: Color
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color.secondary.opacity(0.13), lineWidth: 10)
-            Circle()
-                .trim(from: 0, to: min(max(progress, 0), 1))
-                .stroke(tint, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-
-            VStack(spacing: 0) {
-                Text(title)
-                    .font(.system(size: 27, weight: .black, design: .rounded))
-                    .monospacedDigit()
-                Text(subtitle)
-                    .font(.system(size: 14, weight: .black, design: .rounded))
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(width: 116, height: 116)
-        .padding(6)
-        .background(.background.opacity(0.52), in: Circle())
     }
 }
 
