@@ -5,7 +5,7 @@ struct SettingsScreen: View {
     @Environment(\.appTheme) private var theme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage(AppTheme.storageKey) private var themeRawValue = AppTheme.setouchi.rawValue
-    @AppStorage(AppDisplaySize.storageKey) private var displaySizeRawValue = AppDisplaySize.large.rawValue
+    @AppStorage(AppDisplaySize.storageKey) private var displaySizeRawValue = AppDisplaySize.comfortable.rawValue
     @State private var accommodation = ""
     @State private var accommodationAddress = ""
     @State private var myMapsURL = ""
@@ -151,7 +151,7 @@ struct SettingsScreen: View {
     }
 
     private var selectedDisplaySize: AppDisplaySize {
-        AppDisplaySize(rawValue: displaySizeRawValue) ?? .large
+        AppDisplaySize(rawValue: displaySizeRawValue) ?? .comfortable
     }
 }
 
