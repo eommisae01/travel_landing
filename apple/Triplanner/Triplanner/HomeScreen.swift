@@ -8,6 +8,7 @@ import AppKit
 struct HomeScreen: View {
     @EnvironmentObject private var store: TripStore
     @Environment(\.appTheme) private var theme
+    @Environment(\.appDisplaySize) private var displaySize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showingAddCity = false
     @State private var newCity = ""
@@ -78,12 +79,12 @@ struct HomeScreen: View {
             ScrollView {
                 if let trip = store.trip {
                     if isWideLayout {
-                        VStack(alignment: .leading, spacing: 26) {
+                        VStack(alignment: .leading, spacing: 24) {
                             cityHero(trip)
                             travelPanel(trip)
 
-                            HStack(alignment: .top, spacing: 20) {
-                                VStack(alignment: .leading, spacing: 20) {
+                            HStack(alignment: .top, spacing: 18) {
+                                VStack(alignment: .leading, spacing: 18) {
                                     statusStrip
                                     todayPanel
                                 }
@@ -94,7 +95,7 @@ struct HomeScreen: View {
                             }
                         }
                         .readableWidth(1380)
-                        .padding(36)
+                        .padding(32)
                     } else {
                         VStack(alignment: .leading, spacing: 22) {
                             cityHero(trip)
@@ -130,16 +131,16 @@ struct HomeScreen: View {
 
     private func cityHero(_ trip: Trip) -> some View {
         VStack(alignment: .leading, spacing: isWideLayout ? 18 : 15) {
-            HStack(alignment: .center, spacing: 14) {
+            HStack(alignment: .center, spacing: 13) {
                 VStack(alignment: .leading, spacing: 7) {
                     HStack(spacing: 8) {
                         Text("TRIP")
-                            .font(.system(size: isWideLayout ? 11 : 10, weight: .black, design: .rounded))
+                            .font(.system(size: displaySize.size(isWideLayout ? 14 : 13), weight: .black, design: .rounded))
                             .foregroundStyle(.secondary)
                             .tracking(1.3)
                         if let dateRange = dateRange(for: trip) {
                             Text(dateRange)
-                                .font(.system(size: isWideLayout ? 11 : 10, weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(isWideLayout ? 14 : 13), weight: .black, design: .rounded))
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 5)
@@ -169,8 +170,8 @@ struct HomeScreen: View {
             )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, isWideLayout ? 24 : 20)
-        .padding(.vertical, isWideLayout ? 22 : 20)
+        .padding(.horizontal, isWideLayout ? 22 : 18)
+        .padding(.vertical, isWideLayout ? 20 : 18)
         .background {
             RoundedRectangle(cornerRadius: 26)
                 .fill(.regularMaterial)
@@ -193,24 +194,24 @@ struct HomeScreen: View {
             HStack(alignment: .center) {
                 HStack(spacing: 12) {
                     Image(systemName: "airplane")
-                        .font(.system(size: isWideLayout ? 19 : 18, weight: .black))
+                        .font(.system(size: displaySize.size(isWideLayout ? 23 : 22), weight: .black))
                         .foregroundStyle(theme.accent)
-                        .frame(width: isWideLayout ? 42 : 40, height: isWideLayout ? 42 : 40)
+                        .frame(width: displaySize.size(isWideLayout ? 52 : 50), height: displaySize.size(isWideLayout ? 52 : 50))
                         .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Flight & Stay")
-                            .font(.system(size: isWideLayout ? 20 : 18, weight: .black, design: .rounded))
+                            .font(.system(size: displaySize.size(isWideLayout ? 25 : 23), weight: .black, design: .rounded))
                             .foregroundStyle(.primary)
                         Text("항공편과 숙소는 탭하면 바로 복사됩니다.")
-                            .font(.system(size: isWideLayout ? 13 : 12, weight: .semibold, design: .rounded))
+                            .font(.system(size: displaySize.size(isWideLayout ? 17 : 16), weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                     }
                 }
                 Spacer()
                 Label("탭하면 복사", systemImage: "doc.on.doc")
-                    .font(.system(size: isWideLayout ? 12 : 11, weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(isWideLayout ? 16 : 15), weight: .black, design: .rounded))
                     .foregroundStyle(theme.accent)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -257,7 +258,7 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(isWideLayout ? 20 : 18)
+        .padding(isWideLayout ? 18 : 16)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
         .overlay {
             RoundedRectangle(cornerRadius: 24)
@@ -358,7 +359,7 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .center, spacing: 8) {
                 Text(currentScopeTitle)
-                    .font(.system(size: isWideLayout ? 28 : 24, weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(isWideLayout ? 34 : 31), weight: .black, design: .rounded))
                     .minimumScaleFactor(0.70)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
@@ -778,18 +779,18 @@ private struct HeroTodayLine: View {
     var body: some View {
         HStack(alignment: .center, spacing: 13) {
             Image(systemName: "sun.max.fill")
-                .font(.system(size: 15, weight: .black))
+                .font(.system(size: 14, weight: .black))
                 .foregroundStyle(secondaryAccent)
-                .frame(width: 40, height: 40)
+                .frame(width: 38, height: 38)
                 .background(secondaryAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text("TODAY")
-                        .font(.system(size: 12, weight: .black, design: .rounded))
+                        .font(.system(size: 11, weight: .black, design: .rounded))
                         .foregroundStyle(.secondary)
                     Text(title)
-                        .font(.system(size: 12, weight: .black, design: .rounded))
+                        .font(.system(size: 11, weight: .black, design: .rounded))
                         .foregroundStyle(accent)
                 }
 
@@ -797,20 +798,20 @@ private struct HeroTodayLine: View {
                     HStack(spacing: 7) {
                         if let nextItem {
                             Text(nextTime(nextItem))
-                                .font(.system(size: 12, weight: .black, design: .rounded).monospacedDigit())
+                                .font(.system(size: 11, weight: .black, design: .rounded).monospacedDigit())
                                 .foregroundStyle(accent)
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
                                 .background(accent.opacity(0.11), in: Capsule())
                         }
                         Text(nextTitle)
-                            .font(.system(size: 17, weight: .black, design: .rounded))
+                            .font(.system(size: 15, weight: .black, design: .rounded))
                             .lineLimit(1)
                             .minimumScaleFactor(0.82)
                     }
 
                     Text(nextLine)
-                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .font(.system(size: 15, weight: .black, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.82)
                 }
@@ -818,9 +819,9 @@ private struct HeroTodayLine: View {
             Spacer(minLength: 8)
             HeroCountPill(title: "일정", value: scheduleCount, tint: accent)
         }
-        .frame(maxWidth: .infinity, minHeight: 82, alignment: .center)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 13)
+        .frame(maxWidth: .infinity, minHeight: 74, alignment: .center)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
@@ -870,7 +871,7 @@ private struct CompactScheduleRow: View {
             HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .center, spacing: 3) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
-                    .font(.system(size: 14, weight: .black, design: .rounded).monospacedDigit())
+                    .font(.system(size: 13, weight: .black, design: .rounded).monospacedDigit())
                     .foregroundStyle(kindColor)
                     .lineLimit(1)
                 if !item.endTime.isEmpty {
@@ -890,7 +891,7 @@ private struct CompactScheduleRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(item.title)
-                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .font(.system(size: 15, weight: .black, design: .rounded))
                         .lineLimit(1)
                     Text(item.kind.rawValue)
                         .font(.system(size: 11, weight: .black, design: .rounded))
@@ -910,7 +911,7 @@ private struct CompactScheduleRow: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, minHeight: 88, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 82, alignment: .center)
         .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
