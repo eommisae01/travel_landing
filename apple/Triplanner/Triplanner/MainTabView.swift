@@ -65,7 +65,7 @@ struct MainTabView: View {
             }
             .navigationTitle("Triplanner")
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 270, ideal: 300, max: 330)
+            .navigationSplitViewColumnWidth(min: 230, ideal: 250, max: 280)
             .alert("지역 추가", isPresented: $showingAddCity) {
                 TextField("예: Osaka", text: $newCity)
                 Button("추가") {
@@ -163,20 +163,20 @@ private struct SidebarTripSummary: View {
                 Label("지역 추가", systemImage: "plus")
             }
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.system(size: displaySize.size(22), weight: .black))
+                    .font(.system(size: displaySize.size(18), weight: .black))
                     .foregroundStyle(.white)
-                    .frame(width: displaySize.size(46), height: displaySize.size(46))
-                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 13))
+                    .frame(width: displaySize.size(38), height: displaySize.size(38))
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 11))
 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: displaySize.size(22), weight: .black, design: .rounded))
+                        .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.system(size: displaySize.size(14), weight: .semibold, design: .rounded))
+                            .font(.system(size: displaySize.size(12), weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -187,7 +187,7 @@ private struct SidebarTripSummary: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 10)
+            .padding(.vertical, 7)
         }
         .buttonStyle(.plain)
     }
@@ -201,25 +201,25 @@ private struct SidebarMenuRow: View {
     var isSelected = false
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: section.iconName)
-                .font(.system(size: displaySize.size(20), weight: .black))
+                .font(.system(size: displaySize.size(17), weight: .black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
-                .frame(width: displaySize.size(42), height: displaySize.size(42))
-                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 12))
+                .frame(width: displaySize.size(36), height: displaySize.size(36))
+                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 10))
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(section.title)
-                    .font(.system(size: displaySize.size(22), weight: isSelected ? .black : .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(18), weight: isSelected ? .black : .semibold, design: .rounded))
                 Text(section.sidebarSubtitle)
-                    .font(.system(size: displaySize.size(14), weight: .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(12), weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer()
             if let count {
                 Text("\(count)")
-                    .font(.system(size: displaySize.size(17), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(14), weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? theme.accent : .secondary)
                     .monospacedDigit()
                     .frame(minWidth: 26)
@@ -228,10 +228,10 @@ private struct SidebarMenuRow: View {
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: displaySize.size(68), alignment: .center)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 3)
-        .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 17))
+        .frame(maxWidth: .infinity, minHeight: displaySize.size(54), alignment: .center)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 2)
+        .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             if isSelected {
                 RoundedRectangle(cornerRadius: 2)

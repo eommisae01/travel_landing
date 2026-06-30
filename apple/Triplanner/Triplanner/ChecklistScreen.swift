@@ -54,21 +54,21 @@ struct ChecklistScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 38) {
+                VStack(alignment: .leading, spacing: 28) {
                     ScreenHeader(title: "체크리스트", subtitle: "남은 준비 \(remainingCount)개 · 완료 \(doneCount)개")
 
-                    VStack(alignment: .leading, spacing: 34) {
+                    VStack(alignment: .leading, spacing: 18) {
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(selectedOwner == "전체" ? "전체 준비" : selectedOwner)
-                                    .font(.system(size: displaySize.size(58), weight: .black, design: .rounded))
+                                    .font(.system(size: displaySize.size(23), weight: .black, design: .rounded))
                                     .foregroundStyle(.secondary)
                                 Text("\(remainingCount)개 남음")
-                                    .font(.system(size: displaySize.size(106), weight: .black, design: .rounded))
+                                    .font(.system(size: displaySize.size(34), weight: .black, design: .rounded))
                             }
                             Spacer()
                             Text("\(Int(progress * 100))%")
-                                .font(.system(size: displaySize.size(106), weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(34), weight: .black, design: .rounded))
                                 .foregroundStyle(progress >= 1 ? theme.accent : .primary)
                         }
                         ProgressView(value: progress)
@@ -78,7 +78,7 @@ struct ChecklistScreen: View {
                         ownerFilterBar
                     }
                     .appPanel(cornerRadius: 24)
-                    .frame(minHeight: displaySize.size(238), alignment: .center)
+                    .frame(minHeight: displaySize.size(154), alignment: .center)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     ChecklistSection(title: "남은 준비", subtitle: "\(remainingItems.count)개", items: remainingItems, tint: theme.accent) { item in
@@ -92,7 +92,7 @@ struct ChecklistScreen: View {
                     }
                 }
                 .readableWidth(1240)
-                .padding(48)
+                .padding(36)
             }
             .navigationTitle("")
             .toolbar {
@@ -114,7 +114,7 @@ struct ChecklistScreen: View {
 
     private var ownerFilterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 ForEach(filterOwners, id: \.self) { owner in
                     let summary = ownerSummary(for: owner)
                     let isSelected = selectedOwner == owner
@@ -125,19 +125,19 @@ struct ChecklistScreen: View {
                             if isSelected {
                                 Circle()
                                     .fill(.white)
-                                    .frame(width: 9, height: 9)
+                                    .frame(width: 6, height: 6)
                             }
                             Image(systemName: "person.crop.circle")
-                                .font(.system(size: displaySize.size(38), weight: .black))
+                                .font(.system(size: displaySize.size(14), weight: .black))
                             Text(owner)
-                                .font(.system(size: displaySize.size(44), weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(14), weight: .black, design: .rounded))
                                 .lineLimit(1)
                             Text("\(summary.remaining)/\(summary.total)")
-                                .font(.system(size: displaySize.size(44), weight: .black, design: .rounded).monospacedDigit())
+                                .font(.system(size: displaySize.size(14), weight: .black, design: .rounded).monospacedDigit())
                                 .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
                         }
-                        .padding(.horizontal, 34)
-                        .padding(.vertical, 23)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
                         .background(isSelected ? theme.accent : Color.clear, in: Capsule())
                         .foregroundStyle(isSelected ? .white : .primary)
                         .overlay {
@@ -167,16 +167,16 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(title)
-                    .font(.system(size: displaySize.size(64), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(23), weight: .black, design: .rounded))
                     .foregroundStyle(.primary)
                 Spacer()
                 Text(subtitle)
-                    .font(.system(size: displaySize.size(44), weight: .black, design: .rounded).monospacedDigit())
-                    .padding(.horizontal, 21)
-                    .padding(.vertical, 13)
+                    .font(.system(size: displaySize.size(14), weight: .black, design: .rounded).monospacedDigit())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(tint.opacity(0.12), in: Capsule())
                     .foregroundStyle(tint)
             }
@@ -219,9 +219,9 @@ private struct ChecklistItemRow: View {
     @State private var isEditing = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 18) {
+        HStack(alignment: .center, spacing: 12) {
             Button(action: action) {
-                HStack(alignment: .center, spacing: 14) {
+                HStack(alignment: .center, spacing: 10) {
                     checkmarkIcon
                     titleLabel
                 }
@@ -235,7 +235,7 @@ private struct ChecklistItemRow: View {
             controlCluster
         }
         .frame(maxWidth: .infinity, minHeight: rowHeight, maxHeight: rowHeight, alignment: .center)
-        .padding(.horizontal, 18)
+        .padding(.horizontal, 12)
         .padding(.vertical, 0)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
@@ -243,7 +243,7 @@ private struct ChecklistItemRow: View {
                 Rectangle()
                     .fill(Color.secondary.opacity(0.11))
                     .frame(height: 0.5)
-                    .padding(.leading, 72)
+                    .padding(.leading, 46)
             }
         }
         .opacity(item.isDone ? 0.66 : 1)
@@ -253,7 +253,7 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { displaySize.size(188) }
+    private var rowHeight: CGFloat { displaySize.size(56) }
 
     private var checkmarkIcon: some View {
         ZStack {
@@ -263,17 +263,17 @@ private struct ChecklistItemRow: View {
                 .stroke(item.isDone ? tint.opacity(0.42) : Color.secondary.opacity(0.16), lineWidth: 1)
             if item.isDone {
                 Image(systemName: "checkmark")
-                    .font(.system(size: displaySize.size(29), weight: .black))
+                    .font(.system(size: displaySize.size(14), weight: .black))
                     .foregroundStyle(tint)
             }
         }
-        .frame(width: displaySize.size(94), height: displaySize.size(94))
+        .frame(width: displaySize.size(26), height: displaySize.size(26))
         .contentShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var titleLabel: some View {
         Text(item.title)
-            .font(.system(size: displaySize.size(78), weight: .semibold, design: .rounded))
+            .font(.system(size: displaySize.size(18), weight: .semibold, design: .rounded))
             .strikethrough(item.isDone)
             .foregroundStyle(item.isDone ? .secondary : .primary)
             .lineLimit(1)
@@ -284,16 +284,16 @@ private struct ChecklistItemRow: View {
 
     private var ownerPill: some View {
         Text(item.owner)
-            .font(.system(size: displaySize.size(46), weight: .black, design: .rounded))
+            .font(.system(size: displaySize.size(12), weight: .black, design: .rounded))
             .lineLimit(1)
             .minimumScaleFactor(0.78)
-            .frame(width: displaySize.size(234), height: displaySize.size(92))
+            .frame(width: displaySize.size(58), height: displaySize.size(28))
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
     }
 
     private var controlCluster: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             ownerPill
 
             Button {
@@ -304,15 +304,15 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(width: displaySize.size(340), height: rowHeight, alignment: .center)
+        .frame(width: displaySize.size(98), height: rowHeight, alignment: .center)
     }
 
     private var editIcon: some View {
         Image(systemName: "pencil")
-            .font(.system(size: displaySize.size(38), weight: .black))
+            .font(.system(size: displaySize.size(13), weight: .black))
             .foregroundStyle(.secondary)
-            .frame(width: displaySize.size(92), height: displaySize.size(92))
-            .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 15))
+            .frame(width: displaySize.size(28), height: displaySize.size(28))
+            .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private var ownerTint: Color {

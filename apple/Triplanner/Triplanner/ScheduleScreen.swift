@@ -24,31 +24,36 @@ struct ScheduleScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: 26) {
                     ScreenHeader(title: scheduleTitle, subtitle: scheduleSubtitle)
 
-                    VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 14) {
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Days")
-                                    .font(.system(size: displaySize.size(32), weight: .black, design: .rounded))
+                                    .font(.system(size: displaySize.size(23), weight: .black, design: .rounded))
                                 Text("전체 또는 하루만 골라서 보기")
-                                    .font(.system(size: displaySize.size(18), weight: .semibold, design: .rounded))
+                                    .font(.system(size: displaySize.size(14), weight: .semibold, design: .rounded))
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
                             Text(selectedDate.map(compactDayLabel) ?? "전체")
-                                .font(.system(size: displaySize.size(21), weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(15), weight: .black, design: .rounded))
                                 .foregroundStyle(theme.accent)
-                                .padding(.horizontal, 15)
-                                .padding(.vertical, 8)
+                                .padding(.horizontal, 11)
+                                .padding(.vertical, 6)
                                 .background(theme.accent.opacity(0.10), in: Capsule())
                         }
                         filterBar
 
                         ScheduleModeSwitch(viewMode: $viewMode)
                     }
-                    .appPanel(cornerRadius: 22)
+                    .padding(18)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.primary.opacity(0.060))
+                    }
 
                     if viewMode == .calendar {
                         calendarGrid
@@ -65,7 +70,7 @@ struct ScheduleScreen: View {
                     }
                 }
                 .readableWidth(1360)
-                .padding(44)
+                .padding(40)
             }
             .navigationTitle("")
             .toolbar {
@@ -98,7 +103,7 @@ struct ScheduleScreen: View {
 
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 11) {
+            HStack(spacing: 8) {
                 dayFilterButton(title: "전체", subtitle: "\(store.scheduleItemsForSelectedCity().count)개", isSelected: selectedDate == nil) {
                     selectedDate = nil
                 }
@@ -112,10 +117,10 @@ struct ScheduleScreen: View {
                     }
                 }
             }
-            .padding(6)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+            .padding(5)
+            .background(.secondary.opacity(0.050), in: RoundedRectangle(cornerRadius: 18))
             .overlay {
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: 18)
                     .stroke(Color.primary.opacity(0.055))
             }
         }
@@ -123,42 +128,42 @@ struct ScheduleScreen: View {
 
     private func dayFilterButton(title: String, subtitle: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(alignment: .center, spacing: 10) {
+            HStack(alignment: .center, spacing: 8) {
                 ZStack {
                     Circle()
-                        .fill(isSelected ? .white : theme.accent.opacity(0.12))
+                        .fill(isSelected ? .white : theme.accent.opacity(0.10))
                     if isSelected {
                         Image(systemName: "checkmark")
-                            .font(.system(size: displaySize.size(14), weight: .black))
+                            .font(.system(size: displaySize.size(10), weight: .black))
                             .foregroundStyle(theme.accent)
                     } else {
                         Circle()
                             .fill(theme.accent.opacity(0.45))
-                            .frame(width: 7, height: 7)
+                            .frame(width: 5, height: 5)
                     }
                 }
-                .frame(width: displaySize.size(30), height: displaySize.size(30))
+                .frame(width: displaySize.size(22), height: displaySize.size(22))
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.system(size: displaySize.size(22), weight: .black, design: .rounded))
+                        .font(.system(size: displaySize.size(15), weight: .black, design: .rounded))
                     Text(subtitle)
-                        .font(.system(size: displaySize.size(16), weight: .bold, design: .rounded))
+                        .font(.system(size: displaySize.size(12), weight: .bold, design: .rounded))
                         .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
                         .lineLimit(1)
                 }
             }
-            .frame(width: displaySize.size(title == "전체" ? 138 : 184), alignment: .leading)
-            .frame(minHeight: displaySize.size(68), alignment: .leading)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(isSelected ? theme.accent : Color.secondary.opacity(0.038), in: RoundedRectangle(cornerRadius: 18))
+            .frame(width: displaySize.size(title == "전체" ? 106 : 148), alignment: .leading)
+            .frame(minHeight: displaySize.size(48), alignment: .leading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 13))
             .foregroundStyle(isSelected ? .white : .primary)
             .overlay {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 13)
                     .stroke(isSelected ? theme.accent.opacity(0.50) : Color.secondary.opacity(0.11), lineWidth: 1)
             }
-            .shadow(color: isSelected ? theme.accent.opacity(0.18) : Color.clear, radius: 9, x: 0, y: 5)
+            .shadow(color: isSelected ? theme.accent.opacity(0.12) : Color.clear, radius: 6, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -388,7 +393,7 @@ struct ScheduleScreen: View {
     }
 
     private var timelineList: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 16) {
             if selectedDate == nil {
                 ForEach(timelineDates, id: \.self) { date in
                     timelineSection(date: date, items: items(on: date))
@@ -397,10 +402,10 @@ struct ScheduleScreen: View {
                 timelineSection(date: selectedDate ?? Date(), items: visibleItems)
             }
         }
-        .padding(18)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 26))
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
         .overlay {
-            RoundedRectangle(cornerRadius: 26)
+            RoundedRectangle(cornerRadius: 22)
                 .stroke(.quaternary)
         }
     }
@@ -452,42 +457,42 @@ struct ScheduleScreen: View {
     }
 
     private func timelineSection(date: Date, items: [ScheduleItem]) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .center, spacing: 14) {
-                HStack(alignment: .firstTextBaseline, spacing: 9) {
+        VStack(alignment: .leading, spacing: 11) {
+            HStack(alignment: .center, spacing: 11) {
+                HStack(alignment: .firstTextBaseline, spacing: 7) {
                     Text(dayTitle(for: date))
-                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .font(.system(size: 25, weight: .black, design: .rounded))
                     Text(compactDayLabel(date))
-                        .font(.system(size: 21, weight: .black, design: .rounded))
+                        .font(.system(size: 15, weight: .black, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text("\(items.count)")
-                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .font(.system(size: 13, weight: .black, design: .rounded))
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 11)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
                     .background(.secondary.opacity(0.10), in: Capsule())
                 Button {
                     openScheduleEditor(for: date)
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 20, weight: .black))
-                        .frame(width: 46, height: 46)
-                        .background(theme.accent.opacity(0.13), in: RoundedRectangle(cornerRadius: 15))
+                        .font(.system(size: 16, weight: .black))
+                        .frame(width: 36, height: 36)
+                        .background(theme.accent.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
                         .foregroundStyle(theme.accent)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(dayTitle(for: date)) 일정 추가")
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
-            .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 20))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .background(.background.opacity(0.52), in: RoundedRectangle(cornerRadius: 16))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(theme.accent)
-                    .frame(width: 4)
-                    .padding(.vertical, 12)
+                    .frame(width: 3)
+                    .padding(.vertical, 10)
             }
 
             VStack(spacing: 0) {
@@ -587,14 +592,14 @@ private struct ScheduleModeSwitch: View {
     @Binding var viewMode: ScheduleViewMode
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             modeButton(.timeline)
             modeButton(.calendar)
         }
-        .padding(5)
-        .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 17))
+        .padding(4)
+        .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 14))
         .overlay {
-            RoundedRectangle(cornerRadius: 17)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.primary.opacity(0.045))
         }
     }
@@ -605,12 +610,12 @@ private struct ScheduleModeSwitch: View {
             viewMode = mode
         } label: {
             Label(mode.title, systemImage: mode.iconName)
-                .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
-                .frame(maxWidth: .infinity, minHeight: displaySize.size(50))
+                .font(.system(size: displaySize.size(14), weight: .black, design: .rounded))
+                .frame(maxWidth: .infinity, minHeight: displaySize.size(38))
                 .foregroundStyle(isSelected ? .white : .primary)
-                .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 14))
+                .background(isSelected ? theme.accent : Color.clear, in: RoundedRectangle(cornerRadius: 10))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(isSelected ? theme.accent.opacity(0.38) : Color.secondary.opacity(0.10))
                 }
         }

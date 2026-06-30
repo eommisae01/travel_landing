@@ -78,12 +78,12 @@ struct HomeScreen: View {
             ScrollView {
                 if let trip = store.trip {
                     if isWideLayout {
-                        VStack(alignment: .leading, spacing: 30) {
+                        VStack(alignment: .leading, spacing: 26) {
                             cityHero(trip)
                             travelPanel(trip)
 
-                            HStack(alignment: .top, spacing: 22) {
-                                VStack(alignment: .leading, spacing: 24) {
+                            HStack(alignment: .top, spacing: 20) {
+                                VStack(alignment: .leading, spacing: 20) {
                                     statusStrip
                                     todayPanel
                                 }
@@ -94,7 +94,7 @@ struct HomeScreen: View {
                             }
                         }
                         .readableWidth(1380)
-                        .padding(42)
+                        .padding(36)
                     } else {
                         VStack(alignment: .leading, spacing: 22) {
                             cityHero(trip)
@@ -129,20 +129,20 @@ struct HomeScreen: View {
     }
 
     private func cityHero(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: isWideLayout ? 24 : 18) {
-            HStack(alignment: .center, spacing: 16) {
-                VStack(alignment: .leading, spacing: 9) {
-                    HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: isWideLayout ? 18 : 15) {
+            HStack(alignment: .center, spacing: 14) {
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack(spacing: 8) {
                         Text("TRIP")
-                            .font(.system(size: isWideLayout ? 18 : 15, weight: .black, design: .rounded))
+                            .font(.system(size: isWideLayout ? 13 : 12, weight: .black, design: .rounded))
                             .foregroundStyle(.secondary)
                             .tracking(1.3)
                         if let dateRange = dateRange(for: trip) {
                             Text(dateRange)
-                                .font(.system(size: isWideLayout ? 17 : 13, weight: .black, design: .rounded))
+                                .font(.system(size: isWideLayout ? 13 : 11, weight: .black, design: .rounded))
                                 .foregroundStyle(.secondary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
                                 .background(.secondary.opacity(0.08), in: Capsule())
                         }
                     }
@@ -169,8 +169,8 @@ struct HomeScreen: View {
             )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, isWideLayout ? 30 : 22)
-        .padding(.vertical, isWideLayout ? 26 : 22)
+        .padding(.horizontal, isWideLayout ? 24 : 20)
+        .padding(.vertical, isWideLayout ? 22 : 20)
         .background {
             RoundedRectangle(cornerRadius: 26)
                 .fill(.regularMaterial)
@@ -180,7 +180,7 @@ struct HomeScreen: View {
             RoundedRectangle(cornerRadius: 26)
                 .fill(theme.accent)
                 .frame(width: 5)
-                .padding(.vertical, 22)
+                .padding(.vertical, 18)
         }
         .overlay {
             RoundedRectangle(cornerRadius: 26)
@@ -189,31 +189,31 @@ struct HomeScreen: View {
     }
 
     private func travelPanel(_ trip: Trip) -> some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .center) {
-                HStack(spacing: 14) {
+                HStack(spacing: 12) {
                     Image(systemName: "airplane")
-                        .font(.system(size: isWideLayout ? 24 : 21, weight: .black))
+                        .font(.system(size: isWideLayout ? 19 : 18, weight: .black))
                         .foregroundStyle(theme.accent)
-                        .frame(width: isWideLayout ? 52 : 46, height: isWideLayout ? 52 : 46)
-                        .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 15))
+                        .frame(width: isWideLayout ? 42 : 40, height: isWideLayout ? 42 : 40)
+                        .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Flight & Stay")
-                            .font(.system(size: isWideLayout ? 30 : 25, weight: .black, design: .rounded))
+                            .font(.system(size: isWideLayout ? 23 : 21, weight: .black, design: .rounded))
                             .foregroundStyle(.primary)
                         Text("항공편과 숙소는 탭하면 바로 복사됩니다.")
-                            .font(.system(size: isWideLayout ? 16 : 14, weight: .semibold, design: .rounded))
+                            .font(.system(size: isWideLayout ? 13 : 12, weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                     }
                 }
                 Spacer()
                 Label("탭하면 복사", systemImage: "doc.on.doc")
-                    .font(.system(size: isWideLayout ? 14 : 13, weight: .black, design: .rounded))
+                    .font(.system(size: isWideLayout ? 12 : 11, weight: .black, design: .rounded))
                     .foregroundStyle(theme.accent)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(theme.accent.opacity(0.095), in: Capsule())
             }
 
@@ -257,7 +257,7 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(isWideLayout ? 24 : 20)
+        .padding(isWideLayout ? 20 : 18)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
         .overlay {
             RoundedRectangle(cornerRadius: 24)
@@ -266,7 +266,7 @@ struct HomeScreen: View {
     }
 
     private var statusStrip: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 330), spacing: 18)], spacing: 18) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 14)], spacing: 14) {
             StatButton(title: "남은 준비", value: "\(undoneChecklistCount)", unit: "개", iconName: "checklist", tint: theme.accent) {
                 showingChecklistSummary = true
             }
@@ -358,11 +358,11 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .center, spacing: 8) {
                 Text(currentScopeTitle)
-                    .font(.system(size: isWideLayout ? 48 : 36, weight: .black, design: .rounded))
+                    .font(.system(size: isWideLayout ? 34 : 30, weight: .black, design: .rounded))
                     .minimumScaleFactor(0.70)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
-                    .font(.title3.weight(.bold))
+                    .font(.callout.weight(.bold))
                     .foregroundStyle(.secondary)
             }
         }
@@ -422,7 +422,7 @@ struct HomeScreen: View {
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: isWideLayout ? 25 : 22, weight: .black, design: .rounded))
+            .font(.system(size: isWideLayout ? 20 : 18, weight: .black, design: .rounded))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -438,27 +438,27 @@ private struct FlightSummaryRow: View {
         Button {
             copyToClipboard(flight.flightNumber.isEmpty ? "\(flight.origin) \(flight.destination)" : flight.flightNumber)
         } label: {
-            HStack(alignment: .center, spacing: 16) {
+            HStack(alignment: .center, spacing: 13) {
                 Image(systemName: iconName)
-                    .font(.system(size: 21, weight: .black))
-                    .frame(width: 54, height: 54)
-                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 15))
+                    .font(.system(size: 18, weight: .black))
+                    .frame(width: 44, height: 44)
+                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
                     .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 9) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 7) {
                         Text(title)
-                            .font(.system(size: 16, weight: .black, design: .rounded))
+                            .font(.system(size: 13, weight: .black, design: .rounded))
                             .foregroundStyle(tint)
                         Text(flight.flightNumber.isEmpty ? "편명 입력 전" : flight.flightNumber)
-                            .font(.system(size: 15, weight: .black, design: .rounded))
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 5)
+                            .font(.system(size: 12, weight: .black, design: .rounded))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
                             .background(tint.opacity(0.12), in: Capsule())
                             .foregroundStyle(tint)
                     }
                     Text(routeText)
-                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .font(.system(size: 19, weight: .black, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
                     ViewThatFits(in: .horizontal) {
@@ -474,23 +474,23 @@ private struct FlightSummaryRow: View {
                 }
                 Spacer(minLength: 6)
                 Image(systemName: "doc.on.doc")
-                    .font(.system(size: 16, weight: .black))
+                    .font(.system(size: 13, weight: .black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 132, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 106, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 18))
+        .padding(.horizontal, 15)
+        .padding(.vertical, 13)
+        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(tint)
                 .frame(width: 3)
-                .padding(.vertical, 15)
+                .padding(.vertical, 13)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(tint.opacity(0.13))
         }
     }
@@ -509,7 +509,7 @@ private struct RouteTimeBadge: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 11, weight: .black, design: .rounded))
+                .font(.system(size: 10, weight: .black, design: .rounded))
                 .foregroundStyle(.secondary)
             HStack(spacing: 4) {
                 Text(city.isEmpty ? "미정" : city)
@@ -517,13 +517,13 @@ private struct RouteTimeBadge: View {
                 Text(time.isEmpty ? "--:--" : time)
                     .monospacedDigit()
             }
-            .font(.system(size: 15, weight: .black, design: .rounded))
+            .font(.system(size: 12, weight: .black, design: .rounded))
             .foregroundStyle(tint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
-        .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 9))
     }
 }
 
@@ -538,63 +538,63 @@ private struct AccommodationSummaryRow: View {
         Button {
             copyToClipboard(trip.accommodationAddress ?? trip.accommodation)
         } label: {
-            HStack(alignment: isTall ? .top : .center, spacing: 14) {
+            HStack(alignment: isTall ? .top : .center, spacing: 12) {
                 Image(systemName: "bed.double")
-                    .font(.system(size: 21, weight: .black))
-                    .frame(width: 54, height: 54)
-                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 15))
+                    .font(.system(size: 18, weight: .black))
+                    .frame(width: 44, height: 44)
+                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
                     .foregroundStyle(tint)
 
-                VStack(alignment: .leading, spacing: isTall ? 10 : 8) {
-                    HStack(spacing: 7) {
+                VStack(alignment: .leading, spacing: isTall ? 8 : 7) {
+                    HStack(spacing: 6) {
                         Text("숙소")
-                            .font(.system(size: 16, weight: .black, design: .rounded))
+                            .font(.system(size: 13, weight: .black, design: .rounded))
                             .foregroundStyle(tint)
                         Text("주소 복사")
-                            .font(.system(size: 12, weight: .black, design: .rounded))
+                            .font(.system(size: 11, weight: .black, design: .rounded))
                             .foregroundStyle(tint)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
                             .background(tint.opacity(0.11), in: Capsule())
                     }
                     Text(trip.accommodation.isEmpty ? "숙소 입력 전" : trip.accommodation)
-                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .font(.system(size: 19, weight: .black, design: .rounded))
                         .lineLimit(isTall ? 2 : 1)
                         .minimumScaleFactor(0.78)
                     if let address = trip.accommodationAddress, !address.isEmpty {
                         Text(address)
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(isTall ? 4 : 2)
                     }
                     if isTall {
                         Spacer(minLength: 0)
                         Label("탭하면 주소가 복사돼요", systemImage: "doc.on.doc")
-                            .font(.system(size: 13, weight: .black, design: .rounded))
+                            .font(.system(size: 11, weight: .black, design: .rounded))
                             .foregroundStyle(.secondary)
                     }
                 }
                 Spacer(minLength: 6)
                 if !isTall {
                     Image(systemName: "doc.on.doc")
-                        .font(.system(size: 16, weight: .black))
+                        .font(.system(size: 13, weight: .black))
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: isTall ? 290 : 132, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isTall ? 236 : 106, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 18))
+        .padding(.horizontal, 15)
+        .padding(.vertical, 13)
+        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(tint)
                 .frame(width: 3)
-                .padding(.vertical, 15)
+                .padding(.vertical, 13)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(tint.opacity(0.13))
         }
     }
@@ -654,36 +654,36 @@ private struct StatChipContent: View {
     var tint: Color
 
     var body: some View {
-        HStack(spacing: 11) {
+        HStack(spacing: 10) {
             Image(systemName: iconName)
-                .font(.system(size: 26, weight: .black))
-                .frame(width: 70, height: 70)
-                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 20))
+                .font(.system(size: 18, weight: .black))
+                .frame(width: 46, height: 46)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
                 .foregroundStyle(tint)
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 21, weight: .black, design: .rounded))
+                    .font(.system(size: 13, weight: .black, design: .rounded))
                     .foregroundStyle(.secondary)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(value)
-                        .font(.system(size: 46, weight: .black, design: .rounded))
+                        .font(.system(size: 25, weight: .black, design: .rounded))
                         .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.76)
                     Text(unit)
-                        .font(.system(size: 15, weight: .black, design: .rounded))
+                        .font(.system(size: 11, weight: .black, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
             }
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 150, maxHeight: 150, alignment: .leading)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 22)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .frame(maxWidth: .infinity, minHeight: 88, maxHeight: 88, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
@@ -776,20 +776,20 @@ private struct HeroTodayLine: View {
     var secondaryAccent: Color
 
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center, spacing: 13) {
             Image(systemName: "sun.max.fill")
-                .font(.system(size: 27, weight: .black))
+                .font(.system(size: 18, weight: .black))
                 .foregroundStyle(secondaryAccent)
-                .frame(width: 70, height: 70)
-                .background(secondaryAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 20))
+                .frame(width: 46, height: 46)
+                .background(secondaryAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
 
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 7) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
                     Text("TODAY")
-                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .font(.system(size: 12, weight: .black, design: .rounded))
                         .foregroundStyle(.secondary)
                     Text(title)
-                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .font(.system(size: 12, weight: .black, design: .rounded))
                         .foregroundStyle(accent)
                 }
 
@@ -797,20 +797,20 @@ private struct HeroTodayLine: View {
                     HStack(spacing: 7) {
                         if let nextItem {
                             Text(nextTime(nextItem))
-                                .font(.system(size: 16, weight: .black, design: .rounded).monospacedDigit())
+                                .font(.system(size: 12, weight: .black, design: .rounded).monospacedDigit())
                                 .foregroundStyle(accent)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
                                 .background(accent.opacity(0.11), in: Capsule())
                         }
                         Text(nextTitle)
-                            .font(.system(size: 31, weight: .black, design: .rounded))
+                            .font(.system(size: 20, weight: .black, design: .rounded))
                             .lineLimit(1)
                             .minimumScaleFactor(0.82)
                     }
 
                     Text(nextLine)
-                        .font(.system(size: 31, weight: .black, design: .rounded))
+                        .font(.system(size: 20, weight: .black, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.82)
                 }
@@ -818,12 +818,12 @@ private struct HeroTodayLine: View {
             Spacer(minLength: 8)
             HeroCountPill(title: "일정", value: scheduleCount, tint: accent)
         }
-        .frame(maxWidth: .infinity, minHeight: 136, alignment: .center)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 20)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .frame(maxWidth: .infinity, minHeight: 96, alignment: .center)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.primary.opacity(0.05))
         }
     }
@@ -850,9 +850,9 @@ private struct HeroCountPill: View {
     var body: some View {
         HStack(spacing: 4) {
             Text(title)
-                .font(.system(size: 13, weight: .black, design: .rounded))
+                .font(.system(size: 11, weight: .black, design: .rounded))
             Text("\(value)")
-                .font(.system(size: 16, weight: .black, design: .rounded))
+                .font(.system(size: 13, weight: .black, design: .rounded))
                 .monospacedDigit()
         }
         .foregroundStyle(tint)
@@ -867,33 +867,33 @@ private struct CompactScheduleRow: View {
     var item: ScheduleItem
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .center, spacing: 3) {
                 Text(item.startTime.isEmpty ? item.kind.rawValue : item.startTime)
-                    .font(.system(size: 20, weight: .black, design: .rounded).monospacedDigit())
+                    .font(.system(size: 14, weight: .black, design: .rounded).monospacedDigit())
                     .foregroundStyle(kindColor)
                     .lineLimit(1)
                 if !item.endTime.isEmpty {
                     Text(item.endTime)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 108)
-            .frame(minHeight: 88)
-            .background(kindColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 16))
+            .frame(width: 76)
+            .frame(minHeight: 64)
+            .background(kindColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 13))
 
             RoundedRectangle(cornerRadius: 2)
                 .fill(kindColor)
-                .frame(width: 4, height: 82)
+                .frame(width: 3, height: 60)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(item.title)
-                        .font(.system(size: 29, weight: .black, design: .rounded))
+                        .font(.system(size: 20, weight: .black, design: .rounded))
                         .lineLimit(1)
                     Text(item.kind.rawValue)
-                        .font(.system(size: 15, weight: .black, design: .rounded))
+                        .font(.system(size: 11, weight: .black, design: .rounded))
                         .foregroundStyle(kindColor)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
@@ -901,19 +901,19 @@ private struct CompactScheduleRow: View {
                 }
                 if !item.note.isEmpty {
                     Text(item.note)
-                        .font(.system(size: 19, weight: .semibold, design: .rounded))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                 }
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 15)
-        .frame(maxWidth: .infinity, minHeight: 124, alignment: .center)
-        .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 19))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, minHeight: 88, alignment: .center)
+        .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 19)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(kindColor.opacity(0.12))
         }
     }
@@ -1024,10 +1024,10 @@ private struct HomeNoteThumbnail: View {
 private extension View {
     func panelStyle() -> some View {
         self
-            .padding(28)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 28))
+            .padding(22)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
             .overlay {
-                RoundedRectangle(cornerRadius: 28)
+                RoundedRectangle(cornerRadius: 24)
                     .stroke(.quaternary)
             }
     }

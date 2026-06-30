@@ -95,9 +95,9 @@ enum AppDisplaySize: String, CaseIterable, Identifiable {
 
     var scale: CGFloat {
         switch self {
-        case .standard: return 0.88
-        case .comfortable: return 0.96
-        case .large: return 1.04
+        case .standard: return 0.78
+        case .comfortable: return 0.86
+        case .large: return 0.96
         }
     }
 
@@ -167,12 +167,12 @@ struct ScreenHeader: View {
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.system(size: displaySize.size(50), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(42), weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: displaySize.size(21), weight: .semibold, design: .rounded))
+                        .font(.system(size: displaySize.size(18), weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -191,7 +191,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: displaySize.size(24), weight: .black, design: .rounded))
+            .font(.system(size: displaySize.size(21), weight: .black, design: .rounded))
             .tracking(0.2)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
