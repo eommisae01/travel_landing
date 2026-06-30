@@ -87,19 +87,19 @@ struct InfoCard: View {
     var subtitle: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 7) {
             Text(title)
-                .font(.system(size: 16, weight: .black, design: .rounded))
+                .font(.system(size: 18, weight: .black, design: .rounded))
                 .foregroundStyle(theme.accent)
             Text(subtitle.isEmpty ? "입력 전" : subtitle)
-                .font(.system(size: 19, weight: .semibold, design: .rounded))
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
                 .lineLimit(3)
         }
-        .frame(maxWidth: .infinity, minHeight: 74, alignment: .topLeading)
-        .padding(14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
+        .frame(maxWidth: .infinity, minHeight: 88, alignment: .topLeading)
+        .padding(17)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
         .overlay {
-            RoundedRectangle(cornerRadius: 13)
+            RoundedRectangle(cornerRadius: 15)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
@@ -111,19 +111,19 @@ struct ScreenHeader: View {
     var subtitle: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 11) {
+        HStack(alignment: .center, spacing: 13) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(theme.accent)
-                .frame(width: 4, height: subtitle.isEmpty ? 34 : 44)
+                .frame(width: 5, height: subtitle.isEmpty ? 38 : 50)
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.system(size: 60, weight: .black, design: .rounded))
+                    .font(.system(size: 66, weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: 27, weight: .semibold, design: .rounded))
+                        .font(.system(size: 30, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -141,7 +141,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: 21, weight: .black, design: .rounded))
+            .font(.system(size: 24, weight: .black, design: .rounded))
             .tracking(0.2)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -155,29 +155,29 @@ struct EmptyStateView: View {
     var iconName: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: 13) {
             Image(systemName: iconName)
-                .font(.subheadline.weight(.bold))
+                .font(.title3.weight(.bold))
                 .foregroundStyle(theme.accent)
-                .frame(width: 36, height: 36)
-                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                .frame(width: 44, height: 44)
+                .background(theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 19, weight: .black, design: .rounded))
+                    .font(.system(size: 22, weight: .black, design: .rounded))
                 Text(message)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, minHeight: 72, alignment: .center)
-        .padding(12)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity, minHeight: 88, alignment: .center)
+        .padding(16)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.primary.opacity(0.055))
         }
     }
@@ -186,7 +186,7 @@ struct EmptyStateView: View {
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
-            .padding(22)
+            .padding(26)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
