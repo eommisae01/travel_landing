@@ -95,9 +95,9 @@ enum AppDisplaySize: String, CaseIterable, Identifiable {
 
     var scale: CGFloat {
         switch self {
-        case .standard: return 0.92
-        case .comfortable: return 1.0
-        case .large: return 1.14
+        case .standard: return 1.0
+        case .comfortable: return 1.1
+        case .large: return 1.24
         }
     }
 
