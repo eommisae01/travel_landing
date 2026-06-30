@@ -65,7 +65,7 @@ struct MainTabView: View {
             }
             .navigationTitle("Triplanner")
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 230, ideal: 250, max: 280)
+            .navigationSplitViewColumnWidth(min: 216, ideal: 236, max: 260)
             .alert("지역 추가", isPresented: $showingAddCity) {
                 TextField("예: Osaka", text: $newCity)
                 Button("추가") {
@@ -165,18 +165,18 @@ private struct SidebarTripSummary: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.system(size: displaySize.size(18), weight: .black))
+                    .font(.system(size: displaySize.size(16), weight: .black))
                     .foregroundStyle(.white)
-                    .frame(width: displaySize.size(38), height: displaySize.size(38))
+                    .frame(width: displaySize.size(34), height: displaySize.size(34))
                     .background(theme.accent, in: RoundedRectangle(cornerRadius: 11))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: displaySize.size(16), weight: .black, design: .rounded))
+                        .font(.system(size: displaySize.size(15), weight: .black, design: .rounded))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.system(size: displaySize.size(12), weight: .semibold, design: .rounded))
+                            .font(.system(size: displaySize.size(11), weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -203,16 +203,16 @@ private struct SidebarMenuRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: section.iconName)
-                .font(.system(size: displaySize.size(17), weight: .black))
+                .font(.system(size: displaySize.size(15), weight: .black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
-                .frame(width: displaySize.size(36), height: displaySize.size(36))
+                .frame(width: displaySize.size(32), height: displaySize.size(32))
                 .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(section.title)
-                    .font(.system(size: displaySize.size(16), weight: isSelected ? .black : .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(15), weight: isSelected ? .black : .semibold, design: .rounded))
                 Text(section.sidebarSubtitle)
-                    .font(.system(size: displaySize.size(11), weight: .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(10), weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -228,9 +228,9 @@ private struct SidebarMenuRow: View {
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: displaySize.size(48), alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: displaySize.size(44), alignment: .center)
         .padding(.horizontal, 8)
-        .padding(.vertical, 2)
+        .padding(.vertical, 1)
         .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             if isSelected {
