@@ -54,21 +54,21 @@ struct ChecklistScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 22) {
                     ScreenHeader(title: "체크리스트", subtitle: "남은 준비 \(remainingCount)개 · 완료 \(doneCount)개")
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 13) {
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(selectedOwner == "전체" ? "전체 준비" : selectedOwner)
-                                    .font(.system(size: displaySize.size(15), weight: .black, design: .rounded))
+                                    .font(.system(size: displaySize.size(16), weight: .black, design: .rounded))
                                     .foregroundStyle(.secondary)
                                 Text("\(remainingCount)개 남음")
-                                    .font(.system(size: displaySize.size(22), weight: .black, design: .rounded))
+                                    .font(.system(size: displaySize.size(24), weight: .black, design: .rounded))
                             }
                             Spacer()
                             Text("\(Int(progress * 100))%")
-                                .font(.system(size: displaySize.size(22), weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(24), weight: .black, design: .rounded))
                                 .foregroundStyle(progress >= 1 ? theme.accent : .primary)
                         }
                         ProgressView(value: progress)
@@ -77,10 +77,10 @@ struct ChecklistScreen: View {
 
                         ownerFilterBar
                     }
-                    .padding(18)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+                    .padding(17)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 22)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.primary.opacity(0.055))
                     }
                     .frame(minHeight: displaySize.size(108), alignment: .center)
@@ -97,7 +97,7 @@ struct ChecklistScreen: View {
                     }
                 }
                 .readableWidth(1240)
-                .padding(32)
+                .padding(30)
             }
             .navigationTitle("")
             .toolbar {
@@ -119,30 +119,30 @@ struct ChecklistScreen: View {
 
     private var ownerFilterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: 7) {
                 ForEach(filterOwners, id: \.self) { owner in
                     let summary = ownerSummary(for: owner)
                     let isSelected = selectedOwner == owner
                     Button {
                         selectedOwner = owner
                     } label: {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 7) {
                             if isSelected {
                                 Circle()
                                     .fill(.white)
                                     .frame(width: 5, height: 5)
                             }
                             Image(systemName: "person.crop.circle")
-                                .font(.system(size: displaySize.size(11), weight: .black))
+                                .font(.system(size: displaySize.size(12), weight: .black))
                             Text(owner)
-                                .font(.system(size: displaySize.size(11), weight: .black, design: .rounded))
+                                .font(.system(size: displaySize.size(12), weight: .black, design: .rounded))
                                 .lineLimit(1)
                             Text("\(summary.remaining)/\(summary.total)")
-                                .font(.system(size: displaySize.size(11), weight: .black, design: .rounded).monospacedDigit())
+                                .font(.system(size: displaySize.size(12), weight: .black, design: .rounded).monospacedDigit())
                                 .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
                         }
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
                         .background(isSelected ? theme.accent : Color.clear, in: Capsule())
                         .foregroundStyle(isSelected ? .white : .primary)
                         .overlay {
@@ -172,10 +172,10 @@ private struct ChecklistSection: View {
     var action: (ChecklistItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 11) {
             HStack {
                 Text(title)
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: 17, weight: .black, design: .rounded))
                     .foregroundStyle(.primary)
                 Spacer()
                 Text(subtitle)
@@ -200,10 +200,10 @@ private struct ChecklistSection: View {
                         }
                     }
                 }
-                .background(.background.opacity(0.87), in: RoundedRectangle(cornerRadius: 20))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .background(.background.opacity(0.88), in: RoundedRectangle(cornerRadius: 18))
+                .clipShape(RoundedRectangle(cornerRadius: 18))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: 18)
                         .stroke(Color.primary.opacity(0.055))
                 }
             }
@@ -258,7 +258,7 @@ private struct ChecklistItemRow: View {
         }
     }
 
-    private var rowHeight: CGFloat { 48 }
+    private var rowHeight: CGFloat { 52 }
 
     private var checkmarkIcon: some View {
         ZStack {
@@ -272,13 +272,13 @@ private struct ChecklistItemRow: View {
                     .foregroundStyle(tint)
             }
         }
-        .frame(width: 24, height: 24)
+        .frame(width: 26, height: 26)
         .contentShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var titleLabel: some View {
         Text(item.title)
-            .font(.system(size: 14, weight: .semibold, design: .rounded))
+            .font(.system(size: 15, weight: .semibold, design: .rounded))
             .strikethrough(item.isDone)
             .foregroundStyle(item.isDone ? .secondary : .primary)
             .lineLimit(1)
@@ -289,16 +289,16 @@ private struct ChecklistItemRow: View {
 
     private var ownerPill: some View {
         Text(item.owner)
-            .font(.system(size: 11, weight: .black, design: .rounded))
+            .font(.system(size: 12, weight: .black, design: .rounded))
             .lineLimit(1)
             .minimumScaleFactor(0.78)
-            .frame(width: 54, height: 26)
+            .frame(width: 58, height: 28)
             .background(ownerTint.opacity(0.11), in: Capsule())
             .foregroundStyle(ownerTint)
     }
 
     private var controlCluster: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 9) {
             ownerPill
 
             Button {
@@ -309,15 +309,15 @@ private struct ChecklistItemRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("항목 수정")
         }
-        .frame(width: 92, height: rowHeight, alignment: .center)
+        .frame(width: 100, height: rowHeight, alignment: .center)
     }
 
     private var editIcon: some View {
         Image(systemName: "pencil")
-            .font(.system(size: 12, weight: .black))
+            .font(.system(size: 13, weight: .black))
             .foregroundStyle(.secondary)
-            .frame(width: 28, height: 28)
-            .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 8))
+            .frame(width: 30, height: 30)
+            .background(.secondary.opacity(0.070), in: RoundedRectangle(cornerRadius: 9))
     }
 
     private var ownerTint: Color {
