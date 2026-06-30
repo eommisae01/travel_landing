@@ -95,9 +95,9 @@ enum AppDisplaySize: String, CaseIterable, Identifiable {
 
     var scale: CGFloat {
         switch self {
-        case .standard: return 0.66
-        case .comfortable: return 0.70
-        case .large: return 0.74
+        case .standard: return 0.60
+        case .comfortable: return 0.64
+        case .large: return 0.68
         }
     }
 
@@ -137,10 +137,10 @@ struct InfoCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             Text(title)
-                .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
+                .font(.system(size: displaySize.size(16), weight: .black, design: .rounded))
                 .foregroundStyle(theme.accent)
             Text(subtitle.isEmpty ? "입력 전" : subtitle)
-                .font(.system(size: displaySize.size(22), weight: .semibold, design: .rounded))
+                .font(.system(size: displaySize.size(19), weight: .semibold, design: .rounded))
                 .lineLimit(3)
         }
         .frame(maxWidth: .infinity, minHeight: displaySize.size(88), alignment: .topLeading)
@@ -167,12 +167,12 @@ struct ScreenHeader: View {
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.system(size: displaySize.size(28), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(25), weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: displaySize.size(15), weight: .semibold, design: .rounded))
+                        .font(.system(size: displaySize.size(13), weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -191,7 +191,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
+            .font(.system(size: displaySize.size(15), weight: .black, design: .rounded))
             .tracking(0.2)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -215,9 +215,9 @@ struct EmptyStateView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: displaySize.size(22), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
                 Text(message)
-                    .font(.system(size: displaySize.size(18), weight: .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(14), weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
@@ -237,7 +237,7 @@ struct EmptyStateView: View {
 extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
-            .padding(22)
+            .padding(18)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
