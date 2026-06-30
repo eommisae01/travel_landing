@@ -5,6 +5,7 @@ struct SettingsScreen: View {
     @Environment(\.appTheme) private var theme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage(AppTheme.storageKey) private var themeRawValue = AppTheme.setouchi.rawValue
+    @AppStorage(AppDisplaySize.storageKey) private var displaySizeRawValue = AppDisplaySize.large.rawValue
     @State private var accommodation = ""
     @State private var accommodationAddress = ""
     @State private var myMapsURL = ""
@@ -31,6 +32,10 @@ struct SettingsScreen: View {
 
                     ThemePickerCard(selectedTheme: selectedTheme) { theme in
                         themeRawValue = theme.rawValue
+                    }
+
+                    DisplaySizePickerCard(selectedSize: selectedDisplaySize) { size in
+                        displaySizeRawValue = size.rawValue
                     }
 
                     if horizontalSizeClass == .compact {
@@ -143,6 +148,88 @@ struct SettingsScreen: View {
 
     private var selectedTheme: AppTheme {
         AppTheme(rawValue: themeRawValue) ?? theme
+    }
+
+    private var selectedDisplaySize: AppDisplaySize {
+        AppDisplaySize(rawValue: displaySizeRawValue) ?? .large
+    }
+}
+
+private struct DisplaySizePickerCard: View {
+    @Environment(\.appTheme) private var theme
+    var selectedSize: AppDisplaySize
+    var onSelect: (AppDisplaySize) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 5) {
+                    SectionLabel(title: "DISPLAY")
+                    Text("아이폰, 아이패드, 맥에서 읽기 편한 크기를 고릅니다")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text(selectedSize.title)
+                    .font(.callout.weight(.black))
+                    .foregroundStyle(theme.accent)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(theme.accent.opacity(0.11), in: Capsule())
+            }
+
+            HStack(spacing: 12) {
+                ForEach(AppDisplaySize.allCases) { size in
+                    Button {
+                        onSelect(size)
+                    } label: {
+                        DisplaySizeTile(size: size, isSelected: selectedSize == size)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .appPanel(cornerRadius: 24)
+    }
+}
+
+private struct DisplaySizeTile: View {
+    @Environment(\.appTheme) private var theme
+    var size: AppDisplaySize
+    var isSelected: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(size.title)
+                    .font(.title3.weight(.black))
+                Spacer()
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3.weight(.black))
+                    .foregroundStyle(isSelected ? theme.accent : .secondary.opacity(0.44))
+            }
+
+            Text(size.subtitle)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+
+            HStack(alignment: .lastTextBaseline, spacing: 5) {
+                Text("Aa")
+                    .font(.system(size: size.size(30), weight: .black, design: .rounded))
+                Text("일정")
+                    .font(.system(size: size.size(18), weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
+        .padding(16)
+        .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.08 : 0.030), in: RoundedRectangle(cornerRadius: 18))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(isSelected ? theme.accent.opacity(0.48) : Color.secondary.opacity(0.11), lineWidth: isSelected ? 1.4 : 1)
+        }
     }
 }
 

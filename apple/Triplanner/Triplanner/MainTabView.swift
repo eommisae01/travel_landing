@@ -139,6 +139,7 @@ private struct SidebarCityOption: Identifiable {
 
 private struct SidebarTripSummary: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.appDisplaySize) private var displaySize
     var title: String
     var subtitle: String
     var cityOptions: [SidebarCityOption]
@@ -164,18 +165,18 @@ private struct SidebarTripSummary: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.system(size: 30, weight: .black))
+                    .font(.system(size: displaySize.size(30), weight: .black))
                     .foregroundStyle(.white)
-                    .frame(width: 66, height: 66)
+                    .frame(width: displaySize.size(66), height: displaySize.size(66))
                     .background(theme.accent, in: RoundedRectangle(cornerRadius: 18))
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text(title)
-                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .font(.system(size: displaySize.size(34), weight: .black, design: .rounded))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.system(size: 21, weight: .semibold, design: .rounded))
+                            .font(.system(size: displaySize.size(21), weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -194,6 +195,7 @@ private struct SidebarTripSummary: View {
 
 private struct SidebarMenuRow: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.appDisplaySize) private var displaySize
     var section: AppSection
     var count: Int?
     var isSelected = false
@@ -201,23 +203,23 @@ private struct SidebarMenuRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: section.iconName)
-                .font(.system(size: 27, weight: .black))
+                .font(.system(size: displaySize.size(27), weight: .black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
-                .frame(width: 58, height: 58)
+                .frame(width: displaySize.size(58), height: displaySize.size(58))
                 .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 16))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(section.title)
-                    .font(.system(size: 30, weight: isSelected ? .black : .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(30), weight: isSelected ? .black : .semibold, design: .rounded))
                 Text(section.sidebarSubtitle)
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(20), weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer()
             if let count {
                 Text("\(count)")
-                    .font(.system(size: 23, weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(23), weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? theme.accent : .secondary)
                     .monospacedDigit()
                     .frame(minWidth: 32)
@@ -226,7 +228,7 @@ private struct SidebarMenuRow: View {
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 98, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: displaySize.size(98), alignment: .center)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
         .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 17))

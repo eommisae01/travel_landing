@@ -70,8 +70,50 @@ enum AppTheme: String, CaseIterable, Identifiable {
     static let storageKey = "triplanner.theme"
 }
 
+enum AppDisplaySize: String, CaseIterable, Identifiable {
+    case standard
+    case comfortable
+    case large
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .standard: return "Standard"
+        case .comfortable: return "Comfort"
+        case .large: return "Large"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .standard: return "정보를 더 많이 보기"
+        case .comfortable: return "기본 추천 크기"
+        case .large: return "아이패드/부모님 보기 좋게"
+        }
+    }
+
+    var scale: CGFloat {
+        switch self {
+        case .standard: return 0.92
+        case .comfortable: return 1.0
+        case .large: return 1.14
+        }
+    }
+
+    func size(_ value: CGFloat) -> CGFloat {
+        value * scale
+    }
+
+    static let storageKey = "triplanner.display-size"
+}
+
 private struct AppThemeKey: EnvironmentKey {
     static let defaultValue = AppTheme.setouchi
+}
+
+private struct AppDisplaySizeKey: EnvironmentKey {
+    static let defaultValue = AppDisplaySize.large
 }
 
 extension EnvironmentValues {
@@ -79,23 +121,29 @@ extension EnvironmentValues {
         get { self[AppThemeKey.self] }
         set { self[AppThemeKey.self] = newValue }
     }
+
+    var appDisplaySize: AppDisplaySize {
+        get { self[AppDisplaySizeKey.self] }
+        set { self[AppDisplaySizeKey.self] = newValue }
+    }
 }
 
 struct InfoCard: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.appDisplaySize) private var displaySize
     var title: String
     var subtitle: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             Text(title)
-                .font(.system(size: 18, weight: .black, design: .rounded))
+                .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
                 .foregroundStyle(theme.accent)
             Text(subtitle.isEmpty ? "입력 전" : subtitle)
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .font(.system(size: displaySize.size(22), weight: .semibold, design: .rounded))
                 .lineLimit(3)
         }
-        .frame(maxWidth: .infinity, minHeight: 88, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: displaySize.size(88), alignment: .topLeading)
         .padding(17)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
         .overlay {
@@ -107,6 +155,7 @@ struct InfoCard: View {
 
 struct ScreenHeader: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.appDisplaySize) private var displaySize
     var title: String
     var subtitle: String
 
@@ -114,16 +163,16 @@ struct ScreenHeader: View {
         HStack(alignment: .center, spacing: 13) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(theme.accent)
-                .frame(width: 5, height: subtitle.isEmpty ? 38 : 50)
+                .frame(width: 5, height: displaySize.size(subtitle.isEmpty ? 38 : 50))
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.system(size: 66, weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(66), weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: 30, weight: .semibold, design: .rounded))
+                        .font(.system(size: displaySize.size(30), weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -137,11 +186,12 @@ struct ScreenHeader: View {
 }
 
 struct SectionLabel: View {
+    @Environment(\.appDisplaySize) private var displaySize
     var title: String
 
     var body: some View {
         Text(title)
-            .font(.system(size: 24, weight: .black, design: .rounded))
+            .font(.system(size: displaySize.size(24), weight: .black, design: .rounded))
             .tracking(0.2)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -150,6 +200,7 @@ struct SectionLabel: View {
 
 struct EmptyStateView: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.appDisplaySize) private var displaySize
     var title: String
     var message: String
     var iconName: String
@@ -164,9 +215,9 @@ struct EmptyStateView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(22), weight: .black, design: .rounded))
                 Text(message)
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(18), weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
