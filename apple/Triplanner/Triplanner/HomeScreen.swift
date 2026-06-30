@@ -359,11 +359,11 @@ struct HomeScreen: View {
         } label: {
             HStack(alignment: .center, spacing: 8) {
                 Text(currentScopeTitle)
-                    .font(.system(size: displaySize.size(isWideLayout ? 29 : 27), weight: .black, design: .rounded))
-                    .minimumScaleFactor(0.70)
+                    .font(.system(size: displaySize.size(isWideLayout ? 25 : 23), weight: .black, design: .rounded))
+                    .minimumScaleFactor(0.76)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
-                    .font(.callout.weight(.bold))
+                    .font(.footnote.weight(.bold))
                     .foregroundStyle(.secondary)
             }
         }
@@ -423,7 +423,7 @@ struct HomeScreen: View {
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: isWideLayout ? 20 : 18, weight: .black, design: .rounded))
+            .font(.system(size: isWideLayout ? 17 : 16, weight: .black, design: .rounded))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

@@ -165,18 +165,18 @@ private struct SidebarTripSummary: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.system(size: displaySize.size(16), weight: .black))
+                    .font(.system(size: displaySize.size(14), weight: .black))
                     .foregroundStyle(.white)
-                    .frame(width: displaySize.size(34), height: displaySize.size(34))
+                    .frame(width: displaySize.size(30), height: displaySize.size(30))
                     .background(theme.accent, in: RoundedRectangle(cornerRadius: 11))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: displaySize.size(15), weight: .black, design: .rounded))
+                        .font(.system(size: displaySize.size(13), weight: .black, design: .rounded))
                         .lineLimit(1)
                     if !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.system(size: displaySize.size(11), weight: .semibold, design: .rounded))
+                            .font(.system(size: displaySize.size(10), weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -203,32 +203,32 @@ private struct SidebarMenuRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: section.iconName)
-                .font(.system(size: displaySize.size(15), weight: .black))
+                .font(.system(size: displaySize.size(13), weight: .black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
-                .frame(width: displaySize.size(32), height: displaySize.size(32))
+                .frame(width: displaySize.size(29), height: displaySize.size(29))
                 .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(section.title)
-                    .font(.system(size: displaySize.size(15), weight: isSelected ? .black : .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(13), weight: isSelected ? .black : .semibold, design: .rounded))
                 Text(section.sidebarSubtitle)
-                    .font(.system(size: displaySize.size(10), weight: .semibold, design: .rounded))
+                    .font(.system(size: displaySize.size(9), weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer()
             if let count {
                 Text("\(count)")
-                    .font(.system(size: displaySize.size(12), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(10), weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? theme.accent : .secondary)
                     .monospacedDigit()
-                    .frame(minWidth: 26)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .frame(minWidth: 22)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: displaySize.size(44), alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: displaySize.size(39), alignment: .center)
         .padding(.horizontal, 8)
         .padding(.vertical, 1)
         .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 14))
