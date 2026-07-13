@@ -49,7 +49,7 @@ struct MapScreen: View {
                             }
                         }
                         .padding(16)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 20))
                         .overlay {
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(sectionColor(for: category).opacity(0.10))
@@ -64,7 +64,7 @@ struct MapScreen: View {
                     }
                 }
                 .readableWidth(1380)
-                .padding(horizontalSizeClass == .compact ? 18 : 32)
+                .padding(horizontalSizeClass == .compact ? 18 : 30)
             }
             .navigationTitle("")
             .toolbar {
@@ -100,7 +100,7 @@ struct MapScreen: View {
         if horizontalSizeClass == .compact {
             return [GridItem(.flexible(), spacing: 14)]
         }
-        return [GridItem(.adaptive(minimum: 340, maximum: 440), spacing: 14)]
+        return [GridItem(.adaptive(minimum: 320, maximum: 430), spacing: 14)]
     }
 
     private var placesTitle: String {
@@ -148,7 +148,7 @@ struct MapScreen: View {
             .foregroundStyle(.white)
         }
         .padding(14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 17))
         .overlay {
             RoundedRectangle(cornerRadius: 17)
                 .stroke(.quaternary)
@@ -220,7 +220,7 @@ private struct PlaceMetricPill: View {
         .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
         .padding(.horizontal, 11)
         .padding(.vertical, 8)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 13))
         .overlay {
             RoundedRectangle(cornerRadius: 13)
                 .stroke(.quaternary)
@@ -273,7 +273,7 @@ struct PlaceRow: View {
     @State private var isShowingDetail = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             cardHeader
 
             memoPreview
@@ -286,9 +286,9 @@ struct PlaceRow: View {
         .onTapGesture {
             isShowingDetail = true
         }
-        .frame(maxWidth: .infinity, minHeight: 170, alignment: .topLeading)
-        .padding(14)
-        .background(.background.opacity(0.98), in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, minHeight: 154, alignment: .topLeading)
+        .padding(13)
+        .background(Color.appInsetBackground, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2.5)
                 .fill(categoryColor)
@@ -299,7 +299,7 @@ struct PlaceRow: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(categoryColor.opacity(place.isFavorite ? 0.32 : 0.13), lineWidth: place.isFavorite ? 1.1 : 0.8)
         }
-        .shadow(color: Color.primary.opacity(0.014), radius: 7, x: 0, y: 3)
+        .shadow(color: Color.primary.opacity(0.020), radius: 10, x: 0, y: 5)
         .sheet(isPresented: $isEditing) {
             PlaceEditorSheet(existingPlace: place)
                 .environmentObject(store)
@@ -324,7 +324,7 @@ struct PlaceRow: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.86)
                     .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, minHeight: 35, alignment: .topLeading)
+                .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
 
                 cardBadges
             }
@@ -371,14 +371,14 @@ struct PlaceRow: View {
 
     private var categoryBadge: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 13)
                 .fill(categoryColor.opacity(0.13))
 
             Image(systemName: categoryIcon)
                 .font(.system(size: 15, weight: .black))
                 .foregroundStyle(categoryColor)
         }
-        .frame(width: 38, height: 38)
+        .frame(width: 34, height: 34)
     }
 
     private var actionBar: some View {
@@ -413,7 +413,7 @@ struct PlaceRow: View {
             .frame(maxWidth: .infinity)
         }
         .padding(4)
-        .background(.secondary.opacity(0.045), in: RoundedRectangle(cornerRadius: 13))
+        .background(Color.appCardBackground.opacity(0.74), in: RoundedRectangle(cornerRadius: 13))
     }
 
     private var memoPreview: some View {
@@ -450,13 +450,13 @@ struct PlaceRow: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 56, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
         .padding(.horizontal, 9)
         .padding(.vertical, 8)
-        .background(categoryColor.opacity(0.035), in: RoundedRectangle(cornerRadius: 12))
+        .background(categoryColor.opacity(0.045), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .stroke(categoryColor.opacity(0.075))
+                .stroke(categoryColor.opacity(0.090))
         }
     }
 

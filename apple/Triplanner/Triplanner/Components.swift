@@ -1,4 +1,9 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 enum AppTheme: String, CaseIterable, Identifiable {
     case setouchi
@@ -37,28 +42,37 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var accent: Color {
         switch self {
-        case .setouchi: return Color(red: 0.05, green: 0.58, blue: 0.55)
-        case .sunrise: return Color(red: 0.72, green: 0.08, blue: 0.15)
-        case .forest: return Color(red: 0.10, green: 0.31, blue: 0.25)
-        case .graphite: return Color(red: 0.18, green: 0.20, blue: 0.28)
+        case .setouchi: return Color(red: 0.02, green: 0.49, blue: 0.47)
+        case .sunrise: return Color(red: 0.68, green: 0.09, blue: 0.16)
+        case .forest: return Color(red: 0.11, green: 0.29, blue: 0.23)
+        case .graphite: return Color(red: 0.22, green: 0.24, blue: 0.32)
         }
     }
 
     var secondaryAccent: Color {
         switch self {
-        case .setouchi: return Color(red: 0.58, green: 0.72, blue: 0.74)
-        case .sunrise: return Color(red: 0.53, green: 0.75, blue: 0.69)
-        case .forest: return Color(red: 0.63, green: 0.65, blue: 0.28)
-        case .graphite: return Color(red: 0.63, green: 0.57, blue: 0.69)
+        case .setouchi: return Color(red: 0.47, green: 0.66, blue: 0.68)
+        case .sunrise: return Color(red: 0.48, green: 0.70, blue: 0.65)
+        case .forest: return Color(red: 0.58, green: 0.61, blue: 0.31)
+        case .graphite: return Color(red: 0.57, green: 0.54, blue: 0.63)
         }
     }
 
     var warmAccent: Color {
         switch self {
-        case .setouchi: return Color(red: 0.88, green: 0.78, blue: 0.22)
-        case .sunrise: return Color(red: 0.88, green: 0.86, blue: 0.22)
-        case .forest: return Color(red: 0.73, green: 0.50, blue: 0.27)
-        case .graphite: return Color(red: 0.78, green: 0.62, blue: 0.32)
+        case .setouchi: return Color(red: 0.76, green: 0.49, blue: 0.20)
+        case .sunrise: return Color(red: 0.82, green: 0.48, blue: 0.20)
+        case .forest: return Color(red: 0.65, green: 0.46, blue: 0.28)
+        case .graphite: return Color(red: 0.69, green: 0.55, blue: 0.36)
+        }
+    }
+
+    var canvas: Color {
+        switch self {
+        case .setouchi: return Color(red: 0.965, green: 0.977, blue: 0.970)
+        case .sunrise: return Color(red: 0.988, green: 0.967, blue: 0.953)
+        case .forest: return Color(red: 0.960, green: 0.970, blue: 0.952)
+        case .graphite: return Color(red: 0.955, green: 0.960, blue: 0.970)
         }
     }
 
@@ -145,7 +159,7 @@ struct InfoCard: View {
         }
         .frame(maxWidth: .infinity, minHeight: displaySize.size(88), alignment: .topLeading)
         .padding(17)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 15))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 15))
         .overlay {
             RoundedRectangle(cornerRadius: 15)
                 .stroke(Color.primary.opacity(0.055))
@@ -226,7 +240,7 @@ struct EmptyStateView: View {
         }
         .frame(maxWidth: .infinity, minHeight: 88, alignment: .center)
         .padding(16)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.primary.opacity(0.055))
@@ -238,12 +252,12 @@ extension View {
     func appPanel(cornerRadius: CGFloat = 16) -> some View {
         self
             .padding(18)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: cornerRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.primary.opacity(0.065))
+                    .stroke(Color.primary.opacity(0.060))
             }
-            .shadow(color: Color.primary.opacity(0.026), radius: 9, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.045), radius: 18, x: 0, y: 10)
     }
 
     func appScreenBackground() -> some View {
@@ -263,9 +277,31 @@ private struct AppScreenBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background {
-                Color.secondary.opacity(0.026)
+                theme.canvas
                     .ignoresSafeArea()
             }
             .tint(theme.accent)
+    }
+}
+
+extension Color {
+    static var appCardBackground: Color {
+        #if canImport(UIKit)
+        Color(uiColor: .secondarySystemGroupedBackground)
+        #elseif canImport(AppKit)
+        Color(nsColor: .controlBackgroundColor)
+        #else
+        Color.white
+        #endif
+    }
+
+    static var appInsetBackground: Color {
+        #if canImport(UIKit)
+        Color(uiColor: .tertiarySystemGroupedBackground)
+        #elseif canImport(AppKit)
+        Color(nsColor: .windowBackgroundColor)
+        #else
+        Color.primary.opacity(0.035)
+        #endif
     }
 }

@@ -65,7 +65,9 @@ struct MainTabView: View {
             }
             .navigationTitle("Triplanner")
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 216, ideal: 236, max: 260)
+            .scrollContentBackground(.hidden)
+            .background(theme.canvas)
+            .navigationSplitViewColumnWidth(min: 220, ideal: 242, max: 270)
             .alert("지역 추가", isPresented: $showingAddCity) {
                 TextField("예: Osaka", text: $newCity)
                 Button("추가") {
@@ -186,8 +188,14 @@ private struct SidebarTripSummary: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 5)
+            .frame(maxWidth: .infinity, minHeight: displaySize.size(42), alignment: .leading)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
+            .background(theme.accent.opacity(0.070), in: RoundedRectangle(cornerRadius: 15))
+            .overlay {
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(theme.accent.opacity(0.10))
+            }
         }
         .buttonStyle(.plain)
     }
@@ -206,7 +214,7 @@ private struct SidebarMenuRow: View {
                 .font(.system(size: displaySize.size(13), weight: .black))
                 .foregroundStyle(isSelected ? theme.accent : .secondary)
                 .frame(width: displaySize.size(29), height: displaySize.size(29))
-                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.13 : 0.050), in: RoundedRectangle(cornerRadius: 10))
+                .background((isSelected ? theme.accent : Color.secondary).opacity(isSelected ? 0.15 : 0.060), in: RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(section.title)
@@ -228,10 +236,10 @@ private struct SidebarMenuRow: View {
                     .background((isSelected ? theme.accent : Color.secondary).opacity(0.10), in: Capsule())
             }
         }
-        .frame(maxWidth: .infinity, minHeight: displaySize.size(39), alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: displaySize.size(42), alignment: .center)
         .padding(.horizontal, 8)
-        .padding(.vertical, 1)
-        .background(isSelected ? theme.accent.opacity(0.085) : Color.clear, in: RoundedRectangle(cornerRadius: 14))
+        .padding(.vertical, 3)
+        .background(isSelected ? theme.accent.opacity(0.095) : Color.appCardBackground.opacity(0.35), in: RoundedRectangle(cornerRadius: 14))
         .overlay(alignment: .leading) {
             if isSelected {
                 RoundedRectangle(cornerRadius: 2)

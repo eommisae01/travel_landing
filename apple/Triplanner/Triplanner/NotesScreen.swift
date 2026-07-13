@@ -133,7 +133,7 @@ struct NotesScreen: View {
                     }
                 }
                 .readableWidth(1320)
-                .padding(horizontalSizeClass == .compact ? 18 : 32)
+                .padding(horizontalSizeClass == .compact ? 18 : 30)
             }
             .navigationTitle("")
             .toolbar {
@@ -196,7 +196,7 @@ struct NotesScreen: View {
             }
         }
         .padding(13)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 17))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 17))
         .overlay {
             RoundedRectangle(cornerRadius: 17)
                 .stroke(Color.primary.opacity(0.055))
@@ -230,7 +230,7 @@ struct NotesScreen: View {
             }
         }
         .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.primary.opacity(0.055))
@@ -305,9 +305,9 @@ struct NotesScreen: View {
                 noteThumbnail(note)
                 noteCardText(note)
             }
-            .frame(maxWidth: .infinity, minHeight: displaySize.size(148), alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: displaySize.size(142), alignment: .topLeading)
             .padding(displaySize.size(14))
-            .background(.background.opacity(0.96), in: RoundedRectangle(cornerRadius: 18))
+            .background(Color.appInsetBackground, in: RoundedRectangle(cornerRadius: 18))
             .overlay(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2.5)
                     .fill(noteAccent(note))
@@ -318,7 +318,7 @@ struct NotesScreen: View {
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(noteAccent(note).opacity(0.13))
             }
-            .shadow(color: Color.primary.opacity(0.018), radius: 9, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.024), radius: 12, x: 0, y: 6)
         }
         .buttonStyle(.plain)
     }
@@ -343,7 +343,7 @@ struct NotesScreen: View {
         VStack(alignment: .leading, spacing: displaySize.size(9)) {
             VStack(alignment: .leading, spacing: displaySize.size(7)) {
                 Text(note.title)
-                    .font(.system(size: displaySize.size(18), weight: .black, design: .rounded))
+                    .font(.system(size: displaySize.size(16), weight: .black, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.84)
 
@@ -355,7 +355,7 @@ struct NotesScreen: View {
 
             Text(note.body.isEmpty ? "메모 없음" : note.body)
                 .lineLimit(2)
-                .font(.system(size: displaySize.size(13), weight: .semibold, design: .rounded))
+                .font(.system(size: displaySize.size(12), weight: .semibold, design: .rounded))
                 .lineSpacing(3)
                 .foregroundStyle(note.body.isEmpty ? .tertiary : .secondary)
                 .frame(maxWidth: .infinity, minHeight: displaySize.size(36), alignment: .topLeading)

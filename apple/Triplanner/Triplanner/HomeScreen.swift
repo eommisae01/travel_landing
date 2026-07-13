@@ -174,8 +174,7 @@ struct HomeScreen: View {
         .padding(.vertical, isWideLayout ? 18 : 16)
         .background {
             RoundedRectangle(cornerRadius: 26)
-                .fill(.regularMaterial)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 26))
+                .fill(Color.appCardBackground)
         }
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 26)
@@ -259,7 +258,7 @@ struct HomeScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(isWideLayout ? 18 : 16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 24))
         .overlay {
             RoundedRectangle(cornerRadius: 24)
                 .stroke(Color.primary.opacity(0.055))
@@ -483,7 +482,7 @@ private struct FlightSummaryRow: View {
         .buttonStyle(.plain)
         .padding(.horizontal, 13)
         .padding(.vertical, 10)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.appInsetBackground, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 16)
                 .fill(tint)
@@ -587,7 +586,7 @@ private struct AccommodationSummaryRow: View {
         .buttonStyle(.plain)
         .padding(.horizontal, 13)
         .padding(.vertical, 10)
-        .background(.background.opacity(0.62), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.appInsetBackground, in: RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 16)
                 .fill(tint)
@@ -682,7 +681,7 @@ private struct StatChipContent: View {
         .frame(maxWidth: .infinity, minHeight: 78, maxHeight: 78, alignment: .leading)
         .padding(.horizontal, 13)
         .padding(.vertical, 10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.appCardBackground, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.primary.opacity(0.055))
@@ -822,7 +821,7 @@ private struct HeroTodayLine: View {
         .frame(maxWidth: .infinity, minHeight: 66, alignment: .center)
         .padding(.horizontal, 13)
         .padding(.vertical, 10)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.appInsetBackground, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.primary.opacity(0.05))
@@ -912,7 +911,7 @@ private struct CompactScheduleRow: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, minHeight: 82, alignment: .center)
-        .background(.background.opacity(0.66), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.appInsetBackground, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(kindColor.opacity(0.12))
@@ -957,7 +956,7 @@ private struct CompactNoteCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.background.opacity(0.68), in: RoundedRectangle(cornerRadius: 18))
+        .background(Color.appInsetBackground, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
                 .stroke(noteTint.opacity(0.12))
