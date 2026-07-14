@@ -2,6 +2,7 @@
 
 import {
   Archive,
+  ArrowRight,
   CalendarDays,
   CheckCircle2,
   CloudRain,
@@ -527,8 +528,22 @@ function Header({ trip, onLogout }: { trip: TripData["trips"][number]; onLogout:
             </select>
           </div>
           <div className="flight-strip mt-4">
-            <span className="flight-card inline-flex items-center gap-2"><Plane size={16} />가는 편 {trip.outbound_flight || "편명 미정"} · {trip.outbound_origin || "출발지"} → {trip.outbound_destination || "도착지"} · {trip.outbound_arrival_time || "도착시간 미정"} 도착</span>
-            <span className="flight-card inline-flex items-center gap-2"><Plane size={16} />오는 편 {trip.return_flight || "편명 미정"} · {trip.return_origin || "출발지"} → {trip.return_destination || "도착지"} · {trip.return_departure_time || "출발시간 미정"} 출발</span>
+            <FlightCard
+              label="가는 편"
+              flight={trip.outbound_flight || "편명 미정"}
+              origin={trip.outbound_origin || "출발지"}
+              destination={trip.outbound_destination || "도착지"}
+              departureTime={trip.outbound_departure_time || "08:20"}
+              arrivalTime={trip.outbound_arrival_time || "10:30"}
+            />
+            <FlightCard
+              label="오는 편"
+              flight={trip.return_flight || "편명 미정"}
+              origin={trip.return_origin || "출발지"}
+              destination={trip.return_destination || "도착지"}
+              departureTime={trip.return_departure_time || "11:40"}
+              arrivalTime={trip.return_arrival_time || "13:30"}
+            />
           </div>
         </div>
         <button className="btn btn-secondary relative z-10 px-3" onClick={onLogout} type="button" aria-label="로그아웃">
@@ -536,6 +551,22 @@ function Header({ trip, onLogout }: { trip: TripData["trips"][number]; onLogout:
         </button>
       </div>
     </header>
+  );
+}
+
+function FlightCard({ label, flight, origin, destination, departureTime, arrivalTime }: { label: string; flight: string; origin: string; destination: string; departureTime: string; arrivalTime: string }) {
+  return (
+    <span className="flight-card">
+      <span className="flight-card-icon"><Plane size={16} /></span>
+      <span className="flight-card-main">
+        <span className="flight-card-label">{label} <strong>{flight}</strong></span>
+        <span className="flight-card-route">
+          <span><b>{origin}</b><time>{departureTime} 출발</time></span>
+          <ArrowRight size={15} />
+          <span><b>{destination}</b><time>{arrivalTime} 도착</time></span>
+        </span>
+      </span>
+    </span>
   );
 }
 
@@ -598,7 +629,7 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
           )) : <Empty text="여행 준비가 모두 완료됐어요." />}
         </Panel>
       </div>
-      <Panel title="빠른 링크" action={<button className="btn btn-secondary" type="button" onClick={() => setRecommendOpen(true)}><Sparkles size={16} />추천 도우미</button>}>
+      <Panel title="빠른 링크" action={<button className="btn btn-secondary btn-sm" type="button" onClick={() => setRecommendOpen(true)}><Sparkles size={14} />추천 도우미</button>}>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           {data.quick_links.map((link) => <a className="btn btn-secondary" href={link.url} key={link.id} rel="noreferrer" target="_blank">{link.label}<ExternalLink size={16} /></a>)}
         </div>
@@ -903,6 +934,27 @@ function ItineraryCard({ item, compact = false, weather, onDelete, onStatus, onP
   const timeRange = item.start_time ? `${item.start_time.slice(0, 5)}${item.end_time ? ` - ${item.end_time.slice(0, 5)}` : ""}` : item.time_label;
   const kind = itineraryKind(item);
   const tone = kind === "이동" ? "bg-[#eef7ff] border-sky-200" : kind === "식사" ? "bg-[#fff7ed] border-orange-100" : "bg-white/82 border-black/5";
+  if (compact && !editing) {
+    const [start, end] = timeRange.split(" - ");
+    return (
+      <article className="brief-itinerary">
+        <div className="brief-time">
+          <span>{start || item.time_label || "시간 미정"}</span>
+          {end ? <small>{end}</small> : null}
+        </div>
+        <div className="brief-body">
+          <p className="brief-date">{dateLabel(item.date)} · {item.time_label || kind}</p>
+          <h3>{kind === "이동" ? "↔ " : ""}{item.title}</h3>
+          <p>{item.description}</p>
+          <div className="brief-chips">
+            <span>{item.priority}</span>
+            <span>{item.reservation_status}</span>
+            <span>{weather ? `${weather.label} · 강수 ${weather.rain}%` : "날씨 확인"}</span>
+          </div>
+        </div>
+      </article>
+    );
+  }
   return (
     <article className={`grid grid-cols-[5.75rem_minmax(0,1fr)] gap-5 rounded-lg border p-3 shadow-sm transition hover:shadow-md ${tone}`}>
       <div className="relative pr-5 text-right">
