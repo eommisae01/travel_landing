@@ -106,7 +106,7 @@ export const seedData: TripData = {
       note: "RS0741 10:30 도착, RS0742 11:40 출발. 짐을 들고 우동집/공원에 가지 않고 숙소 짐보관 후 움직이는 일정.",
       country: "일본",
       cities: ["타카마쓰", "나오시마"],
-      accommodation: "리쓰린코엔 기타구치역 근처 숙소 · 12:00 짐보관 기준",
+      accommodation: "리쓰린코엔 기타구치역 근처 airbnb · 12:00 짐보관 기준",
       my_maps_url: MY_MAPS_URL,
       outbound_origin: "서울",
       outbound_destination: "타카마쓰",

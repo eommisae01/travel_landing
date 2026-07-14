@@ -541,10 +541,17 @@ export default function Page() {
     <div className="app-shell" data-app-theme={appTheme}>
       <SideNav active={active} setActive={setActive} saveState={saveState} mode={mode} trip={trip} />
       <main className="mx-auto min-w-0 max-w-[92rem] px-4 py-4 lg:px-8 lg:py-6">
-        <Header trip={trip} onLogout={async () => {
-          await fetch("/api/session", { method: "DELETE" });
-          setAuthenticated(false);
-        }} />
+        <Header
+          trip={trip}
+          onOpenLanding={() => {
+            setShowStarter(false);
+            setShowLanding(true);
+          }}
+          onLogout={async () => {
+            await fetch("/api/session", { method: "DELETE" });
+            setAuthenticated(false);
+          }}
+        />
         {active === "home" && <HomeView data={scopedData} setActive={setActive} mutate={mutate} />}
         {active === "schedule" && <ScheduleView items={scopedData.itinerary_items} places={scopedData.places} foods={scopedData.food_candidates} trip={trip} mutate={mutate} />}
         {active === "gallery" && <GalleryView items={scopedData.gallery_items} trip={trip} mutate={mutate} />}
@@ -1006,7 +1013,7 @@ function NavButton({ item, active, setActive, compact = false }: { item: (typeof
   );
 }
 
-function Header({ trip, onLogout }: { trip: TripData["trips"][number]; onLogout: () => void }) {
+function Header({ trip, onOpenLanding, onLogout }: { trip: TripData["trips"][number]; onOpenLanding: () => void; onLogout: () => void }) {
   const cityOptions = trip.cities?.length ? trip.cities : trip.region.split("·").map((city) => city.trim()).filter(Boolean);
   return (
     <header className="trip-hero mb-4 rounded-lg p-4 shadow-soft lg:p-6">
@@ -1040,9 +1047,14 @@ function Header({ trip, onLogout }: { trip: TripData["trips"][number]; onLogout:
             />
           </div>
         </div>
-        <button className="btn btn-secondary relative z-10 px-3" onClick={onLogout} type="button" aria-label="로그아웃">
-          <LogOut size={18} />
-        </button>
+        <div className="relative z-10 flex shrink-0 items-center gap-2">
+          <button className="btn btn-secondary min-h-11 px-3 text-sm" onClick={onOpenLanding} type="button">
+            처음 화면
+          </button>
+          <button className="btn btn-secondary min-h-11 w-11 px-0" onClick={onLogout} type="button" aria-label="로그아웃">
+            <LogOut size={18} />
+          </button>
+        </div>
       </div>
     </header>
   );
@@ -1089,8 +1101,11 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
     setResearchNotes(initialResearchNotes);
   }, [initialResearchNotes]);
   const [researchDraft, setResearchDraft] = useState({ title: "", body: "" });
-  const today = todayKey();
-  const todaysItems = data.itinerary_items.filter((item) => item.date === today);
+  const currentDate = todayKey();
+  const briefingDate = data.itinerary_items.some((item) => item.date === currentDate)
+    ? currentDate
+    : (trip?.start_date || data.itinerary_items[0]?.date || currentDate);
+  const todaysItems = data.itinerary_items.filter((item) => item.date === briefingDate);
   const pendingChecks = data.checklist_items.filter((item) => item.group_name === "여행준비" && !item.is_done && !item.is_archived);
   const totalExpense = data.expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
 
@@ -1098,7 +1113,7 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
     <section className="grid gap-4">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Metric title="날씨" value={weather.brief} icon={CloudRain} />
-        <Metric title="오늘 일정" value={`${todaysItems.length || data.itinerary_items.length}개`} icon={CalendarDays} />
+        <Metric title="오늘 일정" value={`${todaysItems.length}개`} icon={CalendarDays} />
         <Metric title="미완료 준비" value={`${pendingChecks.length}개`} icon={ListTodo} />
         <Metric title="지출" value={`${totalExpense.toLocaleString("ko-KR")} JPY`} icon={CreditCard} />
       </div>
@@ -1106,7 +1121,7 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
         <div className="grid gap-2 md:grid-cols-3">
           <div className="soft-inset rounded-lg p-3">
             <p className="text-xs font-black text-sea">숙소</p>
-            <p className="mt-1 text-sm font-black">{data.trips[0]?.accommodation || "숙소를 설정에서 입력하세요."}</p>
+            <p className="mt-1 text-xs font-black leading-relaxed md:text-sm">{data.trips[0]?.accommodation || "숙소를 설정에서 입력하세요."}</p>
           </div>
           <div className="soft-inset rounded-lg p-3">
             <p className="text-xs font-black text-sea">도착</p>
@@ -1120,7 +1135,10 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
       </Panel>
       <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <Panel title="오늘의 브리핑" action={<button className="btn btn-secondary" onClick={() => setActive("schedule")} type="button">일정 보기</button>}>
-          {(todaysItems.length ? todaysItems : data.itinerary_items.slice(0, 4)).map((item) => <ItineraryCard key={item.id} item={item} compact weather={weather.byDate[item.date]} />)}
+          <p className="mb-2 text-xs font-black text-black/45">{dateLabel(briefingDate)} 일정만 표시합니다.</p>
+          {todaysItems.length
+            ? todaysItems.map((item) => <ItineraryCard key={item.id} item={item} compact weather={weather.byDate[item.date]} />)
+            : <Empty text={`${dateLabel(briefingDate)}에 등록된 일정이 없어요.`} />}
         </Panel>
         <Panel title="여행준비" action={<button className="btn btn-secondary" onClick={() => setActive("checklist")} type="button">전체 보기</button>}>
           {pendingChecks.length ? pendingChecks.slice(0, 7).map((item) => (
