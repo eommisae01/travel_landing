@@ -74,6 +74,8 @@ const navItems: Array<{ key: ViewKey; label: string; icon: ComponentType<{ size?
 const weatherUrl = "https://api.open-meteo.com/v1/forecast?latitude=34.3428&longitude=134.0466&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&current=temperature_2m,weather_code,wind_speed_10m&timezone=Asia%2FTokyo";
 
 const recommendationTopics = ["식당", "카페", "관광지", "비 오는 날", "나오시마 동선", "현장 리스크"];
+const countryOptions = ["일본", "한국", "대만", "태국", "프랑스", "이탈리아", "미국", "기타"];
+const cityPresets = ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "기타"];
 
 function labelWeather(code?: number) {
   if (code === undefined) return "예보 확인";
@@ -234,6 +236,7 @@ export default function Page() {
   const [active, setActive] = useState<ViewKey>("home");
   const [appTheme, setAppThemeState] = useState<AppTheme>("editorial-sea");
   const [showLanding, setShowLanding] = useState(true);
+  const [showStarter, setShowStarter] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   function setAppTheme(theme: AppTheme) {
@@ -340,11 +343,24 @@ export default function Page() {
   const trip = data.trips[0] || seedData.trips[0];
 
   if (showLanding) {
+    if (showStarter) {
+      return (
+        <TripStarterPage
+          theme={appTheme}
+          onBack={() => setShowStarter(false)}
+          onOpenExisting={() => {
+            setShowLanding(false);
+            setActive("home");
+          }}
+        />
+      );
+    }
     return (
       <LandingPage
         trip={trip}
         theme={appTheme}
         onEnter={() => setShowLanding(false)}
+        onPlanNew={() => setShowStarter(true)}
         onJump={(view) => {
           setActive(view);
           setShowLanding(false);
@@ -376,7 +392,7 @@ export default function Page() {
   );
 }
 
-function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"][number]; theme: AppTheme; onEnter: () => void; onJump: (view: ViewKey) => void }) {
+function LandingPage({ trip, theme, onEnter, onPlanNew, onJump }: { trip: TripData["trips"][number]; theme: AppTheme; onEnter: () => void; onPlanNew: () => void; onJump: (view: ViewKey) => void }) {
   const cityOptions = trip.cities?.length ? trip.cities : trip.region.split("·").map((city) => city.trim()).filter(Boolean);
   const features = [
     { title: "Live map", body: "My Maps 링크를 기준으로 장소와 식당 후보를 계속 정리", icon: Map },
@@ -408,7 +424,7 @@ function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"]
             현장에서 바로 읽히는 밀도와, 여행 전 계획하기 좋은 구조를 같이 가져갑니다.
           </p>
           <div className="landing-actions">
-            <button className="btn" type="button" onClick={onEnter}>계획 시작</button>
+            <button className="btn" type="button" onClick={onPlanNew}>계획 시작</button>
             <button className="btn btn-secondary" type="button" onClick={() => onJump("map")}>지도 보기</button>
           </div>
           <div className="landing-stats">
@@ -483,6 +499,176 @@ function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"]
             </button>
           ))}
         </div>
+      </section>
+    </main>
+  );
+}
+
+function TripStarterPage({ theme, onBack, onOpenExisting }: { theme: AppTheme; onBack: () => void; onOpenExisting: () => void }) {
+  const [draft, setDraft] = useState({
+    tripName: "",
+    country: "일본",
+    cityPreset: "타카마쓰",
+    customCity: "",
+    cities: "",
+    startDate: "",
+    endDate: "",
+    outboundFlight: "",
+    outboundOrigin: "",
+    outboundDestination: "",
+    outboundDepart: "",
+    outboundArrive: "",
+    returnFlight: "",
+    returnOrigin: "",
+    returnDestination: "",
+    returnDepart: "",
+    returnArrive: "",
+    myMapsUrl: ""
+  });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
+
+  const city = draft.cityPreset === "기타" ? draft.customCity || "직접 입력 도시" : draft.cityPreset;
+  const tripName = draft.tripName || `${city} 여행`;
+  const dateRange = draft.startDate && draft.endDate ? `${dateLabel(draft.startDate)} - ${dateLabel(draft.endDate)}` : "기간은 나중에 입력 가능";
+  const outboundRoute = `${draft.outboundOrigin || "출발지"} → ${draft.outboundDestination || city || "도착지"}`;
+  const returnRoute = `${draft.returnOrigin || city || "출발지"} → ${draft.returnDestination || "도착지"}`;
+
+  return (
+    <main className="landing-shell starter-shell" data-landing-theme={theme}>
+      <nav className="landing-nav">
+        <button className="landing-logo" type="button" onClick={onBack} aria-label="랜딩으로 돌아가기">
+          <span>Triplanner</span>
+        </button>
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="starter-nav-note">새 여행 셋업 미리보기</span>
+        </div>
+        <button className="btn btn-secondary" type="button" onClick={onOpenExisting}>기존 여행 열기</button>
+      </nav>
+
+      <section className="starter-hero">
+        <div>
+          <p className="landing-kicker">Start a trip</p>
+          <h1>처음에는 목적지만 정해도 됩니다.</h1>
+          <p>기간, 항공편, My Maps 링크는 건너뛸 수 있고 나중에 설정에서 다시 채울 수 있습니다.</p>
+        </div>
+        <div className="starter-steps" aria-label="여행 셋업 단계">
+          {["Destination", "Dates", "Flights", "My Maps"].map((step, index) => (
+            <span key={step}><b>{index + 1}</b>{step}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="starter-grid">
+        <form className="starter-form">
+          <section className="starter-panel">
+            <div className="starter-section-head">
+              <span>1</span>
+              <div>
+                <h2>Destination</h2>
+                <p>국가와 첫 도시를 먼저 고릅니다. 소도시는 기타에서 직접 입력합니다.</p>
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="setup-field"><span>여행 제목</span><input className="field" value={draft.tripName} onChange={(event) => setDraft({ ...draft, tripName: event.target.value })} placeholder="예: 세토우치 가족여행" /></label>
+              <label className="setup-field"><span>국가</span><select className="field" value={draft.country} onChange={(event) => setDraft({ ...draft, country: event.target.value })}>{countryOptions.map((country) => <option key={country}>{country}</option>)}</select></label>
+              <label className="setup-field"><span>첫 도시</span><select className="field" value={draft.cityPreset} onChange={(event) => setDraft({ ...draft, cityPreset: event.target.value })}>{cityPresets.map((item) => <option key={item}>{item}</option>)}</select></label>
+              {draft.cityPreset === "기타" ? <label className="setup-field"><span>도시 직접 입력</span><input className="field" value={draft.customCity} onChange={(event) => setDraft({ ...draft, customCity: event.target.value })} placeholder="예: 마쓰야마" /></label> : null}
+              <label className="setup-field md:col-span-2"><span>추가 도시</span><input className="field" value={draft.cities} onChange={(event) => setDraft({ ...draft, cities: event.target.value })} placeholder="예: 나오시마, 도쿄" /></label>
+            </div>
+          </section>
+
+          <section className="starter-panel">
+            <div className="starter-section-head">
+              <span>2</span>
+              <div>
+                <h2>Dates</h2>
+                <p>여행 기간을 넣으면 일정 탭의 Day 필터와 캘린더 기준이 됩니다.</p>
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="setup-field"><span>시작일</span><input className="field" type="date" value={draft.startDate} onChange={(event) => setDraft({ ...draft, startDate: event.target.value })} /></label>
+              <label className="setup-field"><span>종료일</span><input className="field" type="date" value={draft.endDate} onChange={(event) => setDraft({ ...draft, endDate: event.target.value })} /></label>
+            </div>
+          </section>
+
+          <section className="starter-panel">
+            <div className="starter-section-head">
+              <span>3</span>
+              <div>
+                <h2>Flights</h2>
+                <p>편명만 먼저 넣고 시간은 나중에 채워도 됩니다. 자동 항공편 조회는 별도 API 연결 단계입니다.</p>
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="setup-flight-card">
+                <p>가는 편</p>
+                <label className="setup-field"><span>편명</span><input className="field" value={draft.outboundFlight} onChange={(event) => setDraft({ ...draft, outboundFlight: event.target.value.toUpperCase() })} placeholder="RS0741" /></label>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="setup-field"><span>출발지</span><input className="field" value={draft.outboundOrigin} onChange={(event) => setDraft({ ...draft, outboundOrigin: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착지</span><input className="field" value={draft.outboundDestination} onChange={(event) => setDraft({ ...draft, outboundDestination: event.target.value })} /></label>
+                  <label className="setup-field"><span>출발시간</span><input className="field" type="time" value={draft.outboundDepart} onChange={(event) => setDraft({ ...draft, outboundDepart: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착시간</span><input className="field" type="time" value={draft.outboundArrive} onChange={(event) => setDraft({ ...draft, outboundArrive: event.target.value })} /></label>
+                </div>
+              </div>
+              <div className="setup-flight-card">
+                <p>오는 편</p>
+                <label className="setup-field"><span>편명</span><input className="field" value={draft.returnFlight} onChange={(event) => setDraft({ ...draft, returnFlight: event.target.value.toUpperCase() })} placeholder="RS0742" /></label>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="setup-field"><span>출발지</span><input className="field" value={draft.returnOrigin} onChange={(event) => setDraft({ ...draft, returnOrigin: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착지</span><input className="field" value={draft.returnDestination} onChange={(event) => setDraft({ ...draft, returnDestination: event.target.value })} /></label>
+                  <label className="setup-field"><span>출발시간</span><input className="field" type="time" value={draft.returnDepart} onChange={(event) => setDraft({ ...draft, returnDepart: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착시간</span><input className="field" type="time" value={draft.returnArrive} onChange={(event) => setDraft({ ...draft, returnArrive: event.target.value })} /></label>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="starter-panel">
+            <div className="starter-section-head">
+              <span>4</span>
+              <div>
+                <h2>My Maps</h2>
+                <p>공유 지도 링크를 넣으면 장소/식당 후보를 지도 탭에서 계속 동기화하는 구조로 시작합니다.</p>
+              </div>
+            </div>
+            <label className="setup-field"><span>Google My Maps 공유 링크</span><input className="field" value={draft.myMapsUrl} onChange={(event) => setDraft({ ...draft, myMapsUrl: event.target.value })} placeholder="https://www.google.com/maps/d/..." /></label>
+          </section>
+        </form>
+
+        <aside className="starter-preview">
+          <div className="starter-phone">
+            <div className="starter-phone-top">
+              <span>{draft.country}</span>
+              <strong>{city}</strong>
+            </div>
+            <h2>{tripName}</h2>
+            <p>{dateRange}</p>
+            <div className="starter-preview-card">
+              <small>가는 편</small>
+              <strong>{draft.outboundFlight || "편명 미정"}</strong>
+              <span>{outboundRoute}</span>
+              <em>{draft.outboundDepart || "--:--"} 출발 · {draft.outboundArrive || "--:--"} 도착</em>
+            </div>
+            <div className="starter-preview-card alt">
+              <small>오는 편</small>
+              <strong>{draft.returnFlight || "편명 미정"}</strong>
+              <span>{returnRoute}</span>
+              <em>{draft.returnDepart || "--:--"} 출발 · {draft.returnArrive || "--:--"} 도착</em>
+            </div>
+            <div className="starter-preview-row">
+              <span>Map</span>
+              <b>{draft.myMapsUrl ? "연결됨" : "나중에 연결"}</b>
+            </div>
+            <div className="starter-preview-row">
+              <span>Next</span>
+              <b>일정 · Notes · 체크리스트</b>
+            </div>
+          </div>
+          <button className="btn" type="button" onClick={onOpenExisting}>기존 예시 앱에서 계속 보기</button>
+        </aside>
       </section>
     </main>
   );
@@ -1960,7 +2146,6 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
   });
   const [memberDraft, setMemberDraft] = useState({ name: "", role: "", color: "#16a3a3", avatar_url: "" });
   const [memberEdit, setMemberEdit] = useState<Record<string, Partial<TripMember>>>({});
-  const cityPresets = ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "기타"];
   const resolvedCity = setup.cityPreset === "기타" ? setup.customCity : setup.cityPreset;
   const inviteUrl = typeof window !== "undefined" ? window.location.origin : "https://project-6ok16.vercel.app";
   const readProfileImage = (file: File | undefined, callback: (value: string) => void) => {
