@@ -27,7 +27,7 @@ import {
   X
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { inferGoogleMapsName } from "./lib/maps";
 import { MY_MAPS_EMBED_URL, seedData } from "./lib/seed";
 import {
@@ -1864,8 +1864,15 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
             <button
               aria-pressed={theme === item.key}
               className="theme-card"
+              data-theme-key={item.key}
               key={item.key}
               onClick={() => setTheme(item.key)}
+              style={{
+                "--theme-card-primary": item.swatches[0],
+                "--theme-card-secondary": item.swatches[1],
+                "--theme-card-soft": item.swatches[2],
+                "--theme-card-highlight": item.swatches[3]
+              } as CSSProperties}
               type="button"
             >
               <span className="theme-swatch-row" aria-hidden="true">
