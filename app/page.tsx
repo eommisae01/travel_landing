@@ -55,7 +55,8 @@ type TripStarterDraft = {
   country: string;
   cityPreset: string;
   customCity: string;
-  cities: string;
+  extraCities: string[];
+  cityTransferDates: Record<string, string>;
   startDate: string;
   endDate: string;
   outboundFlight: string;
@@ -386,7 +387,7 @@ export default function Page() {
 
   async function createTripFromStarter(draft: TripStarterDraft) {
     const primaryCity = (draft.cityPreset === "기타" ? draft.customCity : draft.cityPreset).trim() || "새 도시";
-    const cities = Array.from(new Set([primaryCity, ...draft.cities.split(/,|\n/).map((city) => city.trim()).filter(Boolean)]));
+    const cities = Array.from(new Set([primaryCity, ...draft.extraCities.map((city) => city.trim()).filter(Boolean)]));
     const start = draft.startDate || todayKey();
     const end = draft.endDate || draft.startDate || start;
     const created = await mutate<Trip>("trips", "create", {
@@ -421,6 +422,28 @@ export default function Page() {
     if (draft.myMapsUrl.trim()) {
       await mutate<QuickLink>("quick_links", "create", {
         row: { id: makeId("link"), trip_id: created.id, label: "공유 지도", kind: "map", url: draft.myMapsUrl.trim() }
+      });
+    }
+    for (let index = 0; index < cities.length - 1; index += 1) {
+      const transferDate = draft.cityTransferDates[String(index)];
+      if (!transferDate) continue;
+      await mutate<ItineraryItem>("itinerary_items", "create", {
+        row: {
+          id: makeId("itinerary"),
+          trip_id: created.id,
+          date: transferDate,
+          time_label: "이동",
+          start_time: "",
+          end_time: "",
+          title: `${cities[index]} → ${cities[index + 1]} 이동`,
+          description: "도시 간 이동일입니다. 교통편과 시간을 나중에 채워주세요.",
+          location: `${cities[index]} → ${cities[index + 1]}`,
+          priority: "필수",
+          reservation_status: "확인 필요",
+          weather_impact: "날씨 확인",
+          owner: "공통",
+          sort_order: index + 1
+        }
       });
     }
     setSelectedTripId(created.id);
@@ -608,7 +631,8 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
     country: "일본",
     cityPreset: "타카마쓰",
     customCity: "",
-    cities: "",
+    extraCities: [],
+    cityTransferDates: {},
     startDate: "",
     endDate: "",
     outboundFlight: "",
@@ -630,6 +654,8 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
   }, []);
 
   const city = draft.cityPreset === "기타" ? draft.customCity || "직접 입력 도시" : draft.cityPreset;
+  const extraCities = draft.extraCities;
+  const transferStops = [city, ...extraCities.map((value, index) => value.trim() || `도시 ${index + 2}`)];
   const tripName = draft.tripName || `${city} 여행`;
   const dateRange = draft.startDate && draft.endDate ? `${dateLabel(draft.startDate)} - ${dateLabel(draft.endDate)}` : "기간은 나중에 입력 가능";
   const outboundRoute = `${draft.outboundOrigin || "출발지"} → ${draft.outboundDestination || city || "도착지"}`;
@@ -641,6 +667,24 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
     } finally {
       setSaving(false);
     }
+  };
+  const updateExtraCity = (index: number, value: string) => {
+    const next = [...extraCities];
+    next[index] = value;
+    setDraft({ ...draft, extraCities: next });
+  };
+  const addExtraCity = () => {
+    setDraft({ ...draft, extraCities: [...extraCities, ""] });
+  };
+  const removeExtraCity = (index: number) => {
+    const next = extraCities.filter((_, itemIndex) => itemIndex !== index);
+    const nextTransferDates: Record<string, string> = {};
+    Object.entries(draft.cityTransferDates).forEach(([key, value]) => {
+      const numericKey = Number(key);
+      if (numericKey < index) nextTransferDates[key] = value;
+      if (numericKey > index) nextTransferDates[String(numericKey - 1)] = value;
+    });
+    setDraft({ ...draft, extraCities: next, cityTransferDates: nextTransferDates });
   };
 
   return (
@@ -682,11 +726,25 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              <label className="setup-field"><span>여행 제목</span><input className="field" value={draft.tripName} onChange={(event) => setDraft({ ...draft, tripName: event.target.value })} placeholder="예: 세토우치 가족여행" /></label>
-              <label className="setup-field"><span>국가</span><select className="field" value={draft.country} onChange={(event) => setDraft({ ...draft, country: event.target.value })}>{countryOptions.map((country) => <option key={country}>{country}</option>)}</select></label>
-              <label className="setup-field"><span>첫 도시</span><select className="field" value={draft.cityPreset} onChange={(event) => setDraft({ ...draft, cityPreset: event.target.value })}>{cityPresets.map((item) => <option key={item}>{item}</option>)}</select></label>
+              <label className="setup-field"><span>여행 제목</span><input className="field" value={draft.tripName} onChange={(event) => setDraft({ ...draft, tripName: event.target.value })} placeholder="예: 도쿄 가족여행" /></label>
+              <label className="setup-field"><span>국가 선택</span><select className="field" value={draft.country} onChange={(event) => setDraft({ ...draft, country: event.target.value })}>{countryOptions.map((country) => <option key={country}>{country}</option>)}</select></label>
+              <label className="setup-field"><span>첫 도시 선택</span><select className="field" value={draft.cityPreset} onChange={(event) => setDraft({ ...draft, cityPreset: event.target.value })}>{cityPresets.map((item) => <option key={item}>{item}</option>)}</select></label>
               {draft.cityPreset === "기타" ? <label className="setup-field"><span>도시 직접 입력</span><input className="field" value={draft.customCity} onChange={(event) => setDraft({ ...draft, customCity: event.target.value })} placeholder="예: 마쓰야마" /></label> : null}
-              <label className="setup-field md:col-span-2"><span>추가 도시</span><input className="field" value={draft.cities} onChange={(event) => setDraft({ ...draft, cities: event.target.value })} placeholder="예: 나오시마, 도쿄" /></label>
+              <div className="setup-field md:col-span-2">
+                <span>추가 도시</span>
+                <div className="starter-city-list">
+                  {extraCities.map((value, index) => (
+                    <div className="starter-city-row" key={`city-${index}`}>
+                      <label className="setup-field">
+                        <span>{index + 2}번째 도시</span>
+                        <input className="field" value={value} onChange={(event) => updateExtraCity(index, event.target.value)} placeholder="예: 나오시마" />
+                      </label>
+                      <button className="btn btn-secondary starter-icon-button" type="button" onClick={() => removeExtraCity(index)} aria-label={`${index + 2}번째 도시 삭제`}><X size={16} /></button>
+                    </div>
+                  ))}
+                  <button className="btn btn-secondary starter-add-city" type="button" onClick={addExtraCity}><Plus size={16} />도시 추가</button>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -695,13 +753,31 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
               <span>2</span>
               <div>
                 <h2>Dates</h2>
-                <p>여행 기간을 넣으면 일정 탭의 Day 필터와 캘린더 기준이 됩니다.</p>
+                <p>여행 기간과 도시 간 이동일을 넣으면 일정 탭의 Day 필터와 캘린더 기준이 됩니다.</p>
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <label className="setup-field"><span>시작일</span><input className="field" type="date" value={draft.startDate} onChange={(event) => setDraft({ ...draft, startDate: event.target.value })} /></label>
               <label className="setup-field"><span>종료일</span><input className="field" type="date" value={draft.endDate} onChange={(event) => setDraft({ ...draft, endDate: event.target.value })} /></label>
             </div>
+            {extraCities.length > 0 ? (
+              <div className="starter-transfer-list">
+                {extraCities.map((_, index) => (
+                  <label className="setup-field" key={`transfer-${index}`}>
+                    <span>{transferStops[index]} → {transferStops[index + 1]} 이동일</span>
+                    <input
+                      className="field"
+                      type="date"
+                      value={draft.cityTransferDates[String(index)] || ""}
+                      onChange={(event) => setDraft({
+                        ...draft,
+                        cityTransferDates: { ...draft.cityTransferDates, [String(index)]: event.target.value }
+                      })}
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : null}
           </section>
 
           <section className="starter-panel">
@@ -709,9 +785,13 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
               <span>3</span>
               <div>
                 <h2>Flights</h2>
-                <p>편명만 먼저 넣고 시간은 나중에 채워도 됩니다. 자동 항공편 조회는 별도 API 연결 단계입니다.</p>
+                <p>편명만 먼저 넣고 시간은 나중에 채워도 됩니다.</p>
               </div>
             </div>
+            <details className="starter-help">
+              <summary>자동 항공편 조회는 어떻게 연결하나요?</summary>
+              <p>FlightAware, Aviationstack, Amadeus 같은 항공편 API 키가 필요합니다. 서버에서 편명을 조회해 출발지, 도착지, 출발/도착 시간을 채우는 방식으로 붙입니다. 무료/저가 API는 지연·결항 정보가 제한될 수 있어 우선은 수동 입력을 기본값으로 둡니다.</p>
+            </details>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="setup-flight-card">
                 <p>가는 편</p>

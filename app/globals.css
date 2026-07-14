@@ -1344,6 +1344,59 @@ a {
   font-weight: 950;
 }
 
+.starter-city-list,
+.starter-transfer-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.starter-city-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.6rem;
+}
+
+.starter-icon-button {
+  width: 2.9rem;
+  min-height: 2.9rem;
+  padding: 0;
+}
+
+.starter-add-city {
+  justify-self: start;
+  min-height: 2.55rem;
+}
+
+.starter-transfer-list {
+  margin-top: 0.8rem;
+  border-top: 1px solid var(--landing-border);
+  padding-top: 0.8rem;
+}
+
+.starter-help {
+  margin-bottom: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--landing-accent) 22%, var(--landing-border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--landing-surface) 82%, var(--landing-soft));
+  padding: 0.85rem 0.95rem;
+}
+
+.starter-help summary {
+  cursor: pointer;
+  color: var(--landing-ink);
+  font-size: 0.85rem;
+  font-weight: 950;
+}
+
+.starter-help p {
+  margin-top: 0.5rem;
+  color: var(--landing-muted);
+  font-size: 0.8rem;
+  font-weight: 720;
+  line-height: 1.55;
+}
+
 .starter-panel .setup-flight-card {
   border-color: color-mix(in srgb, var(--landing-accent) 22%, var(--landing-border));
   background: var(--landing-soft);
