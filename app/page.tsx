@@ -42,6 +42,7 @@ import {
   QuickLink,
   TableName,
   Trip,
+  TripMember,
   TripData
 } from "./lib/types";
 
@@ -354,7 +355,7 @@ export default function Page() {
 
   return (
     <div className="app-shell" data-app-theme={appTheme}>
-      <SideNav active={active} setActive={setActive} saveState={saveState} mode={mode} />
+      <SideNav active={active} setActive={setActive} saveState={saveState} mode={mode} trip={trip} />
       <main className="mx-auto min-w-0 max-w-[92rem] px-4 py-4 lg:px-8 lg:py-6">
         <Header trip={trip} onLogout={async () => {
           await fetch("/api/session", { method: "DELETE" });
@@ -487,13 +488,13 @@ function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"]
   );
 }
 
-function SideNav({ active, setActive, saveState, mode }: { active: ViewKey; setActive: (key: ViewKey) => void; saveState: SaveState; mode: string }) {
+function SideNav({ active, setActive, saveState, mode, trip }: { active: ViewKey; setActive: (key: ViewKey) => void; saveState: SaveState; mode: string; trip: TripData["trips"][number] }) {
   return (
     <aside className="sidebar-shell sticky top-0 hidden h-screen flex-col gap-5 p-4 lg:flex">
       <div className="sidebar-brand">
         <p className="text-xs font-black uppercase text-sea">Family trip</p>
-        <h2 className="mt-1 text-2xl font-black leading-none">Takamatsu</h2>
-        <p className="mt-1 truncate text-xs font-bold text-black/45">Setouchi · 6월 여행</p>
+        <h2 className="mt-1 text-2xl font-black leading-none">{trip.cities?.[0] || trip.region.split("·")[0]?.trim() || "Trip"}</h2>
+        <p className="mt-1 truncate text-xs font-bold text-black/45">{dateLabel(trip.start_date)} - {dateLabel(trip.end_date)}</p>
       </div>
       <nav className="grid gap-1">
         {navItems.map((item) => <NavButton key={item.key} item={item} active={active} setActive={setActive} />)}
@@ -1745,6 +1746,7 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
 
 function BudgetView({ expenses, members, trip, mutate }: { expenses: Expense[]; members: string[]; trip: TripData["trips"][number]; mutate: PageMutate }) {
   const [draft, setDraft] = useState({ category: "식비", item: "", amount: "", currency: trip.budget_currency || "JPY", payer: members[0] || "나", intended_payer: members[0] || "나", participants: members, note: "" });
+  const [budgetDraft, setBudgetDraft] = useState({ amount: String(trip.budget_amount || ""), currency: trip.budget_currency || "JPY" });
   const total = expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
   const share = members.length ? total / members.length : 0;
   const budget = Number(trip.budget_amount || 0);
@@ -1769,6 +1771,20 @@ function BudgetView({ expenses, members, trip, mutate }: { expenses: Expense[]; 
           <div className="h-3 overflow-hidden rounded-full bg-black/8">
             <div className="h-full rounded-full bg-sea transition-all" style={{ width: `${percent}%` }} />
           </div>
+          <form className="mt-3 grid gap-2 md:grid-cols-[1fr_0.45fr_auto]" onSubmit={(event) => {
+            event.preventDefault();
+            mutate<Trip>("trips", "update", { id: trip.id, patch: { budget_amount: Number(budgetDraft.amount || 0), budget_currency: budgetDraft.currency || "JPY" } });
+          }}>
+            <label className="setup-field">
+              <span>여행 예산</span>
+              <input className="field" inputMode="numeric" placeholder="예: 150000" value={budgetDraft.amount} onChange={(event) => setBudgetDraft({ ...budgetDraft, amount: event.target.value })} />
+            </label>
+            <label className="setup-field">
+              <span>통화</span>
+              <input className="field" placeholder="JPY" value={budgetDraft.currency} onChange={(event) => setBudgetDraft({ ...budgetDraft, currency: event.target.value.toUpperCase() })} />
+            </label>
+            <button className="btn self-end" type="submit">예산 저장</button>
+          </form>
         </div>
       </Panel>
       <Panel title="지출 추가">
@@ -1884,8 +1900,9 @@ function OnsiteView({ notes, links, mutate }: { notes: OnsiteNote[]; links: Quic
 function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData; mode: string; theme: AppTheme; setTheme: (theme: AppTheme) => void; mutate: PageMutate }) {
   const trip = data.trips[0] || seedData.trips[0];
   const [setup, setSetup] = useState({
+    name: trip.name || "",
     country: trip.country || "일본",
-    cityPreset: "타카마쓰",
+    cityPreset: (trip.cities?.[0] || "타카마쓰"),
     customCity: "",
     cities: (trip.cities || trip.region.split("·").map((city) => city.trim()).filter(Boolean)).join(", "),
     start_date: trip.start_date,
@@ -1893,81 +1910,160 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
     outbound_origin: trip.outbound_origin || "",
     outbound_destination: trip.outbound_destination || "",
     outbound_flight: trip.outbound_flight || "",
+    outbound_departure_time: trip.outbound_departure_time || "",
     outbound_arrival_time: trip.outbound_arrival_time || "",
     return_origin: trip.return_origin || "",
     return_destination: trip.return_destination || "",
     return_flight: trip.return_flight || "",
     return_departure_time: trip.return_departure_time || "",
+    return_arrival_time: trip.return_arrival_time || "",
     accommodation: trip.accommodation || "",
-    my_maps_url: trip.my_maps_url || data.quick_links.find((link) => link.kind === "map")?.url || "",
-    budget_amount: String(trip.budget_amount || ""),
-    budget_currency: trip.budget_currency || "JPY"
+    my_maps_url: trip.my_maps_url || data.quick_links.find((link) => link.kind === "map")?.url || ""
   });
+  const [memberDraft, setMemberDraft] = useState({ name: "", role: "", color: "#16a3a3", avatar_url: "" });
+  const [memberEdit, setMemberEdit] = useState<Record<string, Partial<TripMember>>>({});
   const cityPresets = ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "기타"];
   const resolvedCity = setup.cityPreset === "기타" ? setup.customCity : setup.cityPreset;
   const inviteUrl = typeof window !== "undefined" ? window.location.origin : "https://project-6ok16.vercel.app";
+  const readProfileImage = (file: File | undefined, callback: (value: string) => void) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => callback(String(reader.result || ""));
+    reader.readAsDataURL(file);
+  };
+  const saveSetup = (event: FormEvent) => {
+    event.preventDefault();
+    const cities = Array.from(new Set([resolvedCity, ...setup.cities.split(",").map((city) => city.trim()).filter(Boolean)].filter(Boolean)));
+    mutate<Trip>("trips", "update", {
+      id: trip.id,
+      patch: {
+        name: setup.name || trip.name,
+        country: setup.country,
+        cities,
+        region: cities.join(" · "),
+        start_date: setup.start_date || trip.start_date,
+        end_date: setup.end_date || setup.start_date || trip.end_date,
+        outbound_origin: setup.outbound_origin,
+        outbound_destination: setup.outbound_destination || resolvedCity,
+        outbound_flight: setup.outbound_flight,
+        outbound_departure_time: setup.outbound_departure_time || undefined,
+        outbound_arrival_time: setup.outbound_arrival_time || undefined,
+        return_origin: setup.return_origin || resolvedCity,
+        return_destination: setup.return_destination,
+        return_flight: setup.return_flight,
+        return_departure_time: setup.return_departure_time || undefined,
+        return_arrival_time: setup.return_arrival_time || undefined,
+        accommodation: setup.accommodation,
+        my_maps_url: setup.my_maps_url
+      }
+    });
+  };
   return (
     <section className="grid gap-4">
-      <Panel title="처음 셋업">
-        <form className="grid gap-2 md:grid-cols-4" onSubmit={(event) => {
-          event.preventDefault();
-          const cities = Array.from(new Set([resolvedCity, ...setup.cities.split(",").map((city) => city.trim()).filter(Boolean)].filter(Boolean)));
-          mutate<Trip>("trips", "update", {
-            id: trip.id,
-            patch: {
-              country: setup.country,
-              cities,
-              region: cities.join(" · "),
-              start_date: setup.start_date || trip.start_date,
-              end_date: setup.end_date || setup.start_date || trip.end_date,
-              outbound_origin: setup.outbound_origin,
-              outbound_destination: setup.outbound_destination || resolvedCity,
-              outbound_flight: setup.outbound_flight,
-              outbound_arrival_time: setup.outbound_arrival_time,
-              return_origin: setup.return_origin || resolvedCity,
-              return_destination: setup.return_destination,
-              return_flight: setup.return_flight,
-              return_departure_time: setup.return_departure_time,
-              accommodation: setup.accommodation,
-              my_maps_url: setup.my_maps_url,
-              budget_amount: Number(setup.budget_amount || 0),
-              budget_currency: setup.budget_currency
-            }
-          });
-        }}>
-          <select className="field" value={setup.country} onChange={(event) => setSetup({ ...setup, country: event.target.value })}>
-            {["일본", "한국", "대만", "태국", "프랑스", "이탈리아", "미국", "기타"].map((country) => <option key={country}>{country}</option>)}
-          </select>
-          <select className="field" value={setup.cityPreset} onChange={(event) => setSetup({ ...setup, cityPreset: event.target.value })}>
-            {cityPresets.map((city) => <option key={city}>{city}</option>)}
-          </select>
-          {setup.cityPreset === "기타" ? <input className="field" placeholder="도시 직접 입력" value={setup.customCity} onChange={(event) => setSetup({ ...setup, customCity: event.target.value })} required /> : null}
-          <input className="field" placeholder="경유 도시들 쉼표로 추가" value={setup.cities} onChange={(event) => setSetup({ ...setup, cities: event.target.value })} />
-          <input className="field" type="date" value={setup.start_date} onChange={(event) => setSetup({ ...setup, start_date: event.target.value })} />
-          <input className="field" type="date" value={setup.end_date} onChange={(event) => setSetup({ ...setup, end_date: event.target.value })} />
-          <input className="field" placeholder="가는 편명" value={setup.outbound_flight} onChange={(event) => setSetup({ ...setup, outbound_flight: event.target.value })} />
-          <input className="field" placeholder="가는 편 출발지" value={setup.outbound_origin} onChange={(event) => setSetup({ ...setup, outbound_origin: event.target.value })} />
-          <input className="field" placeholder="가는 편 현지 도착지" value={setup.outbound_destination} onChange={(event) => setSetup({ ...setup, outbound_destination: event.target.value })} />
-          <input className="field" type="time" value={setup.outbound_arrival_time} onChange={(event) => setSetup({ ...setup, outbound_arrival_time: event.target.value })} aria-label="가는 편 현지 도착시간" />
-          <input className="field" placeholder="오는 편명" value={setup.return_flight} onChange={(event) => setSetup({ ...setup, return_flight: event.target.value })} />
-          <input className="field" placeholder="오는 편 현지 출발지" value={setup.return_origin} onChange={(event) => setSetup({ ...setup, return_origin: event.target.value })} />
-          <input className="field" placeholder="오는 편 도착지" value={setup.return_destination} onChange={(event) => setSetup({ ...setup, return_destination: event.target.value })} />
-          <input className="field" type="time" value={setup.return_departure_time} onChange={(event) => setSetup({ ...setup, return_departure_time: event.target.value })} aria-label="오는 편 현지 출발시간" />
-          <input className="field md:col-span-2" placeholder="숙소 / 체크인 기준 메모" value={setup.accommodation} onChange={(event) => setSetup({ ...setup, accommodation: event.target.value })} />
-          <input className="field md:col-span-2" placeholder="Google My Maps 공유 링크" value={setup.my_maps_url} onChange={(event) => setSetup({ ...setup, my_maps_url: event.target.value })} />
-          <input className="field" inputMode="numeric" placeholder="예산" value={setup.budget_amount} onChange={(event) => setSetup({ ...setup, budget_amount: event.target.value })} />
-          <input className="field" placeholder="통화" value={setup.budget_currency} onChange={(event) => setSetup({ ...setup, budget_currency: event.target.value })} />
-          <button className="btn md:col-span-2" type="submit">셋업 저장</button>
+      <Panel title="여행 설정">
+        <form className="grid gap-4" onSubmit={saveSetup}>
+          <div className="setup-group">
+            <h3>기본 정보</h3>
+            <div className="grid gap-2 md:grid-cols-2">
+              <label className="setup-field md:col-span-2"><span>여행 제목</span><input className="field" value={setup.name} onChange={(event) => setSetup({ ...setup, name: event.target.value })} placeholder="예: 타카마쓰 가족여행" /></label>
+              <label className="setup-field"><span>국가</span><select className="field" value={setup.country} onChange={(event) => setSetup({ ...setup, country: event.target.value })}>{["일본", "한국", "대만", "태국", "프랑스", "이탈리아", "미국", "기타"].map((country) => <option key={country}>{country}</option>)}</select></label>
+              <label className="setup-field"><span>첫 도시</span><select className="field" value={cityPresets.includes(setup.cityPreset) ? setup.cityPreset : "기타"} onChange={(event) => setSetup({ ...setup, cityPreset: event.target.value })}>{cityPresets.map((city) => <option key={city}>{city}</option>)}</select></label>
+              {setup.cityPreset === "기타" ? <label className="setup-field"><span>도시 직접 입력</span><input className="field" value={setup.customCity} onChange={(event) => setSetup({ ...setup, customCity: event.target.value })} required /></label> : null}
+              <label className="setup-field"><span>여행 도시 목록</span><input className="field" value={setup.cities} onChange={(event) => setSetup({ ...setup, cities: event.target.value })} placeholder="예: 타카마쓰, 도쿄" /></label>
+              <label className="setup-field"><span>시작일</span><input className="field" type="date" value={setup.start_date} onChange={(event) => setSetup({ ...setup, start_date: event.target.value })} /></label>
+              <label className="setup-field"><span>종료일</span><input className="field" type="date" value={setup.end_date} onChange={(event) => setSetup({ ...setup, end_date: event.target.value })} /></label>
+            </div>
+          </div>
+          <div className="setup-group">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <h3>비행 정보</h3>
+              <p className="max-w-xl text-xs font-bold text-black/45">편명 자동조회는 FlightAware, Aviationstack, Amadeus 같은 항공 API 연결이 필요합니다. 지금은 편명과 시간을 직접 저장합니다.</p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="setup-flight-card">
+                <p>가는 편</p>
+                <label className="setup-field"><span>편명</span><input className="field" value={setup.outbound_flight} onChange={(event) => setSetup({ ...setup, outbound_flight: event.target.value.toUpperCase() })} placeholder="RS0741" /></label>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="setup-field"><span>출발지</span><input className="field" value={setup.outbound_origin} onChange={(event) => setSetup({ ...setup, outbound_origin: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착지</span><input className="field" value={setup.outbound_destination} onChange={(event) => setSetup({ ...setup, outbound_destination: event.target.value })} /></label>
+                  <label className="setup-field"><span>출발시간</span><input className="field" type="time" value={setup.outbound_departure_time} onChange={(event) => setSetup({ ...setup, outbound_departure_time: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착시간</span><input className="field" type="time" value={setup.outbound_arrival_time} onChange={(event) => setSetup({ ...setup, outbound_arrival_time: event.target.value })} /></label>
+                </div>
+              </div>
+              <div className="setup-flight-card">
+                <p>오는 편</p>
+                <label className="setup-field"><span>편명</span><input className="field" value={setup.return_flight} onChange={(event) => setSetup({ ...setup, return_flight: event.target.value.toUpperCase() })} placeholder="RS0742" /></label>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="setup-field"><span>출발지</span><input className="field" value={setup.return_origin} onChange={(event) => setSetup({ ...setup, return_origin: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착지</span><input className="field" value={setup.return_destination} onChange={(event) => setSetup({ ...setup, return_destination: event.target.value })} /></label>
+                  <label className="setup-field"><span>출발시간</span><input className="field" type="time" value={setup.return_departure_time} onChange={(event) => setSetup({ ...setup, return_departure_time: event.target.value })} /></label>
+                  <label className="setup-field"><span>도착시간</span><input className="field" type="time" value={setup.return_arrival_time} onChange={(event) => setSetup({ ...setup, return_arrival_time: event.target.value })} /></label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="setup-group">
+            <h3>숙소와 지도</h3>
+            <div className="grid gap-2 md:grid-cols-2">
+              <label className="setup-field"><span>숙소 / 체크인 기준 메모</span><input className="field" value={setup.accommodation} onChange={(event) => setSetup({ ...setup, accommodation: event.target.value })} /></label>
+              <label className="setup-field"><span>Google My Maps 공유 링크</span><input className="field" value={setup.my_maps_url} onChange={(event) => setSetup({ ...setup, my_maps_url: event.target.value })} /></label>
+            </div>
+          </div>
+          <button className="btn md:w-fit" type="submit">여행 설정 저장</button>
         </form>
       </Panel>
       <Panel title="친구 초대">
-        <div className="grid gap-2 md:grid-cols-[1fr_auto]">
-          <div className="rounded-lg bg-white p-3">
+        <div className="grid gap-3">
+          <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+            <div className="rounded-lg bg-white p-3">
             <p className="text-xs font-black text-sea">공유 링크</p>
             <p className="break-all text-sm font-bold">{inviteUrl}</p>
-            <p className="mt-1 text-xs font-bold text-black/45">트리플처럼 링크를 보내고, 가족코드는 별도로 알려주면 됩니다. 나중에는 멤버별 권한/이름 선택까지 붙일 수 있어요.</p>
+            <p className="mt-1 text-xs font-bold text-black/45">링크를 보내고 가족코드는 별도로 알려주면 됩니다. 아래에서 가족 이름과 프로필 사진을 등록할 수 있습니다.</p>
+            </div>
+            <button className="btn" type="button" onClick={() => navigator.clipboard?.writeText(inviteUrl)}>링크 복사</button>
           </div>
-          <button className="btn" type="button" onClick={() => navigator.clipboard?.writeText(inviteUrl)}>링크 복사</button>
+          <form className="setup-member-form" onSubmit={(event) => {
+            event.preventDefault();
+            if (!memberDraft.name.trim()) return;
+            mutate<TripMember>("trip_members", "create", { row: { id: makeId("member"), name: memberDraft.name.trim(), role: memberDraft.role, color: memberDraft.color, avatar_url: memberDraft.avatar_url } });
+            setMemberDraft({ name: "", role: "", color: "#16a3a3", avatar_url: "" });
+          }}>
+            <label className="setup-field"><span>이름</span><input className="field" value={memberDraft.name} onChange={(event) => setMemberDraft({ ...memberDraft, name: event.target.value })} placeholder="예: 민지" /></label>
+            <label className="setup-field"><span>역할 / 메모</span><input className="field" value={memberDraft.role} onChange={(event) => setMemberDraft({ ...memberDraft, role: event.target.value })} placeholder="예: 맛집 담당" /></label>
+            <label className="setup-field"><span>색상</span><input className="field h-[2.65rem] p-1" type="color" value={memberDraft.color} onChange={(event) => setMemberDraft({ ...memberDraft, color: event.target.value })} /></label>
+            <label className="setup-field"><span>프로필 사진</span><input className="field" type="file" accept="image/*" onChange={(event) => readProfileImage(event.target.files?.[0], (avatar_url) => setMemberDraft({ ...memberDraft, avatar_url }))} /></label>
+            <button className="btn self-end" type="submit"><Plus size={16} />멤버 추가</button>
+          </form>
+          <div className="grid gap-2 md:grid-cols-2">
+            {data.trip_members.map((member) => {
+              const patch = memberEdit[member.id] || {};
+              const avatar = patch.avatar_url ?? member.avatar_url;
+              return (
+                <div className="member-card" key={member.id}>
+                  <div className="member-avatar" style={{ backgroundColor: patch.color || member.color }}>
+                    {avatar ? <img alt="" src={avatar} /> : <span>{(patch.name || member.name).slice(0, 1)}</span>}
+                  </div>
+                  <div className="grid min-w-0 flex-1 gap-2">
+                    <div className="grid gap-2 md:grid-cols-2">
+                      <input className="field" value={patch.name ?? member.name} onChange={(event) => setMemberEdit({ ...memberEdit, [member.id]: { ...patch, name: event.target.value } })} aria-label={`${member.name} 이름`} />
+                      <input className="field" value={patch.role ?? member.role} onChange={(event) => setMemberEdit({ ...memberEdit, [member.id]: { ...patch, role: event.target.value } })} aria-label={`${member.name} 역할`} />
+                      <input className="field h-[2.65rem] p-1" type="color" value={patch.color ?? member.color} onChange={(event) => setMemberEdit({ ...memberEdit, [member.id]: { ...patch, color: event.target.value } })} aria-label={`${member.name} 색상`} />
+                      <input className="field" type="file" accept="image/*" onChange={(event) => readProfileImage(event.target.files?.[0], (avatar_url) => setMemberEdit({ ...memberEdit, [member.id]: { ...patch, avatar_url } }))} aria-label={`${member.name} 프로필 사진`} />
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="btn min-h-9" type="button" onClick={() => {
+                        mutate<TripMember>("trip_members", "update", { id: member.id, patch: memberEdit[member.id] || {} });
+                        const next = { ...memberEdit };
+                        delete next[member.id];
+                        setMemberEdit(next);
+                      }}>저장</button>
+                      <button className="btn btn-danger min-h-9" type="button" onClick={() => mutate<TripMember>("trip_members", "delete", { id: member.id })}>삭제</button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </Panel>
       <Panel title="색상 테마">

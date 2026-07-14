@@ -31,8 +31,11 @@ create table if not exists trip_members (
   name text not null,
   color text not null default '#16a3a3',
   role text not null default '',
+  avatar_url text not null default '',
   created_at timestamptz not null default now()
 );
+
+alter table trip_members add column if not exists avatar_url text not null default '';
 
 create table if not exists itinerary_items (
   id text primary key,

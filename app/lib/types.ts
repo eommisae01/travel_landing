@@ -43,6 +43,7 @@ export type TripMember = {
   name: string;
   color: string;
   role: string;
+  avatar_url?: string;
 };
 
 export type ItineraryItem = {
