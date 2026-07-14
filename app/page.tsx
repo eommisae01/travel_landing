@@ -53,6 +53,7 @@ type AppTheme = "editorial-sea" | "coral-plum" | "indigo-amber" | "cherry-mint" 
 type TripStarterDraft = {
   tripName: string;
   country: string;
+  customCountry: string;
   cityPreset: string;
   customCity: string;
   extraCities: string[];
@@ -95,8 +96,24 @@ const navItems: Array<{ key: ViewKey; label: string; icon: ComponentType<{ size?
 const weatherUrl = "https://api.open-meteo.com/v1/forecast?latitude=34.3428&longitude=134.0466&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&current=temperature_2m,weather_code,wind_speed_10m&timezone=Asia%2FTokyo";
 
 const recommendationTopics = ["식당", "카페", "관광지", "비 오는 날", "나오시마 동선", "현장 리스크"];
-const countryOptions = ["일본", "한국", "대만", "태국", "프랑스", "이탈리아", "미국", "기타"];
-const cityPresets = ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "기타"];
+const countryOptions = ["일본", "한국", "대만", "태국", "베트남", "싱가포르", "홍콩", "프랑스", "이탈리아", "스페인", "포르투갈", "영국", "미국", "호주", "기타"];
+const cityPresetsByCountry: Record<string, string[]> = {
+  일본: ["도쿄", "오사카", "후쿠오카", "삿포로", "교토", "타카마쓰", "나오시마", "마쓰야마", "히로시마", "오키나와", "기타"],
+  한국: ["서울", "부산", "제주", "강릉", "경주", "전주", "여수", "기타"],
+  대만: ["타이베이", "타이중", "가오슝", "타이난", "화롄", "기타"],
+  태국: ["방콕", "치앙마이", "푸켓", "끄라비", "파타야", "기타"],
+  베트남: ["하노이", "호치민", "다낭", "호이안", "나트랑", "푸꾸옥", "기타"],
+  싱가포르: ["싱가포르", "기타"],
+  홍콩: ["홍콩", "마카오", "기타"],
+  프랑스: ["파리", "니스", "리옹", "마르세유", "스트라스부르", "기타"],
+  이탈리아: ["로마", "피렌체", "베네치아", "밀라노", "나폴리", "기타"],
+  스페인: ["바르셀로나", "마드리드", "세비야", "그라나다", "발렌시아", "기타"],
+  포르투갈: ["리스본", "포르투", "신트라", "파로", "기타"],
+  영국: ["런던", "에든버러", "맨체스터", "옥스퍼드", "기타"],
+  미국: ["뉴욕", "로스앤젤레스", "샌프란시스코", "라스베이거스", "시애틀", "하와이", "기타"],
+  호주: ["시드니", "멜버른", "브리즈번", "퍼스", "골드코스트", "케언즈", "기타"],
+  기타: ["기타"]
+};
 
 function labelWeather(code?: number) {
   if (code === undefined) return "예보 확인";
@@ -386,6 +403,7 @@ export default function Page() {
   }
 
   async function createTripFromStarter(draft: TripStarterDraft) {
+    const country = (draft.country === "기타" ? draft.customCountry : draft.country).trim() || "국가 미정";
     const primaryCity = (draft.cityPreset === "기타" ? draft.customCity : draft.cityPreset).trim() || "새 도시";
     const cities = Array.from(new Set([primaryCity, ...draft.extraCities.map((city) => city.trim()).filter(Boolean)]));
     const start = draft.startDate || todayKey();
@@ -399,7 +417,7 @@ export default function Page() {
         end_date: end,
         hero_image: "",
         note: draft.myMapsUrl ? "Google My Maps 링크로 시작한 새 여행입니다." : "새 여행 계획입니다.",
-        country: draft.country,
+        country,
         cities,
         accommodation: "",
         my_maps_url: draft.myMapsUrl,
@@ -629,6 +647,7 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
   const [draft, setDraft] = useState<TripStarterDraft>({
     tripName: "",
     country: "일본",
+    customCountry: "",
     cityPreset: "타카마쓰",
     customCity: "",
     extraCities: [],
@@ -653,6 +672,8 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, []);
 
+  const country = draft.country === "기타" ? draft.customCountry || "직접 입력 국가" : draft.country;
+  const cityOptions = cityPresetsByCountry[draft.country] || cityPresetsByCountry["기타"];
   const city = draft.cityPreset === "기타" ? draft.customCity || "직접 입력 도시" : draft.cityPreset;
   const extraCities = draft.extraCities;
   const transferStops = [city, ...extraCities.map((value, index) => value.trim() || `도시 ${index + 2}`)];
@@ -685,6 +706,15 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
       if (numericKey > index) nextTransferDates[String(numericKey - 1)] = value;
     });
     setDraft({ ...draft, extraCities: next, cityTransferDates: nextTransferDates });
+  };
+  const changeCountry = (value: string) => {
+    const nextCityOptions = cityPresetsByCountry[value] || cityPresetsByCountry["기타"];
+    setDraft({
+      ...draft,
+      country: value,
+      cityPreset: nextCityOptions[0] || "기타",
+      customCity: value === "기타" ? draft.customCity : ""
+    });
   };
 
   return (
@@ -727,8 +757,9 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <label className="setup-field"><span>여행 제목</span><input className="field" value={draft.tripName} onChange={(event) => setDraft({ ...draft, tripName: event.target.value })} placeholder="예: 도쿄 가족여행" /></label>
-              <label className="setup-field"><span>국가 선택</span><select className="field" value={draft.country} onChange={(event) => setDraft({ ...draft, country: event.target.value })}>{countryOptions.map((country) => <option key={country}>{country}</option>)}</select></label>
-              <label className="setup-field"><span>첫 도시 선택</span><select className="field" value={draft.cityPreset} onChange={(event) => setDraft({ ...draft, cityPreset: event.target.value })}>{cityPresets.map((item) => <option key={item}>{item}</option>)}</select></label>
+              <label className="setup-field"><span>국가 선택</span><select className="field" value={draft.country} onChange={(event) => changeCountry(event.target.value)}>{countryOptions.map((countryOption) => <option key={countryOption}>{countryOption}</option>)}</select></label>
+              {draft.country === "기타" ? <label className="setup-field"><span>국가 직접 입력</span><input className="field" value={draft.customCountry} onChange={(event) => setDraft({ ...draft, customCountry: event.target.value })} placeholder="예: 뉴질랜드" /></label> : null}
+              <label className="setup-field"><span>첫 도시 선택</span><select className="field" value={draft.cityPreset} onChange={(event) => setDraft({ ...draft, cityPreset: event.target.value })}>{cityOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
               {draft.cityPreset === "기타" ? <label className="setup-field"><span>도시 직접 입력</span><input className="field" value={draft.customCity} onChange={(event) => setDraft({ ...draft, customCity: event.target.value })} placeholder="예: 마쓰야마" /></label> : null}
               <div className="setup-field md:col-span-2">
                 <span>추가 도시</span>
@@ -832,7 +863,7 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
         <aside className="starter-preview">
           <div className="starter-phone">
             <div className="starter-phone-top">
-              <span>{draft.country}</span>
+              <span>{country}</span>
               <strong>{city}</strong>
             </div>
             <h2>{tripName}</h2>
@@ -2335,9 +2366,11 @@ function SettingsView({
   const scoped = tripScopedData(data, trip.id);
   const activeTrips = data.trips.filter((item) => !item.archived);
   const archivedTrips = data.trips.filter((item) => item.archived);
+  const initialCountry = countryOptions.includes(trip.country || "") ? trip.country || "일본" : "기타";
   const [setup, setSetup] = useState({
     name: trip.name || "",
-    country: trip.country || "일본",
+    country: initialCountry,
+    customCountry: initialCountry === "기타" ? trip.country || "" : "",
     cityPreset: (trip.cities?.[0] || "타카마쓰"),
     customCity: "",
     cities: (trip.cities || trip.region.split("·").map((city) => city.trim()).filter(Boolean)).join(", "),
@@ -2359,9 +2392,11 @@ function SettingsView({
   const [memberDraft, setMemberDraft] = useState({ name: "", role: "", color: "#16a3a3", avatar_url: "" });
   const [memberEdit, setMemberEdit] = useState<Record<string, Partial<TripMember>>>({});
   useEffect(() => {
+    const nextCountry = countryOptions.includes(trip.country || "") ? trip.country || "일본" : "기타";
     setSetup({
       name: trip.name || "",
-      country: trip.country || "일본",
+      country: nextCountry,
+      customCountry: nextCountry === "기타" ? trip.country || "" : "",
       cityPreset: (trip.cities?.[0] || "타카마쓰"),
       customCity: "",
       cities: (trip.cities || trip.region.split("·").map((city) => city.trim()).filter(Boolean)).join(", "),
@@ -2381,7 +2416,18 @@ function SettingsView({
       my_maps_url: trip.my_maps_url || scoped.quick_links.find((link) => link.kind === "map")?.url || ""
     });
   }, [trip.id]);
+  const setupCityOptions = cityPresetsByCountry[setup.country] || cityPresetsByCountry["기타"];
   const resolvedCity = setup.cityPreset === "기타" ? setup.customCity : setup.cityPreset;
+  const resolvedCountry = setup.country === "기타" ? setup.customCountry : setup.country;
+  const changeSetupCountry = (value: string) => {
+    const nextCityOptions = cityPresetsByCountry[value] || cityPresetsByCountry["기타"];
+    setSetup({
+      ...setup,
+      country: value,
+      cityPreset: nextCityOptions.includes(setup.cityPreset) ? setup.cityPreset : nextCityOptions[0] || "기타",
+      customCity: value === "기타" ? setup.customCity : ""
+    });
+  };
   const inviteUrl = typeof window !== "undefined" ? window.location.origin : "https://project-6ok16.vercel.app";
   const readProfileImage = (file: File | undefined, callback: (value: string) => void) => {
     if (!file) return;
@@ -2396,7 +2442,7 @@ function SettingsView({
       id: trip.id,
       patch: {
         name: setup.name || trip.name,
-        country: setup.country,
+        country: resolvedCountry || setup.country,
         cities,
         region: cities.join(" · "),
         start_date: setup.start_date || trip.start_date,
@@ -2459,8 +2505,9 @@ function SettingsView({
             <h3>기본 정보</h3>
             <div className="grid gap-2 md:grid-cols-2">
               <label className="setup-field md:col-span-2"><span>여행 제목</span><input className="field" value={setup.name} onChange={(event) => setSetup({ ...setup, name: event.target.value })} placeholder="예: 타카마쓰 가족여행" /></label>
-              <label className="setup-field"><span>국가</span><select className="field" value={setup.country} onChange={(event) => setSetup({ ...setup, country: event.target.value })}>{["일본", "한국", "대만", "태국", "프랑스", "이탈리아", "미국", "기타"].map((country) => <option key={country}>{country}</option>)}</select></label>
-              <label className="setup-field"><span>첫 도시</span><select className="field" value={cityPresets.includes(setup.cityPreset) ? setup.cityPreset : "기타"} onChange={(event) => setSetup({ ...setup, cityPreset: event.target.value })}>{cityPresets.map((city) => <option key={city}>{city}</option>)}</select></label>
+              <label className="setup-field"><span>국가</span><select className="field" value={setup.country} onChange={(event) => changeSetupCountry(event.target.value)}>{countryOptions.map((country) => <option key={country}>{country}</option>)}</select></label>
+              {setup.country === "기타" ? <label className="setup-field"><span>국가 직접 입력</span><input className="field" value={setup.customCountry} onChange={(event) => setSetup({ ...setup, customCountry: event.target.value })} placeholder="예: 뉴질랜드" /></label> : null}
+              <label className="setup-field"><span>첫 도시</span><select className="field" value={setupCityOptions.includes(setup.cityPreset) ? setup.cityPreset : "기타"} onChange={(event) => setSetup({ ...setup, cityPreset: event.target.value })}>{setupCityOptions.map((city) => <option key={city}>{city}</option>)}</select></label>
               {setup.cityPreset === "기타" ? <label className="setup-field"><span>도시 직접 입력</span><input className="field" value={setup.customCity} onChange={(event) => setSetup({ ...setup, customCity: event.target.value })} required /></label> : null}
               <label className="setup-field"><span>여행 도시 목록</span><input className="field" value={setup.cities} onChange={(event) => setSetup({ ...setup, cities: event.target.value })} placeholder="예: 타카마쓰, 도쿄" /></label>
               <label className="setup-field"><span>시작일</span><input className="field" type="date" value={setup.start_date} onChange={(event) => setSetup({ ...setup, start_date: event.target.value })} /></label>
