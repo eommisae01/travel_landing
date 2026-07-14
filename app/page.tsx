@@ -332,7 +332,13 @@ export default function Page() {
 }
 
 function LandingPage({ trip, onEnter, onJump }: { trip: TripData["trips"][number]; onEnter: () => void; onJump: (view: ViewKey) => void }) {
+  const [theme, setTheme] = useState<"02" | "03" | "04">("04");
   const cityOptions = trip.cities?.length ? trip.cities : trip.region.split("·").map((city) => city.trim()).filter(Boolean);
+  const themes = [
+    { key: "02" as const, label: "2", name: "Coral desk" },
+    { key: "03" as const, label: "3", name: "Journey blue" },
+    { key: "04" as const, label: "4", name: "Editorial sea" }
+  ];
   const features = [
     { title: "Live map", body: "My Maps 링크를 기준으로 장소와 식당 후보를 계속 정리", icon: Map },
     { title: "Shared schedule", body: "날짜별 타임라인과 캘린더뷰로 가족 일정 확인", icon: CalendarDays },
@@ -341,7 +347,7 @@ function LandingPage({ trip, onEnter, onJump }: { trip: TripData["trips"][number
   const itineraryPreview = seedData.itinerary_items.slice(0, 3);
 
   return (
-    <main className="landing-shell">
+    <main className="landing-shell" data-landing-theme={theme}>
       <nav className="landing-nav">
         <button className="landing-logo" type="button" onClick={onEnter}>
           <span>Triplanner</span>
@@ -351,7 +357,24 @@ function LandingPage({ trip, onEnter, onJump }: { trip: TripData["trips"][number
           <button className="landing-link" type="button" onClick={() => onJump("map")}>Map</button>
           <button className="landing-link" type="button" onClick={() => onJump("gallery")}>Notes</button>
         </div>
-        <button className="btn" type="button" onClick={onEnter}>앱 열기</button>
+        <div className="landing-nav-actions">
+          <div className="landing-theme-switch" aria-label="랜딩 테마 선택">
+            {themes.map((item) => (
+              <button
+                aria-label={`${item.name} 테마`}
+                aria-pressed={theme === item.key}
+                className="landing-theme-button"
+                key={item.key}
+                onClick={() => setTheme(item.key)}
+                title={item.name}
+                type="button"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <button className="btn" type="button" onClick={onEnter}>앱 열기</button>
+        </div>
       </nav>
 
       <section className="landing-hero">
