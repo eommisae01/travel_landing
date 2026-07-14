@@ -1017,8 +1017,8 @@ function Header({ trip, onOpenLanding, onLogout }: { trip: TripData["trips"][num
   const cityOptions = trip.cities?.length ? trip.cities : trip.region.split("·").map((city) => city.trim()).filter(Boolean);
   return (
     <header className="trip-hero mb-4 rounded-lg p-4 shadow-soft lg:p-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="relative z-10 min-w-0">
+      <div className="trip-hero-layout">
+        <div className="trip-hero-content">
           <p className="trip-kicker text-xs font-black">{dateLabel(trip.start_date)} - {dateLabel(trip.end_date)}</p>
           <h1 className="trip-title mt-1 text-3xl font-black leading-none lg:text-5xl">{trip.name}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1047,11 +1047,11 @@ function Header({ trip, onOpenLanding, onLogout }: { trip: TripData["trips"][num
             />
           </div>
         </div>
-        <div className="relative z-10 flex shrink-0 items-center gap-2">
-          <button className="btn btn-secondary min-h-11 px-3 text-sm" onClick={onOpenLanding} type="button">
+        <div className="trip-hero-actions">
+          <button className="hero-text-action" onClick={onOpenLanding} type="button">
             처음 화면
           </button>
-          <button className="btn btn-secondary min-h-11 w-11 px-0" onClick={onLogout} type="button" aria-label="로그아웃">
+          <button className="hero-icon-action" onClick={onLogout} type="button" aria-label="로그아웃">
             <LogOut size={18} />
           </button>
         </div>
