@@ -924,7 +924,7 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
             </div>
             <label className="setup-field"><span>Google My Maps 공유 링크</span><input className="field" value={draft.myMapsUrl} onChange={(event) => setDraft({ ...draft, myMapsUrl: event.target.value })} placeholder="https://www.google.com/maps/d/..." /></label>
           </section>
-          <button className="btn starter-submit" disabled={saving} type="submit">{saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}새 여행 만들기</button>
+          <button className="btn starter-submit" disabled={saving} type="submit">{saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}이 내용으로 여행 만들기</button>
         </form>
 
         <aside className="starter-preview">
@@ -956,7 +956,6 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
               <b>일정 · Notes · 체크리스트</b>
             </div>
           </div>
-          <button className="btn" disabled={saving} type="button" onClick={saveTrip}>{saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}이 내용으로 시작</button>
           <button className="btn btn-secondary" type="button" onClick={onOpenExisting}>기존 예시 앱에서 계속 보기</button>
         </aside>
       </section>
