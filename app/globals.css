@@ -473,6 +473,8 @@ a {
   color: var(--landing-ink);
   font-weight: 950;
   letter-spacing: 0;
+  cursor: default;
+  user-select: none;
 }
 
 .landing-logo::before {

@@ -368,9 +368,9 @@ function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"]
   return (
     <main className="landing-shell" data-landing-theme={theme}>
       <nav className="landing-nav">
-        <button className="landing-logo" type="button" onClick={onEnter}>
+        <div className="landing-logo" aria-label="Triplanner brand">
           <span>Triplanner</span>
-        </button>
+        </div>
         <div className="hidden items-center gap-2 md:flex">
           <button className="landing-link" type="button" onClick={() => onJump("schedule")}>Schedule</button>
           <button className="landing-link" type="button" onClick={() => onJump("map")}>Map</button>
@@ -410,12 +410,12 @@ function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"]
             <div>
               <p>가는 편</p>
               <strong>{trip.outbound_flight || "RS0741"}</strong>
-              <span>{trip.outbound_origin || "서울"} → {trip.outbound_destination || "타카마쓰"}</span>
+              <span>{trip.outbound_origin || "서울"} {trip.outbound_departure_time || "08:20"} → {trip.outbound_destination || "타카마쓰"} {trip.outbound_arrival_time || "10:30"}</span>
             </div>
             <div>
               <p>오는 편</p>
               <strong>{trip.return_flight || "RS0742"}</strong>
-              <span>{trip.return_origin || "타카마쓰"} → {trip.return_destination || "서울"}</span>
+              <span>{trip.return_origin || "타카마쓰"} {trip.return_departure_time || "11:40"} → {trip.return_destination || "서울"} {trip.return_arrival_time || "13:30"}</span>
             </div>
           </div>
           <div className="landing-timeline">
@@ -448,7 +448,7 @@ function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"]
       <section className="landing-board">
         <div>
           <p className="landing-kicker">Built for web, phone, iPad, and Mac</p>
-          <h2>계획 화면은 넓게, 현장 화면은 빠르게.</h2>
+          <h2>여행마다 필요한 문구와 화면을 바꿀 수 있게.</h2>
         </div>
         <div className="landing-board-cards">
           {[
