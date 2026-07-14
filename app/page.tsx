@@ -30,7 +30,7 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { inferGoogleMapsName } from "./lib/maps";
-import { MY_MAPS_EMBED_URL, seedData } from "./lib/seed";
+import { DEFAULT_TRIP_ID, MY_MAPS_EMBED_URL, seedData } from "./lib/seed";
 import {
   ChecklistItem,
   Expense,
@@ -1001,7 +1001,8 @@ function FlightCard({ label, flight, origin, destination, departureTime, arrival
 function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key: ViewKey) => void; mutate: PageMutate }) {
   const weather = useWeather();
   const [recommendOpen, setRecommendOpen] = useState(false);
-  const [researchNotes, setResearchNotes] = useState([
+  const trip = data.trips[0];
+  const initialResearchNotes = useMemo(() => trip?.id === DEFAULT_TRIP_ID ? [
     { id: "ferry", title: "페리 시간", body: "페리 소요 약 50분, 성인 편도 520엔. 차량/자전거 선적 가능, 객실이 넓고 안정적.\n\n타카마쓰항 → 나오시마\n08:12 → 09:02\n10:14 → 11:04 (추천)\n12:40 → 13:30\n15:35 → 16:25\n18:05 → 18:55\n\n나오시마 → 타카마쓰항\n07:00 → 07:50\n09:20 → 10:10\n11:30 → 12:20\n14:20 → 15:10\n17:00 → 17:50 (추천)" },
     { id: "fast-boat", title: "고속선 시간", body: "고속선 소요 약 30분, 성인 편도 1,220엔. 승선 인원 제한, 자전거 선적 불가.\n\n타카마쓰항 → 나오시마\n07:45 → 08:15\n09:20 → 09:50\n11:35 → 12:05\n16:10 → 16:40\n19:35 → 20:05\n\n나오시마 → 타카마쓰항\n08:35 → 09:05\n10:35 → 11:05\n13:15 → 13:45\n16:55 → 17:25\n18:35 → 19:05" },
     { id: "chichu-route", title: "지중미술관 동선", body: "숙소 인근 JR 리쓰린코엔 기타구치역에서 오전 9:20 전후 열차 탑승 → 다카마쓰역/항구 이동.\n\n10:14 페리 탑승 → 11:04 나오시마 도착. 항구 앞 자전거 대여 및 점심.\n\n지중미술관은 12:00 예약 완료. 성인 3명, 각 ¥2,500.\n\n관람 후 이에 프로젝트/근처 동선을 보고 17:00 페리로 복귀하면 17:50 다카마쓰항 도착." },
@@ -1010,7 +1011,17 @@ function HomeView({ data, setActive, mutate }: { data: TripData; setActive: (key
     { id: "museum-order", title: "나오시마 관람 순서 후보", body: "A안: 지중미술관 → 이우환미술관 + Valley Gallery → 베네세 하우스 뮤지엄.\nB안: 베네세 하우스 뮤지엄 → Valley Gallery + 이우환미술관 → 지중미술관.\n\n이번 예약은 지중미술관 12:00이라 A안을 기본으로 두고, 셔틀 대기 시간이 길면 가까운 곳 위주로 줄이기.\n\n이동 감각: 지중미술관 → 이우환미술관은 전기자전거+도보 10분 이내 또는 셔틀 5분. 이우환미술관 → 베네세 하우스는 도보 10분 또는 셔틀 3분. 베네세 하우스 → 지중미술관은 전기자전거+도보 20분 이내 또는 셔틀 5분." },
     { id: "airport-bus", title: "공항/리무진버스/티켓", body: "6/24 RS0742 11:40 출발. 마지막 날은 관광보다 체크아웃과 공항 이동 중심.\n\n타카마쓰 공항 국제선 쪽 114Bank Money Exchange, 은행 ATM에서 트래블카드 출금/환전 확인. 사진 기준 9:00-21:00.\n\n공항 도착/출발 때 리무진버스 티켓 구매 위치도 같이 확인해두기." },
     { id: "boat-experience", title: "나룻배체험", body: "선착순 성격이 강하고 원하는 시간대가 있으면 미리 예매 필요. 6/23은 12:00 지중미술관 예약이 고정이라 오전에는 무리하지 않기. 페리/버스/셔틀 대기가 길어지면 체험은 과감히 후보로만 두기." }
-  ]);
+  ] : [
+    {
+      id: "starter-note-example",
+      title: "예시 메모",
+      body: "현장에서 다시 볼 정보가 생기면 항목명과 메모를 추가하세요. 예: 공항버스 시간, 예약 확인 방법, 숙소 체크인 규칙."
+    }
+  ], [trip?.id]);
+  const [researchNotes, setResearchNotes] = useState(initialResearchNotes);
+  useEffect(() => {
+    setResearchNotes(initialResearchNotes);
+  }, [initialResearchNotes]);
   const [researchDraft, setResearchDraft] = useState({ title: "", body: "" });
   const today = todayKey();
   const todaysItems = data.itinerary_items.filter((item) => item.date === today);

@@ -374,6 +374,9 @@ a {
 }
 
 .flight-card-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.48rem;
   color: color-mix(in srgb, var(--ink) 58%, transparent);
   font-size: 0.72rem;
   font-weight: 900;
