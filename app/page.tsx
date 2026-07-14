@@ -1386,7 +1386,7 @@ function MapView({ places, foods, links, trip, mutate }: { places: Place[]; food
             <div className="soft-inset grid gap-2 rounded-lg p-2">
               <div className="grid grid-cols-[1fr_0.8fr_0.8fr] gap-2">
                 <select className="field min-h-10 px-2 text-sm" value={placePlans[place.id]?.date || dates[0]} onChange={(event) => setPlacePlans({ ...placePlans, [place.id]: { ...(placePlans[place.id] || { date: dates[0], start_time: "", end_time: "" }), date: event.target.value } })}>
-                  {dates.map((item) => <option key={item} value={item}>{dateLabel(item)}</option>)}
+                  {dates.map((item) => <option key={item} value={item}>{compactDateLabel(item)}</option>)}
                 </select>
                 <input className="field min-h-10 px-2 text-sm" type="time" value={placePlans[place.id]?.start_time || ""} onChange={(event) => setPlacePlans({ ...placePlans, [place.id]: { ...(placePlans[place.id] || { date: dates[0], start_time: "", end_time: "" }), start_time: event.target.value } })} aria-label={`${place.name} 시작 시간`} />
                 <input className="field min-h-10 px-2 text-sm" type="time" value={placePlans[place.id]?.end_time || ""} onChange={(event) => setPlacePlans({ ...placePlans, [place.id]: { ...(placePlans[place.id] || { date: dates[0], start_time: "", end_time: "" }), end_time: event.target.value } })} aria-label={`${place.name} 종료 시간`} />
@@ -1711,7 +1711,7 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
                       value={(plans[food.id]?.date) || tripDates[0]}
                       onChange={(event) => setPlans({ ...plans, [food.id]: { ...(plans[food.id] || { date: tripDates[0], start_time: "", end_time: "" }), date: event.target.value } })}
                     >
-                      {tripDates.map((date) => <option value={date} key={date}>{dateLabel(date)}</option>)}
+                      {tripDates.map((date) => <option value={date} key={date}>{compactDateLabel(date)}</option>)}
                     </select>
                     <input
                       aria-label={`${food.name} 시작 시간`}
