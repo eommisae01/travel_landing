@@ -47,6 +47,16 @@ import {
 type ViewKey = "home" | "schedule" | "gallery" | "map" | "checklist" | "food" | "budget" | "onsite" | "settings";
 type SaveState = "idle" | "saving" | "saved" | "error";
 type DayWeather = Record<string, { label: string; rain: number; wind: number; high: number; low: number }>;
+type AppTheme = "editorial-sea" | "coral-plum" | "indigo-amber" | "cherry-mint" | "graphite-citron";
+
+const APP_THEME_STORAGE_KEY = "triplanner-theme-v1";
+const appThemes: { key: AppTheme; name: string; description: string; swatches: string[] }[] = [
+  { key: "editorial-sea", name: "Editorial Sea", description: "현재 4번 기준. 차분한 여행 매거진 톤", swatches: ["#152124", "#078985", "#EFF7F4", "#FFFEFA"] },
+  { key: "coral-plum", name: "Coral Plum", description: "Canva 앱 목업처럼 밝고 선명한 예약 앱 톤", swatches: ["#EF6448", "#5A244D", "#FFF7F2", "#F8D9CE"] },
+  { key: "indigo-amber", name: "Indigo Amber", description: "프로덕트 대시보드식 블루와 앰버 포인트", swatches: ["#21255F", "#2F68FF", "#F5B84B", "#F4F7FF"] },
+  { key: "cherry-mint", name: "Cherry Mint", description: "체리 레드와 민트의 선명한 여행 기록 톤", swatches: ["#BF0426", "#88BFB0", "#C2F2E5", "#FFFDF8"] },
+  { key: "graphite-citron", name: "Graphite Citron", description: "그래파이트, 파우더블루, 시트론 조합", swatches: ["#2D3047", "#93B7BE", "#E0CA3C", "#F6F6F0"] }
+];
 
 const navItems: Array<{ key: ViewKey; label: string; icon: ComponentType<{ size?: number }> }> = [
   { key: "home", label: "홈", icon: Home },
@@ -202,8 +212,16 @@ export default function Page() {
   const [data, setData] = useState<TripData>(seedData);
   const [mode, setMode] = useState<"supabase" | "demo">("demo");
   const [active, setActive] = useState<ViewKey>("home");
+  const [appTheme, setAppThemeState] = useState<AppTheme>("editorial-sea");
   const [showLanding, setShowLanding] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+
+  function setAppTheme(theme: AppTheme) {
+    setAppThemeState(theme);
+    try {
+      window.localStorage.setItem(APP_THEME_STORAGE_KEY, theme);
+    } catch {}
+  }
 
   async function loadData() {
     const response = await fetch("/api/data", { cache: "no-store" });
@@ -219,6 +237,12 @@ export default function Page() {
   }
 
   useEffect(() => {
+    try {
+      const storedTheme = window.localStorage.getItem(APP_THEME_STORAGE_KEY) as AppTheme | null;
+      if (storedTheme && appThemes.some((theme) => theme.key === storedTheme)) {
+        setAppThemeState(storedTheme);
+      }
+    } catch {}
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
@@ -299,6 +323,7 @@ export default function Page() {
     return (
       <LandingPage
         trip={trip}
+        theme={appTheme}
         onEnter={() => setShowLanding(false)}
         onJump={(view) => {
           setActive(view);
@@ -309,7 +334,7 @@ export default function Page() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-app-theme={appTheme}>
       <SideNav active={active} setActive={setActive} saveState={saveState} mode={mode} />
       <main className="mx-auto min-w-0 max-w-[92rem] px-4 py-4 lg:px-8 lg:py-6">
         <Header trip={trip} onLogout={async () => {
@@ -324,21 +349,15 @@ export default function Page() {
         {active === "food" && <FoodView foods={data.food_candidates} trip={trip} mutate={mutate} />}
         {active === "budget" && <BudgetView expenses={data.expenses} members={data.trip_members.map((member) => member.name)} trip={trip} mutate={mutate} />}
         {active === "onsite" && <OnsiteView notes={data.onsite_notes} links={data.quick_links} mutate={mutate} />}
-        {active === "settings" && <SettingsView data={data} mode={mode} mutate={mutate} />}
+        {active === "settings" && <SettingsView data={data} mode={mode} theme={appTheme} setTheme={setAppTheme} mutate={mutate} />}
       </main>
       <BottomNav active={active} setActive={setActive} />
     </div>
   );
 }
 
-function LandingPage({ trip, onEnter, onJump }: { trip: TripData["trips"][number]; onEnter: () => void; onJump: (view: ViewKey) => void }) {
-  const [theme, setTheme] = useState<"02" | "03" | "04">("04");
+function LandingPage({ trip, theme, onEnter, onJump }: { trip: TripData["trips"][number]; theme: AppTheme; onEnter: () => void; onJump: (view: ViewKey) => void }) {
   const cityOptions = trip.cities?.length ? trip.cities : trip.region.split("·").map((city) => city.trim()).filter(Boolean);
-  const themes = [
-    { key: "02" as const, label: "2", name: "Coral desk" },
-    { key: "03" as const, label: "3", name: "Journey blue" },
-    { key: "04" as const, label: "4", name: "Editorial sea" }
-  ];
   const features = [
     { title: "Live map", body: "My Maps 링크를 기준으로 장소와 식당 후보를 계속 정리", icon: Map },
     { title: "Shared schedule", body: "날짜별 타임라인과 캘린더뷰로 가족 일정 확인", icon: CalendarDays },
@@ -357,24 +376,7 @@ function LandingPage({ trip, onEnter, onJump }: { trip: TripData["trips"][number
           <button className="landing-link" type="button" onClick={() => onJump("map")}>Map</button>
           <button className="landing-link" type="button" onClick={() => onJump("gallery")}>Notes</button>
         </div>
-        <div className="landing-nav-actions">
-          <div className="landing-theme-switch" aria-label="랜딩 테마 선택">
-            {themes.map((item) => (
-              <button
-                aria-label={`${item.name} 테마`}
-                aria-pressed={theme === item.key}
-                className="landing-theme-button"
-                key={item.key}
-                onClick={() => setTheme(item.key)}
-                title={item.name}
-                type="button"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-          <button className="btn" type="button" onClick={onEnter}>앱 열기</button>
-        </div>
+        <button className="btn" type="button" onClick={onEnter}>앱 열기</button>
       </nav>
 
       <section className="landing-hero">
@@ -1767,7 +1769,7 @@ function OnsiteView({ notes, links, mutate }: { notes: OnsiteNote[]; links: Quic
   );
 }
 
-function SettingsView({ data, mode, mutate }: { data: TripData; mode: string; mutate: PageMutate }) {
+function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData; mode: string; theme: AppTheme; setTheme: (theme: AppTheme) => void; mutate: PageMutate }) {
   const trip = data.trips[0] || seedData.trips[0];
   const [setup, setSetup] = useState({
     country: trip.country || "일본",
@@ -1855,6 +1857,26 @@ function SettingsView({ data, mode, mutate }: { data: TripData; mode: string; mu
           </div>
           <button className="btn" type="button" onClick={() => navigator.clipboard?.writeText(inviteUrl)}>링크 복사</button>
         </div>
+      </Panel>
+      <Panel title="색상 테마">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {appThemes.map((item) => (
+            <button
+              aria-pressed={theme === item.key}
+              className="theme-card"
+              key={item.key}
+              onClick={() => setTheme(item.key)}
+              type="button"
+            >
+              <span className="theme-swatch-row" aria-hidden="true">
+                {item.swatches.map((color) => <span key={color} style={{ backgroundColor: color }} />)}
+              </span>
+              <span className="theme-card-title">{item.name}</span>
+              <span className="theme-card-body">{item.description}</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-sm font-bold text-black/50">선택한 테마는 이 브라우저에 저장되고, 랜딩 화면과 앱 화면에 같이 적용됩니다.</p>
       </Panel>
       <Panel title="앱 설정">
         <div className="grid gap-3 md:grid-cols-2">
