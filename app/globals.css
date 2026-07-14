@@ -378,6 +378,7 @@ a {
 .flight-card-route {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.55rem;
   min-width: 0;
 }
@@ -386,6 +387,8 @@ a {
   display: grid;
   min-width: 0;
   gap: 0.12rem;
+  justify-items: center;
+  text-align: center;
 }
 
 .flight-card-route b {
@@ -762,6 +765,79 @@ a {
 .map-card {
   min-height: 12.4rem;
   background: rgba(255, 254, 250, 0.98);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.food-card-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.food-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  line-height: 1.22;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.food-card-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.35rem;
+}
+
+.food-card-actions .btn {
+  width: 2.15rem;
+  min-width: 2.15rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.food-card-actions .btn svg {
+  flex: none;
+}
+
+.food-action-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.food-action-grid > * {
+  min-width: 0;
+}
+
+.food-action-grid summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.food-plan-grid {
+  grid-template-columns: minmax(4.4rem, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
+  min-width: 0;
+}
+
+@media (max-width: 520px) {
+  .food-card-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .food-card-actions {
+    justify-content: flex-start;
+  }
+
+  .food-action-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .gallery-card {

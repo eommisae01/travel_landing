@@ -1342,9 +1342,9 @@ function MapView({ places, foods, links, trip, mutate }: { places: Place[]; food
           <button className="btn" type="submit"><Plus size={18} />추가</button>
         </form>
       </Panel>
-      <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-[repeat(2,minmax(0,1fr))] 2xl:grid-cols-[repeat(3,minmax(0,1fr))]">
         {places.map((place) => (
-          <article className="map-card card grid gap-2 p-4" key={place.id}>
+          <article className="map-card card grid min-w-0 gap-2 overflow-hidden p-4" key={place.id}>
             {editingPlace[place.id] ? (
               <form className="grid gap-2" onSubmit={(event) => {
                 event.preventDefault();
@@ -1371,9 +1371,9 @@ function MapView({ places, foods, links, trip, mutate }: { places: Place[]; food
               </form>
             ) : (
               <>
-            <div className="flex justify-between gap-3">
-              <div><p className="text-xs font-black text-sea">{place.category}</p><h3 className="text-xl font-black">{place.name}</h3></div>
-              <div className="flex gap-1">
+            <div className="food-card-head">
+              <div className="min-w-0"><p className="text-xs font-black text-sea">{place.category}</p><h3 className="food-card-title text-xl font-black">{place.name}</h3></div>
+              <div className="food-card-actions">
                 <button className="btn btn-secondary min-h-9 px-2" onClick={() => setEditingPlace({ ...editingPlace, [place.id]: { ...place } })} type="button" aria-label="수정"><Pencil size={16} /></button>
                 <button className="btn btn-danger min-h-9 px-2" onClick={() => mutate<Place>("places", "delete", { id: place.id })} type="button" aria-label="삭제"><Trash2 size={16} /></button>
               </div>
@@ -1384,7 +1384,7 @@ function MapView({ places, foods, links, trip, mutate }: { places: Place[]; food
             <a className="btn btn-secondary min-h-10" href={place.map_url || googleMapsSearchUrl(place.name, displayPlaceText(place.address, ""))} target="_blank" rel="noreferrer">Google Maps<ExternalLink size={16} /></a>
             <details className="soft-inset rounded-lg p-3 text-sm font-bold"><summary>주소/지도 메모 보기</summary><p className="mt-2 text-black/60">{displayPlaceText(place.address, "주소 입력 전")}</p></details>
             <div className="soft-inset grid gap-2 rounded-lg p-2">
-              <div className="grid grid-cols-[1fr_0.8fr_0.8fr] gap-2">
+              <div className="food-plan-grid grid gap-2">
                 <select className="field min-h-10 px-2 text-sm" value={placePlans[place.id]?.date || dates[0]} onChange={(event) => setPlacePlans({ ...placePlans, [place.id]: { ...(placePlans[place.id] || { date: dates[0], start_time: "", end_time: "" }), date: event.target.value } })}>
                   {dates.map((item) => <option key={item} value={item}>{compactDateLabel(item)}</option>)}
                 </select>
@@ -1659,9 +1659,9 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
       </Panel>
       {groupedFoods.map(([category, categoryFoods]) => (
         <Panel title={category} key={category}>
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-2 md:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))]">
             {(categoryFoods || []).map((food) => (
-              <article className="map-card card grid gap-2 p-3" key={food.id}>
+              <article className="map-card card grid min-w-0 gap-2 overflow-hidden p-3" key={food.id}>
                 {editingFood[food.id] ? (
                   <form className="grid gap-2" onSubmit={(event) => {
                     event.preventDefault();
@@ -1689,9 +1689,9 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
                   </form>
                 ) : (
                   <>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0"><p className="text-xs font-black text-coral">{food.category}</p><h3 className="truncate text-lg font-black">{food.name}</h3></div>
-                  <div className="flex shrink-0 gap-1">
+                <div className="food-card-head">
+                  <div className="min-w-0"><p className="text-xs font-black text-coral">{food.category}</p><h3 className="food-card-title text-lg font-black">{food.name}</h3></div>
+                  <div className="food-card-actions">
                     <button className={`btn min-h-8 px-2 ${food.is_favorite ? "bg-sun text-ink" : "btn-secondary"}`} onClick={() => mutate<FoodCandidate>("food_candidates", "update", { id: food.id, patch: { is_favorite: !food.is_favorite } })} type="button" aria-label="별표"><Star size={15} fill={food.is_favorite ? "currentColor" : "none"} /></button>
                     <button className="btn btn-secondary min-h-8 px-2" onClick={() => setEditingFood({ ...editingFood, [food.id]: { ...food } })} type="button" aria-label="수정"><Pencil size={15} /></button>
                     <button className="btn btn-danger min-h-8 px-2" onClick={() => mutate<FoodCandidate>("food_candidates", "delete", { id: food.id })} type="button" aria-label="삭제"><Trash2 size={15} /></button>
@@ -1700,12 +1700,12 @@ function FoodView({ foods, trip, mutate }: { foods: FoodCandidate[]; trip: TripD
                 <p className="text-xs font-semibold text-black/60">{displayPlaceText(food.location, "지도 링크 확인")} · {food.reservation || "예약 확인"}</p>
                 <p className="text-xs font-semibold text-black/60">{food.wait_note || "웨이팅 확인"} · 추천 {food.recommender || "다 같이"}</p>
                 {food.note ? <p className="line-clamp-2 text-sm font-bold">{food.note}</p> : null}
-                <div className="grid grid-cols-2 gap-2">
+                <div className="food-action-grid">
                   <a className="btn btn-secondary min-h-9" href={food.map_url || googleMapsSearchUrl(food.name, displayPlaceText(food.location, ""))} target="_blank" rel="noreferrer">지도<ExternalLink size={15} /></a>
-                  <details className="soft-inset rounded-lg">
+                  <details className="soft-inset min-w-0 overflow-hidden rounded-lg">
                     <summary className="grid min-h-9 cursor-pointer place-items-center px-2 text-sm font-black">일정에 넣기</summary>
                     <div className="grid gap-2 p-2">
-                  <div className="grid grid-cols-[1fr_0.8fr_0.8fr] gap-2">
+                  <div className="food-plan-grid grid gap-2">
                     <select
                       className="field min-h-10 px-2 text-sm"
                       value={(plans[food.id]?.date) || tripDates[0]}
