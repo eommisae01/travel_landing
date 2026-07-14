@@ -496,6 +496,269 @@ a {
   font-weight: 900;
 }
 
+.schedule-itinerary {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 96%, var(--surface-soft));
+  box-shadow: 0 14px 30px rgba(24, 32, 35, 0.045);
+  padding: 0.82rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.schedule-itinerary:hover {
+  border-color: color-mix(in srgb, var(--sea) 24%, var(--line));
+  box-shadow: 0 18px 38px rgba(24, 32, 35, 0.07);
+  transform: translateY(-1px);
+}
+
+.schedule-itinerary[data-kind="이동"] {
+  background: color-mix(in srgb, var(--surface-soft) 62%, var(--surface));
+  border-color: color-mix(in srgb, var(--sea) 20%, var(--line));
+}
+
+.schedule-itinerary[data-kind="식사"] {
+  background: color-mix(in srgb, var(--sun) 8%, var(--surface));
+  border-color: color-mix(in srgb, var(--sun) 32%, var(--line));
+}
+
+.schedule-time {
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  min-height: 5.6rem;
+  border-right: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  padding-right: 0.9rem;
+  color: var(--sea-dark);
+  font-size: 0.92rem;
+  font-weight: 950;
+  line-height: 1.1;
+  text-align: right;
+}
+
+.schedule-time small {
+  color: color-mix(in srgb, var(--sea-dark) 58%, transparent);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.schedule-body {
+  min-width: 0;
+  padding: 0.1rem 0;
+}
+
+.schedule-date {
+  margin: 0;
+  color: color-mix(in srgb, var(--ink) 40%, transparent);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.schedule-body h3 {
+  margin: 0.1rem 0 0;
+  color: var(--ink);
+  font-size: clamp(1rem, 1vw + 0.82rem, 1.2rem);
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.schedule-body p {
+  line-height: 1.58;
+}
+
+.schedule-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.45rem;
+}
+
+.schedule-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+  margin-top: 0.74rem;
+}
+
+.week-calendar {
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.week-calendar-inner {
+  min-width: min(58rem, 100%);
+}
+
+.week-calendar-header,
+.week-calendar-body {
+  display: grid;
+}
+
+.week-calendar-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: color-mix(in srgb, var(--surface) 96%, var(--surface-soft));
+}
+
+.week-day-head {
+  display: grid;
+  gap: 0.1rem;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0.8rem 0.9rem;
+  text-align: left;
+}
+
+.week-day-head span {
+  color: color-mix(in srgb, var(--sea-dark) 64%, transparent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.week-day-head strong {
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.week-day-head:hover {
+  background: color-mix(in srgb, var(--sea) 7%, transparent);
+}
+
+.week-calendar-body {
+  border: 1px solid var(--line);
+  border-radius: 0 0 8px 8px;
+  background: var(--surface);
+}
+
+.week-time-axis {
+  position: relative;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 46%, var(--surface));
+}
+
+.week-time-axis time {
+  position: absolute;
+  right: 0.58rem;
+  transform: translateY(-0.6em);
+  color: color-mix(in srgb, var(--ink) 42%, transparent);
+  font-size: 0.72rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.week-day-column {
+  position: relative;
+  min-width: 9.5rem;
+  border-left: 1px solid var(--line);
+}
+
+.week-hour-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.week-event {
+  position: absolute;
+  left: 0.42rem;
+  right: 0.42rem;
+  display: grid;
+  align-content: start;
+  gap: 0.16rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sea) 26%, var(--line));
+  border-left: 0.22rem solid var(--sea);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sea) 8%, var(--surface));
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0.48rem 0.54rem;
+  text-align: left;
+  box-shadow: 0 8px 18px rgba(24, 32, 35, 0.055);
+}
+
+.week-event[data-kind="이동"] {
+  border-color: color-mix(in srgb, var(--sea) 34%, var(--line));
+  border-left-color: var(--sea);
+}
+
+.week-event[data-kind="식사"] {
+  border-color: color-mix(in srgb, var(--sun) 42%, var(--line));
+  border-left-color: var(--sun);
+  background: color-mix(in srgb, var(--sun) 12%, var(--surface));
+}
+
+.week-event time {
+  color: var(--sea-dark);
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.week-event strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+}
+
+.week-event span {
+  overflow: hidden;
+  color: color-mix(in srgb, var(--ink) 52%, transparent);
+  font-size: 0.67rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .brief-itinerary {
+    grid-template-columns: 4.15rem minmax(0, 1fr);
+    gap: 0.7rem;
+    padding: 0.72rem;
+  }
+
+  .brief-body h3 {
+    font-size: 0.96rem;
+  }
+
+  .schedule-itinerary {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    gap: 0.7rem;
+    padding: 0.7rem;
+  }
+
+  .schedule-time {
+    min-height: 4.9rem;
+    padding-right: 0.7rem;
+    font-size: 0.82rem;
+  }
+
+  .schedule-actions {
+    gap: 0.32rem;
+  }
+
+  .schedule-actions .btn {
+    min-height: 2.1rem;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+}
+
 .map-card {
   min-height: 12.4rem;
   background: rgba(255, 254, 250, 0.98);

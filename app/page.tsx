@@ -92,6 +92,24 @@ function dateLabel(value: string) {
   return new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric", weekday: "short" }).format(new Date(`${value}T00:00:00`));
 }
 
+function compactDateLabel(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+  const weekday = new Intl.DateTimeFormat("ko-KR", { weekday: "short" }).format(date);
+  return `${date.getMonth() + 1}.${date.getDate()} ${weekday}`;
+}
+
+function timeToMinutes(value?: string) {
+  const match = value?.match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function minutesToClock(value: number) {
+  const hour = Math.floor(value / 60);
+  const minute = value % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 function makeId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -796,7 +814,7 @@ function ScheduleView({ items, places, foods, trip, mutate }: { items: Itinerary
         </div>
       </Panel>
       {viewMode === "calendar" ? (
-        <ScheduleCalendar dates={allDates} items={visibleItems} onSelectDate={(date) => {
+        <ScheduleCalendar dates={allDates} items={sortedItems} onSelectDate={(date) => {
           setSelectedDate(date);
           setViewMode("timeline");
         }} />
@@ -836,29 +854,73 @@ function ScheduleView({ items, places, foods, trip, mutate }: { items: Itinerary
 type PageMutate = <T extends { id: string }>(table: TableName, action: "create" | "update" | "delete", payload: { row?: Partial<T>; id?: string; patch?: Partial<T> }) => Promise<T | null>;
 
 function ScheduleCalendar({ dates, items, onSelectDate }: { dates: string[]; items: ItineraryItem[]; onSelectDate: (date: string) => void }) {
-  const grouped = groupBy(items, (item) => item.date);
+  const grouped = groupBy(items.filter((item) => item.start_time), (item) => item.date);
+  const ranges = items
+    .map((item) => {
+      const start = timeToMinutes(item.start_time);
+      const end = timeToMinutes(item.end_time) ?? (start !== null ? start + 60 : null);
+      return start === null || end === null ? null : { start, end };
+    })
+    .filter(Boolean) as Array<{ start: number; end: number }>;
+  const minHour = Math.max(5, Math.floor((Math.min(...ranges.map((item) => item.start), 9 * 60) - 60) / 60));
+  const maxHour = Math.min(23, Math.ceil((Math.max(...ranges.map((item) => item.end), 19 * 60) + 60) / 60));
+  const hours = Array.from({ length: maxHour - minHour + 1 }, (_, index) => minHour + index);
+  const hourHeight = 72;
+  const gridColumns = `4rem repeat(${Math.max(dates.length, 1)}, minmax(9.5rem, 1fr))`;
+  const gridStyle = { gridTemplateColumns: gridColumns } as CSSProperties;
+  const bodyHeight = hours.length * hourHeight;
   return (
-    <Panel title="Calendar view">
-      <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-4">
-        {dates.map((date, index) => {
-          const dayItems = grouped[date] || [];
-          return (
-            <button className="card grid min-h-36 gap-2 p-3 text-left transition hover:-translate-y-0.5 hover:shadow-lg" key={date} type="button" onClick={() => onSelectDate(date)}>
-              <div>
-                <p className="text-xs font-black text-sea">Day {index + 1}</p>
-                <h3 className="font-black">{dateLabel(date)}</h3>
-              </div>
-              <div className="grid gap-1">
-                {dayItems.slice(0, 4).map((item) => (
-                  <p className="truncate rounded bg-black/[0.035] px-2 py-1 text-xs font-bold" key={item.id}>{item.start_time ? `${item.start_time} ` : ""}{item.title}</p>
-                ))}
-                {dayItems.length > 4 ? <p className="text-xs font-black text-black/40">+ {dayItems.length - 4}개 더</p> : null}
-                {!dayItems.length ? <p className="text-xs font-bold text-black/40">일정 없음</p> : null}
-              </div>
-            </button>
-          );
-        })}
+    <Panel title="Calendar">
+      <div className="week-calendar" aria-label="주간 캘린더">
+        <div className="week-calendar-inner">
+          <div className="week-calendar-header" style={gridStyle}>
+            <div />
+            {dates.map((date, index) => (
+              <button className="week-day-head" key={date} type="button" onClick={() => onSelectDate(date)}>
+                <span>Day {index + 1}</span>
+                <strong>{compactDateLabel(date)}</strong>
+              </button>
+            ))}
+          </div>
+          <div className="week-calendar-body" style={gridStyle}>
+            <div className="week-time-axis" style={{ height: bodyHeight }}>
+              {hours.map((hour) => (
+                <time key={hour} style={{ top: `${(hour - minHour) * hourHeight}px` }}>{hour < 12 ? `오전 ${hour}` : hour === 12 ? "오후 12" : `오후 ${hour - 12}`}</time>
+              ))}
+            </div>
+            {dates.map((date) => {
+              const dayItems = grouped[date] || [];
+              return (
+                <div className="week-day-column" key={date} style={{ height: bodyHeight }}>
+                  {hours.map((hour) => <span className="week-hour-line" key={hour} style={{ top: `${(hour - minHour) * hourHeight}px` }} />)}
+                  {dayItems.map((item) => {
+                    const start = timeToMinutes(item.start_time) ?? minHour * 60;
+                    const end = Math.max(timeToMinutes(item.end_time) ?? start + 60, start + 30);
+                    const top = ((start - minHour * 60) / 60) * hourHeight;
+                    const height = Math.max(64, ((end - start) / 60) * hourHeight - 6);
+                    const kind = itineraryKind(item);
+                    return (
+                      <button
+                        className="week-event"
+                        data-kind={kind}
+                        key={item.id}
+                        style={{ top, height }}
+                        type="button"
+                        onClick={() => onSelectDate(date)}
+                      >
+                        <time>{minutesToClock(start)} - {minutesToClock(end)}</time>
+                        <strong>{item.title}</strong>
+                        {item.location ? <span>{displayPlaceText(item.location, "")}</span> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
+      <p className="mt-3 text-sm font-bold text-black/45">시간 블록을 누르면 해당 날짜 타임라인으로 이동합니다.</p>
     </Panel>
   );
 }
@@ -933,9 +995,8 @@ function ItineraryCard({ item, compact = false, weather, onDelete, onStatus, onP
   const [draft, setDraft] = useState({ title: item.title, description: item.description, location: item.location });
   const timeRange = item.start_time ? `${item.start_time.slice(0, 5)}${item.end_time ? ` - ${item.end_time.slice(0, 5)}` : ""}` : item.time_label;
   const kind = itineraryKind(item);
-  const tone = kind === "이동" ? "bg-[#eef7ff] border-sky-200" : kind === "식사" ? "bg-[#fff7ed] border-orange-100" : "bg-white/82 border-black/5";
+  const [start, end] = timeRange.split(" - ");
   if (compact && !editing) {
-    const [start, end] = timeRange.split(" - ");
     return (
       <article className="brief-itinerary">
         <div className="brief-time">
@@ -956,19 +1017,18 @@ function ItineraryCard({ item, compact = false, weather, onDelete, onStatus, onP
     );
   }
   return (
-    <article className={`grid grid-cols-[5.75rem_minmax(0,1fr)] gap-5 rounded-lg border p-3 shadow-sm transition hover:shadow-md ${tone}`}>
-      <div className="relative pr-5 text-right">
-        <div className="absolute right-1 top-8 h-[calc(100%+1rem)] w-px bg-black/10" />
-        <div className={`relative z-10 ml-auto mr-[-0.15rem] mt-2 h-3 w-3 rounded-full ring-4 ${kind === "이동" ? "bg-sky-500 ring-sky-100" : kind === "식사" ? "bg-orange-400 ring-orange-100" : "bg-sea ring-sea/15"}`} />
-        <p className="mt-2 text-xs font-black leading-tight text-sea">{timeRange}</p>
+    <article className="schedule-itinerary" data-kind={kind}>
+      <div className="schedule-time">
+        <span>{start || item.time_label || "시간 미정"}</span>
+        {end ? <small>{end}</small> : null}
       </div>
-      <div className="min-w-0">
+      <div className="schedule-body">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-black text-black/40">{dateLabel(item.date)} · {item.time_label || kind}</p>
-            {editing ? <input className="field mt-1 min-h-9 px-2 py-1 text-base font-black" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /> : <h3 className="text-base font-black md:text-lg">{kind === "이동" ? "↔ " : ""}{item.title}</h3>}
+            <p className="schedule-date">{dateLabel(item.date)} · {item.time_label || kind}</p>
+            {editing ? <input className="field mt-1 min-h-9 px-2 py-1 text-base font-black" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /> : <h3>{kind === "이동" ? "↔ " : ""}{item.title}</h3>}
           </div>
-          <div className="flex shrink-0 gap-1">
+          <div className="schedule-actions">
             {onPatch ? editing ? (
               <button className="btn btn-secondary min-h-9 px-3 text-sm" onClick={() => {
                 onPatch(draft);
@@ -992,7 +1052,7 @@ function ItineraryCard({ item, compact = false, weather, onDelete, onStatus, onP
             {!compact ? <p className="mt-1 text-sm font-bold text-black/48">{displayPlaceText(item.location, "장소는 지도 링크로 확인")}</p> : null}
           </>
         )}
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="schedule-chips">
           <span className="chip bg-sea/10 text-sea">{item.priority}</span>
           {onStatus ? (
             <select className="chip border-0 bg-sun/20 text-black" value={item.reservation_status} onChange={(event) => onStatus(event.target.value)}>
