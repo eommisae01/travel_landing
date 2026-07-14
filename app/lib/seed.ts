@@ -117,7 +117,8 @@ export const seedData: TripData = {
       return_flight: "RS0742",
       return_departure_time: "11:40",
       budget_amount: 150000,
-      budget_currency: "JPY"
+      budget_currency: "JPY",
+      archived: false
     }
   ],
   trip_members: [

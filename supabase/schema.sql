@@ -22,6 +22,7 @@ create table if not exists trips (
   return_arrival_time time,
   budget_amount numeric not null default 0,
   budget_currency text not null default 'JPY',
+  archived boolean not null default false,
   created_at timestamptz not null default now()
 );
 

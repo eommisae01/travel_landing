@@ -42,9 +42,7 @@ export async function readTripData(): Promise<{ data: TripData; mode: "supabase"
   const entries = await Promise.all(
     tables.map(async (table) => {
       const query = supabase.from(table).select("*");
-      const { data, error } = table === "trips" || table === "app_settings"
-        ? await query
-        : await query.eq("trip_id", DEFAULT_TRIP_ID);
+      const { data, error } = await query;
       if (error) throw error;
       return [table, data || []] as const;
     })
@@ -55,7 +53,10 @@ export async function readTripData(): Promise<{ data: TripData; mode: "supabase"
 
 export async function createRow(table: TableName, row: Record<string, unknown>) {
   const supabase = supabaseAdmin();
-  const nextRow = { id: String(row.id || randomUUID()), trip_id: DEFAULT_TRIP_ID, ...row };
+  const id = String(row.id || randomUUID());
+  const nextRow = table === "trips" || table === "app_settings"
+    ? { id, ...row }
+    : { id, trip_id: DEFAULT_TRIP_ID, ...row };
   if (!supabase) return nextRow;
   const { data, error } = await supabase.from(table).insert(nextRow).select("*").single();
   if (error) throw error;

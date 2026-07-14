@@ -14,6 +14,7 @@ alter table trips add column if not exists return_departure_time time;
 alter table trips add column if not exists return_arrival_time time;
 alter table trips add column if not exists budget_amount numeric not null default 0;
 alter table trips add column if not exists budget_currency text not null default 'JPY';
+alter table trips add column if not exists archived boolean not null default false;
 
 update trips
 set

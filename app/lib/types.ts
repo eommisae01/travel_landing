@@ -35,6 +35,7 @@ export type Trip = {
   return_arrival_time?: string;
   budget_amount?: number;
   budget_currency?: string;
+  archived?: boolean;
 };
 
 export type TripMember = {

@@ -50,6 +50,26 @@ type ViewKey = "home" | "schedule" | "gallery" | "map" | "checklist" | "food" | 
 type SaveState = "idle" | "saving" | "saved" | "error";
 type DayWeather = Record<string, { label: string; rain: number; wind: number; high: number; low: number }>;
 type AppTheme = "editorial-sea" | "coral-plum" | "indigo-amber" | "cherry-mint" | "graphite-citron";
+type TripStarterDraft = {
+  tripName: string;
+  country: string;
+  cityPreset: string;
+  customCity: string;
+  cities: string;
+  startDate: string;
+  endDate: string;
+  outboundFlight: string;
+  outboundOrigin: string;
+  outboundDestination: string;
+  outboundDepart: string;
+  outboundArrive: string;
+  returnFlight: string;
+  returnOrigin: string;
+  returnDestination: string;
+  returnDepart: string;
+  returnArrive: string;
+  myMapsUrl: string;
+};
 
 const APP_THEME_STORAGE_KEY = "triplanner-theme-v1";
 const appThemes: { key: AppTheme; name: string; description: string; swatches: string[] }[] = [
@@ -115,6 +135,23 @@ function minutesToClock(value: number) {
 
 function makeId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function tripScopedData(data: TripData, tripId: string): TripData {
+  const byTrip = <T extends { trip_id: string }>(items: T[]) => items.filter((item) => item.trip_id === tripId);
+  return {
+    ...data,
+    trips: data.trips.filter((trip) => trip.id === tripId),
+    trip_members: byTrip(data.trip_members),
+    itinerary_items: byTrip(data.itinerary_items),
+    places: byTrip(data.places),
+    food_candidates: byTrip(data.food_candidates),
+    checklist_items: byTrip(data.checklist_items),
+    gallery_items: byTrip(data.gallery_items),
+    onsite_notes: byTrip(data.onsite_notes),
+    expenses: byTrip(data.expenses),
+    quick_links: byTrip(data.quick_links)
+  };
 }
 
 function itineraryKind(item: Pick<ItineraryItem, "title" | "location">) {
@@ -238,6 +275,13 @@ export default function Page() {
   const [showLanding, setShowLanding] = useState(true);
   const [showStarter, setShowStarter] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [selectedTripId, setSelectedTripId] = useState("");
+
+  const activeTrips = useMemo(() => data.trips.filter((trip) => !trip.archived), [data.trips]);
+  const selectedTrip = useMemo(() => {
+    return data.trips.find((trip) => trip.id === selectedTripId) || activeTrips[0] || data.trips[0] || seedData.trips[0];
+  }, [activeTrips, data.trips, selectedTripId]);
+  const scopedData = useMemo(() => tripScopedData(data, selectedTrip.id), [data, selectedTrip.id]);
 
   function setAppTheme(theme: AppTheme) {
     setAppThemeState(theme);
@@ -289,6 +333,14 @@ export default function Page() {
     return () => window.clearInterval(timer);
   }, [authenticated, mode]);
 
+  useEffect(() => {
+    if (!data.trips.length) return;
+    const current = data.trips.find((trip) => trip.id === selectedTripId);
+    if (current && !current.archived) return;
+    const next = data.trips.find((trip) => !trip.archived) || data.trips[0];
+    setSelectedTripId(next.id);
+  }, [data.trips, selectedTripId]);
+
   async function mutate<T extends { id: string }>(table: TableName, action: "create" | "update" | "delete", payload: { row?: Partial<T>; id?: string; patch?: Partial<T> }) {
     setSaveState("saving");
     const previous = data;
@@ -332,6 +384,51 @@ export default function Page() {
     return row as T;
   }
 
+  async function createTripFromStarter(draft: TripStarterDraft) {
+    const primaryCity = (draft.cityPreset === "기타" ? draft.customCity : draft.cityPreset).trim() || "새 도시";
+    const cities = Array.from(new Set([primaryCity, ...draft.cities.split(/,|\n/).map((city) => city.trim()).filter(Boolean)]));
+    const start = draft.startDate || todayKey();
+    const end = draft.endDate || draft.startDate || start;
+    const created = await mutate<Trip>("trips", "create", {
+      row: {
+        id: makeId("trip"),
+        name: draft.tripName.trim() || `${primaryCity} 여행`,
+        region: cities.join(" · "),
+        start_date: start,
+        end_date: end,
+        hero_image: "",
+        note: draft.myMapsUrl ? "Google My Maps 링크로 시작한 새 여행입니다." : "새 여행 계획입니다.",
+        country: draft.country,
+        cities,
+        accommodation: "",
+        my_maps_url: draft.myMapsUrl,
+        outbound_origin: draft.outboundOrigin,
+        outbound_destination: draft.outboundDestination || primaryCity,
+        outbound_flight: draft.outboundFlight,
+        outbound_departure_time: draft.outboundDepart || undefined,
+        outbound_arrival_time: draft.outboundArrive || undefined,
+        return_origin: draft.returnOrigin || primaryCity,
+        return_destination: draft.returnDestination,
+        return_flight: draft.returnFlight,
+        return_departure_time: draft.returnDepart || undefined,
+        return_arrival_time: draft.returnArrive || undefined,
+        budget_amount: 0,
+        budget_currency: "JPY",
+        archived: false
+      }
+    });
+    if (!created) return;
+    if (draft.myMapsUrl.trim()) {
+      await mutate<QuickLink>("quick_links", "create", {
+        row: { id: makeId("link"), trip_id: created.id, label: "공유 지도", kind: "map", url: draft.myMapsUrl.trim() }
+      });
+    }
+    setSelectedTripId(created.id);
+    setShowStarter(false);
+    setShowLanding(false);
+    setActive("home");
+  }
+
   if (authenticated === null) {
     return <main className="grid min-h-screen place-items-center"><Loader2 className="animate-spin text-sea" size={34} /></main>;
   }
@@ -340,13 +437,14 @@ export default function Page() {
     return <LoginScreen onSuccess={() => loadData().catch(() => setAuthenticated(true))} />;
   }
 
-  const trip = data.trips[0] || seedData.trips[0];
+  const trip = selectedTrip;
 
   if (showLanding) {
     if (showStarter) {
       return (
         <TripStarterPage
           theme={appTheme}
+          onCreate={createTripFromStarter}
           onBack={() => setShowStarter(false)}
           onOpenExisting={() => {
             setShowLanding(false);
@@ -377,15 +475,15 @@ export default function Page() {
           await fetch("/api/session", { method: "DELETE" });
           setAuthenticated(false);
         }} />
-        {active === "home" && <HomeView data={data} setActive={setActive} mutate={mutate} />}
-        {active === "schedule" && <ScheduleView items={data.itinerary_items} places={data.places} foods={data.food_candidates} trip={trip} mutate={mutate} />}
-        {active === "gallery" && <GalleryView items={data.gallery_items} trip={trip} mutate={mutate} />}
-        {active === "map" && <MapView places={data.places} foods={data.food_candidates} links={data.quick_links} trip={trip} mutate={mutate} />}
-        {active === "checklist" && <ChecklistView items={data.checklist_items} mutate={mutate} />}
-        {active === "food" && <FoodView foods={data.food_candidates} trip={trip} mutate={mutate} />}
-        {active === "budget" && <BudgetView expenses={data.expenses} members={data.trip_members.map((member) => member.name)} trip={trip} mutate={mutate} />}
-        {active === "onsite" && <OnsiteView notes={data.onsite_notes} links={data.quick_links} mutate={mutate} />}
-        {active === "settings" && <SettingsView data={data} mode={mode} theme={appTheme} setTheme={setAppTheme} mutate={mutate} />}
+        {active === "home" && <HomeView data={scopedData} setActive={setActive} mutate={mutate} />}
+        {active === "schedule" && <ScheduleView items={scopedData.itinerary_items} places={scopedData.places} foods={scopedData.food_candidates} trip={trip} mutate={mutate} />}
+        {active === "gallery" && <GalleryView items={scopedData.gallery_items} trip={trip} mutate={mutate} />}
+        {active === "map" && <MapView places={scopedData.places} foods={scopedData.food_candidates} links={scopedData.quick_links} trip={trip} mutate={mutate} />}
+        {active === "checklist" && <ChecklistView items={scopedData.checklist_items} mutate={mutate} />}
+        {active === "food" && <FoodView foods={scopedData.food_candidates} trip={trip} mutate={mutate} />}
+        {active === "budget" && <BudgetView expenses={scopedData.expenses} members={scopedData.trip_members.map((member) => member.name)} trip={trip} mutate={mutate} />}
+        {active === "onsite" && <OnsiteView notes={scopedData.onsite_notes} links={scopedData.quick_links} mutate={mutate} />}
+        {active === "settings" && <SettingsView data={data} trip={trip} selectedTripId={trip.id} setSelectedTripId={setSelectedTripId} mode={mode} theme={appTheme} setTheme={setAppTheme} mutate={mutate} />}
       </main>
       <BottomNav active={active} setActive={setActive} />
     </div>
@@ -504,8 +602,8 @@ function LandingPage({ trip, theme, onEnter, onPlanNew, onJump }: { trip: TripDa
   );
 }
 
-function TripStarterPage({ theme, onBack, onOpenExisting }: { theme: AppTheme; onBack: () => void; onOpenExisting: () => void }) {
-  const [draft, setDraft] = useState({
+function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: AppTheme; onBack: () => void; onOpenExisting: () => void; onCreate: (draft: TripStarterDraft) => Promise<void> }) {
+  const [draft, setDraft] = useState<TripStarterDraft>({
     tripName: "",
     country: "일본",
     cityPreset: "타카마쓰",
@@ -525,6 +623,7 @@ function TripStarterPage({ theme, onBack, onOpenExisting }: { theme: AppTheme; o
     returnArrive: "",
     myMapsUrl: ""
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -535,6 +634,14 @@ function TripStarterPage({ theme, onBack, onOpenExisting }: { theme: AppTheme; o
   const dateRange = draft.startDate && draft.endDate ? `${dateLabel(draft.startDate)} - ${dateLabel(draft.endDate)}` : "기간은 나중에 입력 가능";
   const outboundRoute = `${draft.outboundOrigin || "출발지"} → ${draft.outboundDestination || city || "도착지"}`;
   const returnRoute = `${draft.returnOrigin || city || "출발지"} → ${draft.returnDestination || "도착지"}`;
+  const saveTrip = async () => {
+    setSaving(true);
+    try {
+      await onCreate(draft);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <main className="landing-shell starter-shell" data-landing-theme={theme}>
@@ -562,7 +669,10 @@ function TripStarterPage({ theme, onBack, onOpenExisting }: { theme: AppTheme; o
       </section>
 
       <section className="starter-grid">
-        <form className="starter-form">
+        <form className="starter-form" onSubmit={(event) => {
+          event.preventDefault();
+          void saveTrip();
+        }}>
           <section className="starter-panel">
             <div className="starter-section-head">
               <span>1</span>
@@ -636,6 +746,7 @@ function TripStarterPage({ theme, onBack, onOpenExisting }: { theme: AppTheme; o
             </div>
             <label className="setup-field"><span>Google My Maps 공유 링크</span><input className="field" value={draft.myMapsUrl} onChange={(event) => setDraft({ ...draft, myMapsUrl: event.target.value })} placeholder="https://www.google.com/maps/d/..." /></label>
           </section>
+          <button className="btn starter-submit" disabled={saving} type="submit">{saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}새 여행 만들기</button>
         </form>
 
         <aside className="starter-preview">
@@ -667,7 +778,8 @@ function TripStarterPage({ theme, onBack, onOpenExisting }: { theme: AppTheme; o
               <b>일정 · Notes · 체크리스트</b>
             </div>
           </div>
-          <button className="btn" type="button" onClick={onOpenExisting}>기존 예시 앱에서 계속 보기</button>
+          <button className="btn" disabled={saving} type="button" onClick={saveTrip}>{saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}이 내용으로 시작</button>
+          <button className="btn btn-secondary" type="button" onClick={onOpenExisting}>기존 예시 앱에서 계속 보기</button>
         </aside>
       </section>
     </main>
@@ -2121,8 +2233,28 @@ function OnsiteView({ notes, links, mutate }: { notes: OnsiteNote[]; links: Quic
   );
 }
 
-function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData; mode: string; theme: AppTheme; setTheme: (theme: AppTheme) => void; mutate: PageMutate }) {
-  const trip = data.trips[0] || seedData.trips[0];
+function SettingsView({
+  data,
+  trip,
+  selectedTripId,
+  setSelectedTripId,
+  mode,
+  theme,
+  setTheme,
+  mutate
+}: {
+  data: TripData;
+  trip: TripData["trips"][number];
+  selectedTripId: string;
+  setSelectedTripId: (id: string) => void;
+  mode: string;
+  theme: AppTheme;
+  setTheme: (theme: AppTheme) => void;
+  mutate: PageMutate;
+}) {
+  const scoped = tripScopedData(data, trip.id);
+  const activeTrips = data.trips.filter((item) => !item.archived);
+  const archivedTrips = data.trips.filter((item) => item.archived);
   const [setup, setSetup] = useState({
     name: trip.name || "",
     country: trip.country || "일본",
@@ -2146,6 +2278,29 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
   });
   const [memberDraft, setMemberDraft] = useState({ name: "", role: "", color: "#16a3a3", avatar_url: "" });
   const [memberEdit, setMemberEdit] = useState<Record<string, Partial<TripMember>>>({});
+  useEffect(() => {
+    setSetup({
+      name: trip.name || "",
+      country: trip.country || "일본",
+      cityPreset: (trip.cities?.[0] || "타카마쓰"),
+      customCity: "",
+      cities: (trip.cities || trip.region.split("·").map((city) => city.trim()).filter(Boolean)).join(", "),
+      start_date: trip.start_date,
+      end_date: trip.end_date,
+      outbound_origin: trip.outbound_origin || "",
+      outbound_destination: trip.outbound_destination || "",
+      outbound_flight: trip.outbound_flight || "",
+      outbound_departure_time: trip.outbound_departure_time || "",
+      outbound_arrival_time: trip.outbound_arrival_time || "",
+      return_origin: trip.return_origin || "",
+      return_destination: trip.return_destination || "",
+      return_flight: trip.return_flight || "",
+      return_departure_time: trip.return_departure_time || "",
+      return_arrival_time: trip.return_arrival_time || "",
+      accommodation: trip.accommodation || "",
+      my_maps_url: trip.my_maps_url || scoped.quick_links.find((link) => link.kind === "map")?.url || ""
+    });
+  }, [trip.id]);
   const resolvedCity = setup.cityPreset === "기타" ? setup.customCity : setup.cityPreset;
   const inviteUrl = typeof window !== "undefined" ? window.location.origin : "https://project-6ok16.vercel.app";
   const readProfileImage = (file: File | undefined, callback: (value: string) => void) => {
@@ -2181,8 +2336,43 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
       }
     });
   };
+  const archiveTrip = async (target: Trip, archived: boolean) => {
+    await mutate<Trip>("trips", "update", { id: target.id, patch: { archived } });
+    if (target.id === selectedTripId && archived) {
+      const next = data.trips.find((item) => item.id !== target.id && !item.archived);
+      if (next) setSelectedTripId(next.id);
+    } else {
+      setSelectedTripId(target.id);
+    }
+  };
   return (
     <section className="grid gap-4">
+      <Panel title="여행 관리">
+        <div className="trip-manage-grid">
+          {[...activeTrips, ...archivedTrips].map((item) => {
+            const isSelected = item.id === selectedTripId;
+            const isLastActive = !item.archived && activeTrips.length <= 1;
+            return (
+              <article className={`trip-manage-card ${isSelected ? "is-selected" : ""}`} key={item.id}>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase text-sea">{item.archived ? "Archived trip" : "Active trip"}</p>
+                  <h3 className="truncate text-lg font-black">{item.name}</h3>
+                  <p className="text-sm font-bold text-black/45">{dateLabel(item.start_date)} - {dateLabel(item.end_date)}</p>
+                </div>
+                <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                  <button className="btn btn-secondary min-h-9" type="button" onClick={() => setSelectedTripId(item.id)}>열기</button>
+                  {item.archived ? (
+                    <button className="btn min-h-9" type="button" onClick={() => archiveTrip(item, false)}>복원</button>
+                  ) : (
+                    <button className="btn btn-secondary min-h-9" disabled={isLastActive} title={isLastActive ? "활성 여행은 최소 1개 필요합니다." : undefined} type="button" onClick={() => archiveTrip(item, true)}>아카이브</button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <p className="text-sm font-bold text-black/50">아카이브한 여행은 목록에서 숨기고, 필요하면 여기서 다시 복원할 수 있습니다. 최소 1개의 활성 여행은 남겨둡니다.</p>
+      </Panel>
       <Panel title="여행 설정">
         <form className="grid gap-4" onSubmit={saveSetup}>
           <div className="setup-group">
@@ -2248,7 +2438,7 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
           <form className="setup-member-form" onSubmit={(event) => {
             event.preventDefault();
             if (!memberDraft.name.trim()) return;
-            mutate<TripMember>("trip_members", "create", { row: { id: makeId("member"), name: memberDraft.name.trim(), role: memberDraft.role, color: memberDraft.color, avatar_url: memberDraft.avatar_url } });
+            mutate<TripMember>("trip_members", "create", { row: { id: makeId("member"), trip_id: trip.id, name: memberDraft.name.trim(), role: memberDraft.role, color: memberDraft.color, avatar_url: memberDraft.avatar_url } });
             setMemberDraft({ name: "", role: "", color: "#16a3a3", avatar_url: "" });
           }}>
             <label className="setup-field"><span>이름</span><input className="field" value={memberDraft.name} onChange={(event) => setMemberDraft({ ...memberDraft, name: event.target.value })} placeholder="예: 민지" /></label>
@@ -2258,7 +2448,7 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
             <button className="btn self-end" type="submit"><Plus size={16} />멤버 추가</button>
           </form>
           <div className="grid gap-2 md:grid-cols-2">
-            {data.trip_members.map((member) => {
+            {scoped.trip_members.map((member) => {
               const patch = memberEdit[member.id] || {};
               const avatar = patch.avatar_url ?? member.avatar_url;
               return (
@@ -2324,10 +2514,10 @@ function SettingsView({ data, mode, theme, setTheme, mutate }: { data: TripData;
       </Panel>
       <Panel title="데이터 현황">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-          <Metric title="일정" value={`${data.itinerary_items.length}개`} icon={CalendarDays} />
-          <Metric title="장소" value={`${data.places.length}개`} icon={MapPin} />
-          <Metric title="식당" value={`${data.food_candidates.length}개`} icon={Soup} />
-          <Metric title="체크" value={`${data.checklist_items.length}개`} icon={ListTodo} />
+          <Metric title="일정" value={`${scoped.itinerary_items.length}개`} icon={CalendarDays} />
+          <Metric title="장소" value={`${scoped.places.length}개`} icon={MapPin} />
+          <Metric title="식당" value={`${scoped.food_candidates.length}개`} icon={Soup} />
+          <Metric title="체크" value={`${scoped.checklist_items.length}개`} icon={ListTodo} />
         </div>
       </Panel>
     </section>
