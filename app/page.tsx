@@ -50,13 +50,20 @@ type ViewKey = "home" | "schedule" | "gallery" | "map" | "checklist" | "food" | 
 type SaveState = "idle" | "saving" | "saved" | "error";
 type DayWeather = Record<string, { label: string; rain: number; wind: number; high: number; low: number }>;
 type AppTheme = "editorial-sea" | "coral-plum" | "indigo-amber" | "cherry-mint" | "graphite-citron";
+type StarterCityStop = {
+  id: string;
+  country: string;
+  customCountry: string;
+  cityPreset: string;
+  customCity: string;
+};
 type TripStarterDraft = {
   tripName: string;
   country: string;
   customCountry: string;
   cityPreset: string;
   customCity: string;
-  extraCities: string[];
+  extraCities: StarterCityStop[];
   cityTransferDates: Record<string, string>;
   startDate: string;
   endDate: string;
@@ -114,6 +121,25 @@ const cityPresetsByCountry: Record<string, string[]> = {
   호주: ["시드니", "멜버른", "브리즈번", "퍼스", "골드코스트", "케언즈", "기타"],
   기타: ["기타"]
 };
+
+function resolveStarterCountry(country: string, customCountry: string) {
+  return (country === "기타" ? customCountry : country).trim();
+}
+
+function resolveStarterCity(cityPreset: string, customCity: string) {
+  return (cityPreset === "기타" ? customCity : cityPreset).trim();
+}
+
+function createStarterCityStop(country = "일본"): StarterCityStop {
+  const options = cityPresetsByCountry[country] || cityPresetsByCountry["기타"];
+  return {
+    id: makeId("starter-city"),
+    country,
+    customCountry: "",
+    cityPreset: options[0] || "기타",
+    customCity: ""
+  };
+}
 
 function labelWeather(code?: number) {
   if (code === undefined) return "예보 확인";
@@ -403,9 +429,12 @@ export default function Page() {
   }
 
   async function createTripFromStarter(draft: TripStarterDraft) {
-    const country = (draft.country === "기타" ? draft.customCountry : draft.country).trim() || "국가 미정";
-    const primaryCity = (draft.cityPreset === "기타" ? draft.customCity : draft.cityPreset).trim() || "새 도시";
-    const cities = Array.from(new Set([primaryCity, ...draft.extraCities.map((city) => city.trim()).filter(Boolean)]));
+    const country = resolveStarterCountry(draft.country, draft.customCountry) || "국가 미정";
+    const primaryCity = resolveStarterCity(draft.cityPreset, draft.customCity) || "새 도시";
+    const extraCityNames = draft.extraCities
+      .map((stop) => resolveStarterCity(stop.cityPreset, stop.customCity))
+      .filter(Boolean);
+    const cities = Array.from(new Set([primaryCity, ...extraCityNames]));
     const start = draft.startDate || todayKey();
     const end = draft.endDate || draft.startDate || start;
     const created = await mutate<Trip>("trips", "create", {
@@ -672,11 +701,14 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, []);
 
-  const country = draft.country === "기타" ? draft.customCountry || "직접 입력 국가" : draft.country;
+  const country = resolveStarterCountry(draft.country, draft.customCountry) || "직접 입력 국가";
   const cityOptions = cityPresetsByCountry[draft.country] || cityPresetsByCountry["기타"];
-  const city = draft.cityPreset === "기타" ? draft.customCity || "직접 입력 도시" : draft.cityPreset;
+  const city = resolveStarterCity(draft.cityPreset, draft.customCity) || "직접 입력 도시";
   const extraCities = draft.extraCities;
-  const transferStops = [city, ...extraCities.map((value, index) => value.trim() || `도시 ${index + 2}`)];
+  const transferStops = [
+    city,
+    ...extraCities.map((stop, index) => resolveStarterCity(stop.cityPreset, stop.customCity) || `도시 ${index + 2}`)
+  ];
   const tripName = draft.tripName || `${city} 여행`;
   const dateRange = draft.startDate && draft.endDate ? `${dateLabel(draft.startDate)} - ${dateLabel(draft.endDate)}` : "기간은 나중에 입력 가능";
   const outboundRoute = `${draft.outboundOrigin || "출발지"} → ${draft.outboundDestination || city || "도착지"}`;
@@ -689,13 +721,25 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
       setSaving(false);
     }
   };
-  const updateExtraCity = (index: number, value: string) => {
-    const next = [...extraCities];
-    next[index] = value;
-    setDraft({ ...draft, extraCities: next });
+  const updateExtraCity = (index: number, patch: Partial<StarterCityStop>) => {
+    setDraft((current) => ({
+      ...current,
+      extraCities: current.extraCities.map((stop, itemIndex) => (
+        itemIndex === index ? { ...stop, ...patch } : stop
+      ))
+    }));
+  };
+  const changeExtraCityCountry = (index: number, value: string) => {
+    const nextCityOptions = cityPresetsByCountry[value] || cityPresetsByCountry["기타"];
+    updateExtraCity(index, {
+      country: value,
+      cityPreset: nextCityOptions[0] || "기타",
+      customCountry: value === "기타" ? extraCities[index]?.customCountry || "" : "",
+      customCity: ""
+    });
   };
   const addExtraCity = () => {
-    setDraft({ ...draft, extraCities: [...extraCities, ""] });
+    setDraft((current) => ({ ...current, extraCities: [...current.extraCities, createStarterCityStop(current.country)] }));
   };
   const removeExtraCity = (index: number) => {
     const next = extraCities.filter((_, itemIndex) => itemIndex !== index);
@@ -705,16 +749,16 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
       if (numericKey < index) nextTransferDates[key] = value;
       if (numericKey > index) nextTransferDates[String(numericKey - 1)] = value;
     });
-    setDraft({ ...draft, extraCities: next, cityTransferDates: nextTransferDates });
+    setDraft((current) => ({ ...current, extraCities: next, cityTransferDates: nextTransferDates }));
   };
   const changeCountry = (value: string) => {
     const nextCityOptions = cityPresetsByCountry[value] || cityPresetsByCountry["기타"];
-    setDraft({
-      ...draft,
+    setDraft((current) => ({
+      ...current,
       country: value,
       cityPreset: nextCityOptions[0] || "기타",
-      customCity: value === "기타" ? draft.customCity : ""
-    });
+      customCity: value === "기타" ? current.customCity : ""
+    }));
   };
 
   return (
@@ -764,15 +808,38 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
               <div className="setup-field md:col-span-2">
                 <span>추가 도시</span>
                 <div className="starter-city-list">
-                  {extraCities.map((value, index) => (
-                    <div className="starter-city-row" key={`city-${index}`}>
-                      <label className="setup-field">
-                        <span>{index + 2}번째 도시</span>
-                        <input className="field" value={value} onChange={(event) => updateExtraCity(index, event.target.value)} placeholder="예: 나오시마" />
-                      </label>
-                      <button className="btn btn-secondary starter-icon-button" type="button" onClick={() => removeExtraCity(index)} aria-label={`${index + 2}번째 도시 삭제`}><X size={16} /></button>
-                    </div>
-                  ))}
+                  {extraCities.map((stop, index) => {
+                    const extraCityOptions = cityPresetsByCountry[stop.country] || cityPresetsByCountry["기타"];
+                    return (
+                      <div className="starter-city-row" key={stop.id}>
+                        <label className="setup-field">
+                          <span>{index + 2}번째 국가</span>
+                          <select className="field" value={stop.country} onChange={(event) => changeExtraCityCountry(index, event.target.value)}>
+                            {countryOptions.map((countryOption) => <option key={countryOption}>{countryOption}</option>)}
+                          </select>
+                        </label>
+                        {stop.country === "기타" ? (
+                          <label className="setup-field">
+                            <span>국가 직접 입력</span>
+                            <input className="field" value={stop.customCountry} onChange={(event) => updateExtraCity(index, { customCountry: event.target.value })} placeholder="예: 체코" />
+                          </label>
+                        ) : null}
+                        <label className="setup-field">
+                          <span>{index + 2}번째 도시</span>
+                          <select className="field" value={stop.cityPreset} onChange={(event) => updateExtraCity(index, { cityPreset: event.target.value, customCity: "" })}>
+                            {extraCityOptions.map((item) => <option key={item}>{item}</option>)}
+                          </select>
+                        </label>
+                        {stop.cityPreset === "기타" || stop.country === "기타" ? (
+                          <label className="setup-field">
+                            <span>도시 직접 입력</span>
+                            <input className="field" value={stop.customCity} onChange={(event) => updateExtraCity(index, { customCity: event.target.value })} placeholder="예: 프라하" />
+                          </label>
+                        ) : null}
+                        <button className="btn btn-secondary starter-icon-button" type="button" onClick={() => removeExtraCity(index)} aria-label={`${index + 2}번째 도시 삭제`}><X size={16} /></button>
+                      </div>
+                    );
+                  })}
                   <button className="btn btn-secondary starter-add-city" type="button" onClick={addExtraCity}><Plus size={16} />도시 추가</button>
                 </div>
               </div>

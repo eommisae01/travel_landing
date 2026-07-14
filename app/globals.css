@@ -1355,15 +1355,30 @@ a {
 
 .starter-city-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) auto;
   align-items: end;
   gap: 0.6rem;
+}
+
+.starter-city-row:has(.setup-field:nth-of-type(3)) {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(0, 1fr) auto;
 }
 
 .starter-icon-button {
   width: 2.9rem;
   min-height: 2.9rem;
   padding: 0;
+}
+
+@media (max-width: 720px) {
+  .starter-city-row,
+  .starter-city-row:has(.setup-field:nth-of-type(3)) {
+    grid-template-columns: 1fr;
+  }
+
+  .starter-icon-button {
+    width: 100%;
+  }
 }
 
 .starter-add-city {
