@@ -945,6 +945,38 @@ a {
   background: #fffefa;
 }
 
+.gallery-tag-editor {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--sea) 16%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sea) 6%, #fff);
+  padding: 0.4rem 0.5rem;
+}
+
+.gallery-tag-editor:focus-within {
+  border-color: var(--sea);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sea) 14%, transparent);
+}
+
+.gallery-tag-editor span {
+  color: var(--sea-dark);
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.gallery-tag-editor input {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 900;
+  outline: none;
+}
+
 .soft-inset {
   background: rgba(238, 248, 245, 0.7);
   border: 1px solid rgba(7, 137, 133, 0.08);

@@ -1077,6 +1077,7 @@ function GalleryView({ items, trip, mutate }: { items: GalleryItem[]; trip: Trip
   const [uploadDraft, setUploadDraft] = useState({ title: "", date: trip.start_date, category: "자료", note: "" });
   const [uploading, setUploading] = useState(false);
   const dates = ["all", ...tripDateOptions(trip)];
+  const tagOptions = Array.from(new Set(items.map((item) => item.category).filter(Boolean))).sort((a, b) => a.localeCompare(b));
   const filtered = items
     .filter((item) => selectedDate === "all" || item.date === selectedDate)
     .filter((item) => !favoriteOnly || item.is_favorite)
@@ -1154,6 +1155,9 @@ function GalleryView({ items, trip, mutate }: { items: GalleryItem[]; trip: Trip
           </div>
         </div>
         <p className="text-sm font-semibold text-black/55">페리, 버스, 미술관, 공항 환전/ATM처럼 현장에서 다시 볼 스크린샷을 날짜나 주제별로 모아둔 보드입니다.</p>
+        <datalist id="gallery-tag-options">
+          {tagOptions.map((tag) => <option key={tag} value={tag} />)}
+        </datalist>
       </Panel>
 
       {grouped.length ? grouped.map(([group, dayItems]) => (
@@ -1185,6 +1189,7 @@ function GalleryView({ items, trip, mutate }: { items: GalleryItem[]; trip: Trip
                     </button>
                   </div>
                   <p className="line-clamp-2 text-xs font-semibold text-black/55">{item.note}</p>
+                  <GalleryTagEditor item={item} mutate={mutate} />
                 </div>
               </article>
             ))}
@@ -1268,6 +1273,39 @@ function GalleryView({ items, trip, mutate }: { items: GalleryItem[]; trip: Trip
         </div>
       ) : null}
     </section>
+  );
+}
+
+function GalleryTagEditor({ item, mutate }: { item: GalleryItem; mutate: PageMutate }) {
+  const [value, setValue] = useState(item.category || "");
+
+  useEffect(() => {
+    setValue(item.category || "");
+  }, [item.category]);
+
+  const save = () => {
+    const next = value.trim() || "기타";
+    if (next !== item.category) {
+      mutate<GalleryItem>("gallery_items", "update", { id: item.id, patch: { category: next } });
+    }
+  };
+
+  return (
+    <label className="gallery-tag-editor">
+      <span>태그</span>
+      <input
+        list="gallery-tag-options"
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        onBlur={save}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            event.currentTarget.blur();
+          }
+        }}
+      />
+    </label>
   );
 }
 
