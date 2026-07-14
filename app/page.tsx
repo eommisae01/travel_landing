@@ -202,6 +202,7 @@ export default function Page() {
   const [data, setData] = useState<TripData>(seedData);
   const [mode, setMode] = useState<"supabase" | "demo">("demo");
   const [active, setActive] = useState<ViewKey>("home");
+  const [showLanding, setShowLanding] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   async function loadData() {
@@ -294,6 +295,19 @@ export default function Page() {
 
   const trip = data.trips[0] || seedData.trips[0];
 
+  if (showLanding) {
+    return (
+      <LandingPage
+        trip={trip}
+        onEnter={() => setShowLanding(false)}
+        onJump={(view) => {
+          setActive(view);
+          setShowLanding(false);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="app-shell">
       <SideNav active={active} setActive={setActive} saveState={saveState} mode={mode} />
@@ -314,6 +328,118 @@ export default function Page() {
       </main>
       <BottomNav active={active} setActive={setActive} />
     </div>
+  );
+}
+
+function LandingPage({ trip, onEnter, onJump }: { trip: TripData["trips"][number]; onEnter: () => void; onJump: (view: ViewKey) => void }) {
+  const cityOptions = trip.cities?.length ? trip.cities : trip.region.split("·").map((city) => city.trim()).filter(Boolean);
+  const features = [
+    { title: "Live map", body: "My Maps 링크를 기준으로 장소와 식당 후보를 계속 정리", icon: Map },
+    { title: "Shared schedule", body: "날짜별 타임라인과 캘린더뷰로 가족 일정 확인", icon: CalendarDays },
+    { title: "Field notes", body: "페리, 공항, 예약 정보처럼 현장에서 바로 볼 자료 보관", icon: Images }
+  ];
+  const itineraryPreview = seedData.itinerary_items.slice(0, 3);
+
+  return (
+    <main className="landing-shell">
+      <nav className="landing-nav">
+        <button className="landing-logo" type="button" onClick={onEnter}>
+          <span>Triplanner</span>
+        </button>
+        <div className="hidden items-center gap-2 md:flex">
+          <button className="landing-link" type="button" onClick={() => onJump("schedule")}>Schedule</button>
+          <button className="landing-link" type="button" onClick={() => onJump("map")}>Map</button>
+          <button className="landing-link" type="button" onClick={() => onJump("gallery")}>Notes</button>
+        </div>
+        <button className="btn" type="button" onClick={onEnter}>앱 열기</button>
+      </nav>
+
+      <section className="landing-hero">
+        <div className="landing-copy">
+          <p className="landing-kicker">{dateLabel(trip.start_date)} - {dateLabel(trip.end_date)}</p>
+          <h1>Plan the trip, share the map.</h1>
+          <p className="landing-lead">
+            지도, 일정, 준비물, 자료, 예산을 한 화면에서 정리하는 가족 여행 플래너입니다.
+            현장에서 바로 읽히는 밀도와, 여행 전 계획하기 좋은 구조를 같이 가져갑니다.
+          </p>
+          <div className="landing-actions">
+            <button className="btn" type="button" onClick={onEnter}>계획 시작</button>
+            <button className="btn btn-secondary" type="button" onClick={() => onJump("map")}>지도 보기</button>
+          </div>
+          <div className="landing-stats">
+            <span><strong>{cityOptions.length || 1}</strong> cities</span>
+            <span><strong>{seedData.itinerary_items.length}</strong> schedule</span>
+            <span><strong>{seedData.gallery_items.length}</strong> notes</span>
+          </div>
+        </div>
+
+        <div className="landing-device" aria-label="Triplanner app preview">
+          <div className="landing-device-top">
+            <div>
+              <p>TRIP</p>
+              <h2>{trip.name}</h2>
+            </div>
+            <span>{cityOptions[0] || trip.region}</span>
+          </div>
+          <div className="landing-flight-grid">
+            <div>
+              <p>가는 편</p>
+              <strong>{trip.outbound_flight || "RS0741"}</strong>
+              <span>{trip.outbound_origin || "서울"} → {trip.outbound_destination || "타카마쓰"}</span>
+            </div>
+            <div>
+              <p>오는 편</p>
+              <strong>{trip.return_flight || "RS0742"}</strong>
+              <span>{trip.return_origin || "타카마쓰"} → {trip.return_destination || "서울"}</span>
+            </div>
+          </div>
+          <div className="landing-timeline">
+            {itineraryPreview.map((item) => (
+              <article key={item.id}>
+                <time>{item.start_time || item.time_label}</time>
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-feature-grid">
+        {features.map((feature) => {
+          const Icon = feature.icon;
+          return (
+            <article className="landing-feature-card" key={feature.title}>
+              <div><Icon size={22} /></div>
+              <h2>{feature.title}</h2>
+              <p>{feature.body}</p>
+            </article>
+          );
+        })}
+      </section>
+
+      <section className="landing-board">
+        <div>
+          <p className="landing-kicker">Built for web, phone, iPad, and Mac</p>
+          <h2>계획 화면은 넓게, 현장 화면은 빠르게.</h2>
+        </div>
+        <div className="landing-board-cards">
+          {[
+            ["Checklist", "가족별 준비물"],
+            ["Budget", "지출과 예정 결제"],
+            ["Gallery", "스크린샷 자료 묶음"],
+            ["My Maps", "공유 지도 동기화"]
+          ].map(([title, body]) => (
+            <button className="landing-mini-card" key={title} type="button" onClick={onEnter}>
+              <strong>{title}</strong>
+              <span>{body}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }
 
