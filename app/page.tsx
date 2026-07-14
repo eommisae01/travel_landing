@@ -658,7 +658,7 @@ function TripStarterPage({ theme, onBack, onOpenExisting, onCreate }: { theme: A
       <section className="starter-hero">
         <div>
           <p className="landing-kicker">Start a trip</p>
-          <h1>처음에는 목적지만 정해도 됩니다.</h1>
+          <h1>목적지를 선택해주세요</h1>
           <p>기간, 항공편, My Maps 링크는 건너뛸 수 있고 나중에 설정에서 다시 채울 수 있습니다.</p>
         </div>
         <div className="starter-steps" aria-label="여행 셋업 단계">
